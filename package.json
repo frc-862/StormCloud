@@ -1,0 +1,14 @@
+{
+  "name": "stormcloud",
+  "version": "1.0.0",
+  "description": "Cloud website for the Lightning Scouting App, Lightning Pit Carts, and people online to access!",
+  "main": "app.js",
+  "scripts": {
+    "start": "node ."
+  },
+  "author": "David Reeves",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.1"
+  }
+}

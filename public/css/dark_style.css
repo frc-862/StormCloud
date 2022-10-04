@@ -1,0 +1,123 @@
+.background{
+    background-color: #190024;
+}
+
+.level1bg{
+    background-color: #280338;
+}
+
+.level2bg{
+    background-color: #3a0e4d;
+}
+
+.primarybg{
+    background-color: #680991;
+}
+
+.redbg{
+    background-color: #910929;
+}
+.bluebg{
+    background-color: #290991;
+}
+
+
+.topidentifier{
+    position: absolute;
+    top: 14px;
+    left: 14px;
+}
+
+.center{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width:100%
+}
+
+.bottomstatus{
+    position: absolute;
+    bottom: 14px;
+    right: 14px;
+    
+}
+.bottommoreinfo{
+    position: absolute;
+    bottom: 44px;
+    right: 14px;
+}
+
+.text{
+    
+    color: white;
+    display:block;
+    width: 100%;
+    text-align: center;
+    pointer-events: none;
+}
+
+.hugeicon{
+    font-size: 6em;
+    font-weight: 800;
+}
+.header{
+    font-size: 3em;
+    font-weight: 800;
+}
+.important{
+    font-size: 2em;
+    font-weight: 600;
+}
+.regular{
+    font-size: 1.5em;
+    font-weight: 400;
+}
+.caption{
+    font-size: 1.2em;
+    font-weight: 300;
+}
+.small{
+    font-size: 1em;
+    font-weight: 400;
+}
+.tiny{
+    font-size: 0.5em;
+    font-weight: 400;
+}
+
+.flex_center{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.flex_apart{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.container{
+    padding: 20px;
+    border-radius: 12px;
+}
+.clickable{
+    cursor: pointer;
+    transition: .25s all;
+}
+.clickable:hover{
+    transform: scale(1.05);
+}
+.clickable:active{
+    transform: scale(1.03);
+}
+.container_big{
+    padding: 40px;
+    border-radius: 12px;
+}
+
+.highlightedtext{
+    padding: 4px 6px;
+    border-radius: 4px;
+    margin: 0px 3px;
+}
