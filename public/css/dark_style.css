@@ -10,9 +10,15 @@
     background-color: #3a0e4d;
 }
 
+
 .primarybg{
     background-color: #680991;
 }
+
+.greenbg{
+    background-color: #08503b;
+}
+
 
 .redbg{
     background-color: #910929;
@@ -53,6 +59,13 @@
     color: white;
     display:block;
     width: 100%;
+    text-align: center;
+    pointer-events: none;
+}
+.textslim{
+    
+    color: white;
+    display:block;
     text-align: center;
     pointer-events: none;
 }

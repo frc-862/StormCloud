@@ -78,8 +78,25 @@
             
         </div>
 
-        <div class="center screen" data-screen="1">
-            <span class="text header" style="margin-bottom: 20px;">This is Data</span>
+        <div class="center screen flex_center" data-screen="1">
+            <div class="flex_apart" style="width:90%">
+                <div style="width:30%">
+                    <div style="width: 100%;max-height:80vh" id="match_list">
+
+                    </div>
+                    
+                </div>
+                <div style="width:60%">
+                    <div class="container level1bg" style="width:100%;padding:20px" id="match_view_container">
+                        <div class="flex_apart" style="margin: 0px 10px;">
+                            <span class="textslim important" id="match_view_name">Match #</span>
+                            <span style="font-size:18px" class="highlightedtext caption greenbg textslim" id="match_view_status"></span>
+                        </div>
+                        
+                        
+                    </div>
+                </div>
+            </div>
             
             
             
@@ -103,6 +120,7 @@
         <div class="bottomstatus">
             <span class="text small"><span class="highlightedtext level2bg" data-triggers="current_comp" data-hover="y">Lightning Robotics Test</span> <span class="highlightedtext redbg" data-triggers="current_env" data-hover="y"><span class="material-symbols-rounded small">cloud_circle</span> SERVER</span></span>
         </div>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script src="js/general.js"></script>
     </body>
 </html>
