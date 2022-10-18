@@ -21,106 +21,264 @@
         </style>
     </head>
     <body class="background">
-        <div class="topidentifier screen" data-screen="1">
-            <div class="flex_center">
-                <div class="level1bg container clickable changeScreen" style="padding: 10px;margin-right:14px" data-screen="0">
-                    <span class="text regular material-symbols-rounded">edit_document</span>
+        <div id="contents" style="display: none;">
+            <div class="topidentifier screen" data-screen="1">
+                <div class="flex_center">
+                    <div class="level1bg container clickable changeScreen" style="padding: 10px;margin-right:14px" data-screen="0">
+                        <span class="text regular material-symbols-rounded">edit_document</span>
+                    </div>
+                    <span class="text regular" style="font-weight:600">Scouting / Strategy</span>
                 </div>
-                <span class="text regular" style="font-weight:600">Scouting / Strategy</span>
-            </div>
-            
-        </div> 
-        <div class="topidentifier screen" data-screen="2">
-            <div class="flex_center">
-                <div class="level1bg container clickable changeScreen" style="padding: 10px;margin-right:14px" data-screen="0">
-                    <span class="text regular material-symbols-rounded">newspaper</span>
+                
+            </div> 
+            <div class="topoptions screen" data-screen="1">
+                <div class="flex_center">
+                    <div class="level1bg container clickable changeSubscreen" style="padding: 10px;margin-right:14px" data-subscreen="1">
+                        <span class="text caption">Matches</span>
+                    </div>
+                    <div class="level1bg container clickable changeSubscreen" style="padding: 10px;margin-right:14px" data-subscreen="2">
+                        <span class="text caption">Pick List</span>
+                    </div>
+                    <div class="level1bg container clickable changeSubscreen" style="padding: 10px;margin-right:14px" data-subscreen="3">
+                        <span class="text caption">Settings</span>
+                    </div>
+                    
                 </div>
-                <span class="text regular" style="font-weight:600">Current Competition Data</span>
-            </div>
+                
+            </div> 
+            <div class="topoptions screen" data-screen="3">
+                <div class="flex_center">
+                    <div class="level1bg container clickable changeSubscreen" style="padding: 10px;margin-right:14px" data-subscreen="1">
+                        <span class="text caption">Roles</span>
+                    </div>
+                    <div class="level1bg container clickable changeSubscreen" style="padding: 10px;margin-right:14px" data-subscreen="2">
+                        <span class="text caption">Competitions</span>
+                    </div>
+                    <div class="level1bg container clickable changeSubscreen" style="padding: 10px;margin-right:14px" data-subscreen="3">
+                        <span class="text caption">Change Environment</span>
+                    </div>
+                    
+                </div>
+                
+            </div> 
+            <div class="topidentifier screen" data-screen="2">
+                <div class="flex_center">
+                    <div class="level1bg container clickable changeScreen" style="padding: 10px;margin-right:14px" data-screen="0">
+                        <span class="text regular material-symbols-rounded">newspaper</span>
+                    </div>
+                    <span class="text regular" style="font-weight:600">Current Competition Data</span>
+                </div>
+                
+            </div> 
+            <div class="topidentifier screen" data-screen="3">
+                <div class="flex_center">
+                    <div class="level1bg container clickable changeScreen" style="padding: 10px;margin-right:14px" data-screen="0">
+                        <span class="text regular material-symbols-rounded">settings</span>
+                    </div>
+                    <span class="text regular" style="font-weight:600">Settings</span>
+                </div>
+                
+            </div> 
             
-        </div> 
-        <div class="center screen" data-screen="0">
-            <span class="text header" style="margin-bottom: 20px;">Select an Item</span>
-            <div class="flex_center" style="margin:10px">
-                <div class="container level1bg clickable changeScreen" style="width:80%" data-screen="1">
-                    <div class="flex_center" style="pointer-events: none;">
-                        <div class="level2bg container" style="pointer-events: none;">
-                            <span class="text hugeicon material-symbols-rounded">edit_document</span>
+            <div class="center screen" data-screen="0">
+                <span class="text header" style="margin-bottom: 20px;">Select an Item</span>
+                <div class="flex_center" style="margin:10px">
+                    <div class="container level1bg clickable changeScreen" style="width:80%" data-screen="1">
+                        <div class="flex_center" style="pointer-events: none;">
+                            <div class="level2bg container" style="pointer-events: none;">
+                                <span class="text hugeicon material-symbols-rounded">edit_document</span>
+                            </div>
+                            <div style="width:100%;margin-left:14px;margin-right:14px">
+                                <span class="text important" style="margin-bottom: 5px;">Scouting</span>
+                                <span class="text small">Select this item if you are a paper scouter or online scouter looking to get or write data...</span>
+        
+                            </div>
+                            
                         </div>
-                        <div style="width:100%;margin-left:14px;margin-right:14px">
-                            <span class="text important" style="margin-bottom: 5px;">Scouting</span>
-                            <span class="text small">Select this item if you are a paper scouter or online scouter looking to get or write data...</span>
+                        
+                    </div>
+                </div>
+                <div class="flex_center" style="margin:10px">
+                    <div class="container level1bg clickable changeScreen" style="width:80%" data-screen="2">
+                        
+                        <div class="flex_center" style="pointer-events: none;">
+                            <div class="level2bg container" style="pointer-events: none;">
+                                <span class="text hugeicon material-symbols-rounded">newspaper</span>
+                            </div>
+                            <div style="width:100%;margin-left:14px;margin-right:14px">
+                                <span class="text important" style="margin-bottom: 5px;">Competition Data</span>
+                                <span class="text small">Select this item if you are looking to observe, edit, or update competition data from the current competition...</span>
+        
+                            </div>
+                            
+                        </div>
+                        
+                    </div>
+                </div>
+                <div class="flex_center" style="margin:10px">
+                    <div class="container level1bg clickable changeScreen" style="width:80%" data-screen="3">
+                        
+                        <div class="flex_center" style="pointer-events: none;">
+                            <div class="level2bg container" style="pointer-events: none;">
+                                <span class="text hugeicon material-symbols-rounded">settings</span>
+                            </div>
+                            <div style="width:100%;margin-left:14px;margin-right:14px">
+                                <span class="text important" style="margin-bottom: 5px;">Settings</span>
+                                <span class="text small">Manage the environment that you are working inside of...</span>
+        
+                            </div>
+                            
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                
+            </div>
     
+            <div class="center screen flex_center" data-screen="1">
+                <div class="flex_center subscreen" data-subscreen="1" style="width:100%">
+                    <div class="flex_apart" style="width:90%">
+                        <div style="width:30%">
+                            <div style="width: 100%;max-height:80vh" id="match_list">
+        
+                            </div>
+                            
                         </div>
-                        
-                    </div>
-                    
-                </div>
-            </div>
-            <div class="flex_center" style="margin:10px">
-                <div class="container level1bg clickable changeScreen" style="width:80%" data-screen="2">
-                    
-                    <div class="flex_center" style="pointer-events: none;">
-                        <div class="level2bg container" style="pointer-events: none;">
-                            <span class="text hugeicon material-symbols-rounded">newspaper</span>
-                        </div>
-                        <div style="width:100%;margin-left:14px;margin-right:14px">
-                            <span class="text important" style="margin-bottom: 5px;">Competition Data</span>
-                            <span class="text small">Select this item if you are looking to observe, edit, or update competition data from the current competition...</span>
+                        <div style="width:60%;height:100%">
+                            
+                            <div class="container level1bg" style="width:100%;padding:20px" id="match_view_container">
+                                <div class="flex_apart" style="margin: 0px 10px;">
+                                    <span class="textslim important" id="match_view_name">Match #</span>
+                                    <span style="font-size:18px" class="highlightedtext caption greenbg textslim" id="match_view_status"></span>
+                                </div>
+                                <div class="flex_between" style="margin:15px 0px" id="match_view_teams"></div>
+                                <div style="width:100%;height:20vh">
+                                    <div class="flex_center" style="flex-wrap:wrap;width:100%" id="match_view_documents">
     
+                                    </div>
+                                </div>
+                                <div class="flex_center">
+                                    
+                                    <div class="redbg container clickable" style="padding:10px; margin:7px" id="match_view_close">
+                                        <span class="text caption">Close</span>
+                                    </div>
+                                </div>
+    
+                            </div>
                         </div>
-                        
+                    </div>
+                </div>
+                <div class="flex_center subscreen" data-subscreen="2">
+                    Hi 2
+                </div>
+                <div class="flex_center subscreen" data-subscreen="3">
+                    Hi 3
+                </div>
+                
+                
+                
+                
+            </div>
+            <div class="center screen" data-screen="2">
+                <span class="text header" style="margin-bottom: 20px;">This is Data</span>
+                
+                
+                
+            </div>
+            <div class="center screen" data-screen="3">
+                <div class="flex_center subscreen" data-subscreen="1" style="width:100%">
+                    <div class="flex_apart" style="width:90%">
+                        <div style="width:30%">
+                            <div class="container level1bg clickable"  id="role_add">
+                                <span class="text caption">Add Role</span>
+                            </div>
+                            <div style="width: 100%;max-height:80vh" id="role_list">
+        
+                            </div>
+                            
+                            
+                        </div>
+                        <div style="width:60%;height:100%">
+                                
+                            <div class="container level1bg" style="width:100%;padding:20px" id="role_view_container">
+                                <div class="flex_center" style="margin: 0px 10px;">
+                                    <input type="text" class="input text important" style="pointer-events:all" value="" placeholder="Role Name" id="role_view_name"/>
+                                    
+                                    
+                                </div>
+                                
+                                <div style="width:100%;height:20vh">
+                                    <div class="flex_center" style="flex-wrap:wrap;width:100%" id="role_view_toggles">
+    
+                                    </div>
+                                </div>
+                                <div class="flex_center">
+                                    <div class="level2bg container clickable" style="padding:10px; margin:7px" id="role_view_save">
+                                        <span class="text caption">Save</span>
+                                    </div>
+                                    <div class="redbg container clickable" style="padding:10px; margin:7px" id="role_view_close">
+                                        <span class="text caption">Close</span>
+                                    </div>
+                                </div>
+                                
+    
+                            </div>
+                        </div>
                     </div>
                     
                 </div>
+                
+                
+                
             </div>
-            
-            
-        </div>
 
-        <div class="center screen flex_center" data-screen="1">
-            <div class="flex_apart" style="width:90%">
-                <div style="width:30%">
-                    <div style="width: 100%;max-height:80vh" id="match_list">
-
-                    </div>
-                    
+            <div class="bottommoreinfo">
+                <div class="container redbg" data-part="current_env" style="display: none;border-radius:4px;opacity:0.8">
+                    <span class="text caption" style="font-weight: bold;">Current Environment</span>
+                    <span class="text small">You are currently in the SERVER environment, meaning you have LIVE access with all of the data on the cloud!</span>
                 </div>
-                <div style="width:60%">
-                    <div class="container level1bg" style="width:100%;padding:20px" id="match_view_container">
-                        <div class="flex_apart" style="margin: 0px 10px;">
-                            <span class="textslim important" id="match_view_name">Match #</span>
-                            <span style="font-size:18px" class="highlightedtext caption greenbg textslim" id="match_view_status"></span>
+                <div class="container level2bg" data-part="current_comp" style="display: none;border-radius:4px;opacity:0.8">
+                    <span class="text caption" style="font-weight: bold;">Current Competition</span>
+                    <span class="text small">The system is configured to have this competition tracked! This may affect data transfers...</span>
+                </div>
+            </div>
+            <div class="bottomstatus">
+                <span class="text small"><span class="highlightedtext level2bg" data-triggers="current_comp" data-hover="y">Lightning Robotics Test</span> <span class="highlightedtext redbg" data-triggers="current_env" data-hover="y"><span class="material-symbols-rounded small">cloud_circle</span> SERVER</span></span>
+            </div>
+            <div class="overlay" id="overlay" style="display: none;">
+                <div class="flex_center" style="width: 100%;height:100%">
+                    <div class="container level1bg" style="width:50%">
+                        <div id="overlayContent">
+                            
+                        </div>
+                        <div class="flex_apart" style="margin-top: 20px;">
+                            
+                            <span class="text caption" style="font-weight:600;opacity:0.5;text-align:left" id="overlayTitle">Document #1</span>
+                            <div class="flex_center" style="justify-content:right">
+                                <div class="container level2bg clickable" style="padding: 10px;margin-right:10px" id="overlayDone">
+                                    <span class="text regular material-symbols-rounded">check</span>
+                                </div>
+                                <div class="container level2bg clickable" style="padding: 10px" id="overlayClose">
+                                    <span class="text regular material-symbols-rounded">close</span>
+                                </div>
+                            </div>
                         </div>
                         
-                        
                     </div>
                 </div>
+                
             </div>
-            
-            
-            
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+            <script src="js/general.js"></script>
         </div>
-        <div class="center screen" data-screen="2">
-            <span class="text header" style="margin-bottom: 20px;">This is Data</span>
-            
-            
-            
-        </div>
-        <div class="bottommoreinfo">
-            <div class="container redbg" data-part="current_env" style="display: none;border-radius:4px;opacity:0.8">
-                <span class="text caption" style="font-weight: bold;">Current Environment</span>
-                <span class="text small">You are currently in the SERVER environment, meaning you have LIVE access with all of the data on the cloud!</span>
-            </div>
-            <div class="container level2bg" data-part="current_comp" style="display: none;border-radius:4px;opacity:0.8">
-                <span class="text caption" style="font-weight: bold;">Current Competition</span>
-                <span class="text small">The system is configured to have this competition tracked! This may affect data transfers...</span>
+        <div id="waiting">
+            <div class="center flex_center">
+                <div class="container level1bg flex_center" style="width: 20vh;height:20vh">
+                    <span class="text hugeicon material-symbols-rounded spin">hourglass_empty</span>
+                </div>
             </div>
         </div>
-        <div class="bottomstatus">
-            <span class="text small"><span class="highlightedtext level2bg" data-triggers="current_comp" data-hover="y">Lightning Robotics Test</span> <span class="highlightedtext redbg" data-triggers="current_env" data-hover="y"><span class="material-symbols-rounded small">cloud_circle</span> SERVER</span></span>
-        </div>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-        <script src="js/general.js"></script>
+        
     </body>
 </html>

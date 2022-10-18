@@ -1,5 +1,21 @@
 const mongoose = require('mongoose');
 
+/* 
+
+    Permissions:
+
+    READ_ALL
+    READ_PICKLIST
+    WRITE_DATA
+    WRITE_PAPER
+    WRITE_EXTRA
+    WRITE_PICKLIST
+    EDIT_ALL
+    DELETE_ALL
+    SETTINGS
+    
+
+*/
 
 const models = {
     'Environment' : mongoose.model('Environment', new mongoose.Schema({
@@ -11,12 +27,20 @@ const models = {
             teamsPerColor: Number,
             teamsPerAlliance: Number
         },
+        master: {
+            hash: String,
+            salt: String,
+            iterations: Number
+        },
         access: [{
             role: String,
-            username: String,
-            passwordHash: String,
-            passwordSalt: String,
-            passwordIterations: Number
+            joinKey: String,
+            permissions: [String]
+        }],
+        devices: [{
+            generatedId: String,
+            latestRole: String,
+            latestAccess: String
         }]
     })),
     'Match' : mongoose.model('Match', new mongoose.Schema({
@@ -77,6 +101,11 @@ async function testAddData(){
         await createDoc('Team', {environment: 'test', teamNumber: 40, name: 'Team 40', documents: []});
         await createDoc('Team', {environment: 'test', teamNumber: 50, name: 'Team 50', documents: []});
         await createDoc('Team', {environment: 'test', teamNumber: 60, name: 'Team 60', documents: []});
+    }
+
+    var documents = await getDocs('Document', {environment: 'test'});
+    if(documents.length == 0){
+        await createDoc('Document', {environment: 'test', dataType: 'qual', json: '{"team" : 10}', datetime: new Date(), image: ''});
     }
 
 }

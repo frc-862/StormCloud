@@ -10,6 +10,10 @@ let environment = "test";
  * @apiName GET API
  * @apiGroup API
  */
+
+
+
+
 router.get('/', function(req, res, next) {
     res.json({message: "Welcome to the StormCloud API!", account: false, version: "0.0.1"});
 });
@@ -26,7 +30,7 @@ router.get('/matches*', async function(req, res, next) {
 
     var matches = await db.getDocs("Match", {environment: env});
 
-    var documents = await db.getDocs("Document", {dataType: "match"});
+    var documents = await db.getDocs("Document", {environment: env, dataType: "match"});
 
     var sendBackMatches = [];
     matches.forEach(match => {
@@ -40,7 +44,7 @@ router.get('/matches*', async function(req, res, next) {
             _id: match._id
         }
         documents.forEach(doc => {
-            if(match.documents.includes(doc._id)){
+            if(match.documents.includes(doc._id.toString())){
                 matchData.documents.push(doc);
             }
         })
