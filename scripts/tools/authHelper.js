@@ -1,8 +1,46 @@
 var db = require('../database.js');
 const parser = require('body-parser')
 const crypto = require('crypto');
+const JWT = require('jsonwebtoken');
+const dotenv = require('dotenv');
 
-async function getEnvironment(){
+function generateAuthToken(level, permissions, username, environment){
+    return JWT.sign({
+        level: level,
+        permissions: permissions,
+        username: username,
+        environment: environment
+    }, process.env.JWT_SECRET, {expiresIn: "7d"});
+}
+
+async function authorize(token, permission, env){
+    var decoded = await checkToken(token);
+    if(decoded == undefined){
+        return false;
+    }
+    if(decoded.environment != env.friendlyId){
+        return false;
+    }
+    return checkForPermission(permission, decoded.permissions);
+}
+
+async function checkToken(token){
+    try{
+        var decoded = JWT.verify(token, process.env.JWT_SECRET);
+        return decoded;
+    }catch(err){
+        return undefined;
+    }
+}
+
+function checkForPermission(permission, permissions){
+    if(permissions.includes("*")){
+        return true;
+    }
+    return permissions.includes(permission);
+}
+
+async function getEnvironment(environment){
     var env = (await db.getDocs("Environment", {friendlyId: environment}));
     if(env.length == 0){
         return undefined;
@@ -21,7 +59,8 @@ async function getDevice(deviceId, env){
 }
 
 
-async function isEnvironmentSetup(env){
+function isEnvironmentSetup(env){
+    
     if(env.master == undefined || env.master.hash == undefined){
         return false;
     }
@@ -33,14 +72,17 @@ async function checkPassword(password, env){
     if(env.master == undefined || env.master.hash == undefined){
         return false;
     }
-    var hash = crypto.pbkdf2Sync(password, environmentObject.salt, environmentObject.iterations, 512, 'sha512').toString('hex');
-    return hash == environmentObject.master.hash;
+    var hash = crypto.pbkdf2Sync(password, env.master.salt, env.master.iterations, 512, 'sha512').toString('hex');
+    return hash == env.master.hash;
 }
 
 async function setMasterPassword(previousPassword, password, env){
 
     var newMaster = {};
-    if(_isEnvironmentSetup(env) && !(await _checkPassword(previousPassword, env))){
+    
+    if(isEnvironmentSetup(env) && !(await checkPassword(previousPassword, env))){
+        console.log("Environment setup");
+        console.log(isEnvironmentSetup(env));
         return false;
     }
     newMaster["salt"] = crypto.randomBytes(128).toString('hex');
@@ -56,5 +98,10 @@ module.exports = {
     getDevice: getDevice,
     isEnvironmentSetup: isEnvironmentSetup,
     setMasterPassword: setMasterPassword,
-    checkPassword: checkPassword
+    checkPassword: checkPassword,
+    generateAuthToken: generateAuthToken,
+    getEnvironment: getEnvironment,
+    checkToken: checkToken,
+    checkForPermission: checkForPermission,
+    authorize: authorize
 };

@@ -1,7 +1,24 @@
 var environmentData = {};
 var persistantData = {};
+var overlaySaveData = {};
+var overlaySaveFunction = ()=>{};
 
 var showingContent = false;
+
+
+function readFromCookie(name){
+    var result = document.cookie.match(new RegExp(name + '=([^;]+)'));
+    result && (result = result[1]);
+    return result;
+}
+
+function writeToCookie(name, value){
+    
+
+    document.cookie = name + "=" + value;
+
+}
+
 
 function try_show_content(){
     if(showingContent == false){
@@ -11,18 +28,37 @@ function try_show_content(){
     }
 }
 
+
 function pull_environment(){
     get("/api/environment", {}, function(success, data){
         if(success){
-            environmentData = data;
+
+            environmentData = data["environment"];
+
+            var needToSetup = data["needsSetup"];
+
+            if(needToSetup){
+                window.location = "/setup";
+                return;
+            }
+
+            var account = readFromCookie("token");
+            if(account == undefined || account == ""){
+                window.location = "/login";
+                return;
+            }
+
+            
             try_show_content();
-            handle_environment(data);
+            handle_environment(environmentData);
         }
     })
 }
 
 document.addEventListener('DOMContentLoaded', function(){
+    
     pull_environment();
+    
 });
 
 
@@ -129,6 +165,10 @@ document.querySelector("#overlayClose").addEventListener("click", function(e){
     document.querySelector("#overlay").style.display = "none";
 });
 
+document.querySelector("#overlayDone").addEventListener("click", function(e){
+    overlaySaveFunction();
+});
+
 
 /*
     Differently Defined API Actions
@@ -136,7 +176,7 @@ document.querySelector("#overlayClose").addEventListener("click", function(e){
 
 function pull_matches(cb=()=>{}){
     get("/api/matches", {}, function(success,data){
-        cb(data);
+        cb(data["matches"], data["unassignedDocuments"]);
     })
 }
 
@@ -199,6 +239,7 @@ function handle_matches(ms){
 var currentMatch = undefined;
 var currentTeamsFiltered = [];
 var cachedDocuments = [];
+var unassignedDocuments = [];
 
 var currentRole = undefined;
 var cachedRoleSettings = [];
@@ -296,7 +337,7 @@ function show_hide_documents(){
 }
 
 function handle_document_click(id){
-    document.querySelector("#overlay").style.display = "";
+    
     var d = cachedDocuments.filter((i) => i["_id"] == id)[0];
     
     var data = JSON.parse(d["json"]);
@@ -326,8 +367,65 @@ function handle_document_click(id){
             break;
     }
 
-    
+    document.querySelector("#overlay").style.display = "";
 }
+
+
+document.querySelector("#match_view_create_document").addEventListener("click", function(e){
+    document.querySelector("#overlayContent").innerHTML = `
+    <textarea class="input" style="width:100%;height:200px;resize:none" placeholder="Enter your note here" id="overlayContent_Note"></textarea>
+    <input type="text" class="input" placeholder="Author (Optional)" id="overlayContent_Author">
+    <input type="number" class="input" placeholder="Team Number" id="overlayContent_Number">
+    `;
+
+    document.querySelector("#overlayTitle").innerHTML = `Create New Document`;
+
+    overlaySaveFunction = () => {
+        var note = document.querySelector("#overlayContent_Note").value;
+        var author = document.querySelector("#overlayContent_Author").value;
+        var team = document.querySelector("#overlayContent_Number").value;
+
+
+        post("/api/document", {}, {
+            dataType: "match",
+            image: undefined,
+            json: JSON.stringify({
+                team: team,
+                contents: note,
+                author: author,
+                type: "note"
+            })
+        }, (success, data) => {
+            console.log(data);
+            var _id = data["document"]["_id"];
+            currentMatch["documents"].push({
+                dataType: "match",
+                image: undefined,
+                json: JSON.stringify({
+                    team: team,
+                    contents: note,
+                    author: author,
+                    type: "note"
+                }),
+                datetime: new Date().toLocaleString(),
+                _id: _id
+            });
+            post("/api/match/document", {}, {
+                matchId: currentMatch["_id"],
+                docId: _id
+            }, (success, data) => {
+                console.log(data);
+            });
+        })
+
+        
+
+        handle_match_click(currentMatch["_id"]);
+
+        document.querySelector("#overlay").style.display = "none";
+    };
+    document.querySelector("#overlay").style.display = "";
+});
 
 function handle_team_click(num, color){
     if(num == "*"){
@@ -477,7 +575,7 @@ function handle_match_click(m){
         `;
     }
 
-
+    document.querySelector('#match_view_container_UD').style.display = "none";
     document.querySelector('#match_view_documents').innerHTML = df;
 
 
@@ -518,10 +616,16 @@ var onScreenEvents = {
 
     },
     1: function(){
-        pull_matches((ms)=>{
+        pull_matches((ms, uD)=>{
             document.querySelector('#match_list').innerHTML = "";
             document.querySelector('#match_view_container').style.display = "none";
             persistantData["matches"] = ms;
+            if(uD.length > 0){
+                document.querySelector('#match_unallocated_documents').style.display = "";
+            }else{
+                document.querySelector('#match_unallocated_documents').style.display = "none";
+            }
+            unassignedDocuments = uD;
             handle_matches(ms);
         });
         

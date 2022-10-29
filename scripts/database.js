@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 
     READ_ALL
     READ_PICKLIST
+    ASSOCIATE
     WRITE_DATA
     WRITE_PAPER
     WRITE_EXTRA

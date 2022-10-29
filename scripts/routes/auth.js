@@ -3,9 +3,12 @@ var router = express.Router();
 var db = require('../database.js');
 var authTools = require('../tools/authHelper.js');
 const bodyParser = require('body-parser');
+const JWT = require('jsonwebtoken');
 
 
 let environment = "test";
+
+
 
 
 /**
@@ -14,24 +17,52 @@ let environment = "test";
  * @apiGroup Auth
  */
 
+router.post("/validate/key", async (req, res) => {
+    var token = req.cookies.token;    
+})
+
+router.post('/validate/password', async (req, res) => {
+    var password = req.body.password;
+
+    var env = await authTools.getEnvironment(environment);
+    if(env.length == 0){
+        res.status(500).json({message: "No environment found!"});
+        return;
+    }
+
+    var result = await authTools.checkPassword(password, env);
+
+    if(result){
+        var token = await authTools.generateAuthToken("master", ["*"], "Master User", env.friendlyId);
+        res.status(200).json({token: token});
+    }else{
+        res.status(401).json({message: "Incorrect password!"});
+    }
+});
+
 router.post("/validate/device", async (req, res) => {
     var joinKey = req.body.key;
     
-    var env = (await db.getDocs("Environment", {friendlyId: environment}));
+    var env = await authTools.getEnvironment(environment);
     if(env.length == 0){
         res.status(500).json({message: "No environment found!"});
+        return;
     }
 
     var deviceId = req.body.deviceId;
     if(deviceId == undefined){
         res.status(403).json({message: "No device ID provided!"});
+        return;
     }
 
     
 
     var role = env.access.find(role => role.joinKey == joinKey);
     if(role){
-        res.status(200).json({success: true, access: role});
+        var token = await authTools.generateAuthToken("device", role.permissions, deviceId, env.friendlyId);
+
+
+        res.status(200).json({success: true, access: role, token: token});
 
         if(authTools.checkDeviceExists(deviceId, env)){
             // Device already exists
@@ -52,3 +83,4 @@ router.post("/validate/device", async (req, res) => {
 });
 
 
+module.exports = router;
