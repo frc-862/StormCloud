@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+
 /* 
 
     Permissions:
@@ -72,7 +73,7 @@ const models = {
 }
 
 async function init(pw){
-    await mongoose.connect('mongodb+srv://Daviado:' + pw + '@stormcloud.yxon7lk.mongodb.net/?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true });
+    await mongoose.connect(process.env.DB, { useNewUrlParser: true, useUnifiedTopology: true });
     console.log('Connected to mongodb');
 
     

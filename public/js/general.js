@@ -94,6 +94,36 @@ function post(link, headers, data, callback){
     })
 }
 
+function remove(link, headers, data, callback){
+    $.ajax({
+        url: link,
+        type: "DELETE",
+        headers: headers,
+        data: data,
+        success: function(data){
+            callback(true, data);
+        },
+        error: function(err){
+            callback(false, err);
+        }
+    })
+}
+
+function put(link, headers, data, callback){
+    $.ajax({
+        url: link,
+        type: "PUT",
+        headers: headers,
+        data: data,
+        success: function(data){
+            callback(true, data);
+        },
+        error: function(err){
+            callback(false, err);
+        }
+    })
+}
+
 
 
 Array.from(document.getElementsByClassName("clickable")).forEach((item)=>{
@@ -163,10 +193,15 @@ Array.from(document.getElementsByClassName("clickable")).forEach((item)=>{
 
 document.querySelector("#overlayClose").addEventListener("click", function(e){
     document.querySelector("#overlay").style.display = "none";
+    document.querySelector("#overlayContent").innerHTML = "";
+    document.querySelector("#overlayClose").style.display = "";
+    document.querySelector("#overlayDone").style.display = "";
+    overlaySaveData = {};
 });
 
 document.querySelector("#overlayDone").addEventListener("click", function(e){
     overlaySaveFunction();
+    overlaySaveData = {};
 });
 
 
@@ -339,11 +374,12 @@ function show_hide_documents(){
 function handle_document_click(id){
     
     var d = cachedDocuments.filter((i) => i["_id"] == id)[0];
+    overlaySaveData["document"] = id;
     
     var data = JSON.parse(d["json"]);
     var datetime = new Date(d["datetime"]);
     datetime = datetime.toLocaleString();
-
+    document.querySelector("#overlayClose").style.display = "none";
     document.querySelector("#overlayContent").innerHTML = ``;
     switch(data["type"]){
         case "paper":
@@ -361,11 +397,95 @@ function handle_document_click(id){
             document.querySelector("#overlayTitle").innerHTML = `Extra Note${teamNumber != undefined && teamNumber != "" ? " (" + teamNumber + ")" : ""} - By ${author}`;
 
             document.querySelector("#overlayContent").innerHTML = `
-            <textarea class="input" style="width:100%;height:200px;resize:none" disabled>${contents}</textarea>
+            <textarea class="input" id="overlayContent_contents" style="width:100%;height:200px;resize:none" disabled>${contents}</textarea>
+
+            <div class="flex_center" style="margin:10px">
+                <div class="container level2bg clickable" id="overlayContent_editDocument" style="padding:10px;margin-right:10px">
+                    <span class="text caption">Edit Contents</span>
+                </div>
+                <div class="container level2bg clickable" id="overlayContent_deleteDocument" style="padding:10px">
+                    <span class="text caption">Delete Document</span>
+                </div>
+            </div>
             `;
+
+            // Specific Overlay Events
+            document.querySelector("#overlayContent_editDocument").addEventListener("click", function(e){
+                if(overlaySaveData["editing"]){
+                    document.querySelector("#overlayContent_editDocument").innerHTML = `<span class="text caption">Saving</span>`;
+                    document.querySelector("#overlayContent_editDocument").classList = "container primarybg clickable";
+                    document.querySelector("#overlayContent_contents").disabled = true;
+                    overlaySaveData["editing"] = false;
+                    var editedDocument = currentMatch["documents"].find((i) => i["_id"] == overlaySaveData["document"]);
+                    var object = JSON.parse(editedDocument["json"]);
+                    object["contents"] = document.querySelector("#overlayContent_contents").value;
+                    editedDocument["json"] = JSON.stringify(object);
+                    currentMatch["documents"][currentMatch["documents"].findIndex((i) => i["_id"] == overlaySaveData["document"])] = editedDocument;
+                    put("/api/document", {}, {docId: overlaySaveData["document"], json: editedDocument["json"]}, (success, data) => {
+                        document.querySelector("#overlayContent_editDocument").innerHTML = `<span class="text caption">Edit Contents</span>`;
+                        document.querySelector("#overlayContent_editDocument").classList = "container level2bg clickable";
+                        document.querySelector("#overlayContent_contents").disabled = true;
+                        overlaySaveData["editing"] = false;
+                    });
+                }else{
+                    document.querySelector("#overlayContent_contents").disabled = false;
+                    document.querySelector("#overlayContent_editDocument").classList = "container primarybg clickable";
+                    document.querySelector("#overlayContent_editDocument").innerHTML = `<span class="text caption">Save Contents</span>`;
+                    overlaySaveData["editing"] = true;
+                }
+                
+            });
+            
+            document.querySelector("#overlayContent_deleteDocument").addEventListener("click", function(e){
+                if(!overlaySaveData["deleteConfirm"]){
+                    overlaySaveData["deleteTime"] = new Date();
+                    document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Are You Sure?</span>`;
+                    document.querySelector("#overlayContent_deleteDocument").classList = "container redbg clickable";
+                    overlaySaveData["deleteConfirm"] = true;
+                }else{
+                    if(overlaySaveData["deleteTime"] == undefined){
+                        document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Delete Document</span>`;
+                        document.querySelector("#overlayContent_deleteDocument").classList = "container level2bg clickable";
+                        overlaySaveData["deleteConfirm"] = false;
+                    }
+                    if(new Date() - overlaySaveData["deleteTime"] > 1500){
+                        document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Delete Document</span>`;
+                        document.querySelector("#overlayContent_deleteDocument").classList = "container level2bg clickable";
+                        overlaySaveData["deleteConfirm"] = false;
+                        return;
+                    }
+                    document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Deleting...</span>`;
+                    document.querySelector("#overlayContent_deleteDocument").classList = "container redbg clickable";
+                    overlaySaveData["deleteConfirm"] = false;
+
+                    remove("/api/document", {}, {docId: overlaySaveData["document"]}, (success, data) => {
+                        if(success){
+                            document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Deleted</span>`;
+                            document.querySelector("#overlayContent_deleteDocument").classList = "container redbg clickable";
+                            currentMatch["documents"].splice(currentMatch["documents"].indexOf(d => d._id == overlaySaveData["document"]), 1);
+                            handle_match_click(currentMatch["_id"]);
+                            setTimeout(function(){
+                                document.querySelector("#overlayClose").click();
+                            }, 500);
+                        }else{
+                            document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Delete Document</span>`;
+                            document.querySelector("#overlayContent_deleteDocument").classList = "container level2bg clickable";
+                            overlaySaveData["deleteConfirm"] = false;
+                        }
+                    });
+                    
+                }
+            });
 
             break;
     }
+
+    
+
+    overlaySaveFunction = () => {
+        document.querySelector("#overlay").style.display = "none";
+    };
+
 
     document.querySelector("#overlay").style.display = "";
 }
@@ -434,6 +554,7 @@ function handle_team_click(num, color){
             currentTeamsFiltered.splice(currentTeamsFiltered.indexOf(i), 1);
         });
         document.querySelector('.selectTeam[data-team="*"]').classList = "highlightedtext caption whitebg textslim clickable selectTeam selected_border";
+        show_hide_documents();
         return;
     }
     var currentInstance = currentTeamsFiltered.find((i) => i["team"] == num && i["color"] == color && i["match"] == currentMatch["_id"]);

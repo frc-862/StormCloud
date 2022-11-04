@@ -178,6 +178,32 @@ router.post("/match", async (req, res, next) => {
 
 });
 
+/**
+ * @api {delete} /api/match Delete a match
+ * @requires DELETE_ALL permission
+ * @apiName DELETE Match
+ * @apiGroup Matches
+ * @param {String} matchId The match ID to delete
+ */
+
+router.delete("/match", async (req, res, next) => {
+    let env = await authTools.getEnvironment(environment);
+
+    var token = req.cookies.token;
+
+    var authorized = await authTools.authorize(token, "DELETE_ALL", env);
+    if(!authorized){
+        res.status(401).json({message: "Unauthorized"});
+        return;
+    }
+
+    var matchId = req.body.matchId;
+
+    await db.deleteDoc("Match", {_id: matchId});
+    res.status(200).json({message: "Match deleted!"});
+
+});
+
 
 /**
  * @api {post} /api/document Create a new document
@@ -209,6 +235,73 @@ router.post("/document", async (req, res, next) => {
     var doc = await db.createDoc("Document", document);
     res.status(200).json({message: "Document created!", document: doc});
 });
+
+/**
+ * @api {delete} /api/document Delete a document, no matter its associations to matches
+ * @requires DELETE_ALL permission
+ * @apiName DELETE Document
+ * @apiGroup Documents
+ * @param {String} docId The document ID to delete
+ */
+
+router.delete("/document", async(req, res, next) => {
+    let env = await authTools.getEnvironment(environment);
+
+    var token = req.cookies.token;
+    var dataType = req.body.dataType;
+    var authorized = await authTools.authorize(token, "DELETE_ALL", env);
+    if(!authorized){
+        res.status(401).json({message: "Unauthorized"});
+        return;
+    }
+
+    var docId = req.body.docId;
+    await db.deleteDoc("Document", {_id: docId});
+    res.status(200).json({message: "Document deleted!"});
+});
+
+/**
+ * @api {put} /api/document Edit a document's contents and data. You cannot modify the dataType of a document
+ * @requires DELETE_ALL permission
+ * @apiName DELETE Document
+ * @apiGroup Documents
+ * @param {String} docId The document ID to delete
+ */
+
+router.put("/document", async (req, res, next) => {
+    let env = await authTools.getEnvironment(environment);
+
+    var token = req.cookies.token;
+    
+    var authorized = await authTools.authorize(token, "EDIT_ALL", env);
+    if(!authorized){
+        res.status(401).json({message: "Unauthorized"});
+        return;
+    }
+
+    
+
+    var docId = req.body.docId;
+
+    var document = (await db.getDocs("Document", {_id: docId}))[0];
+
+    if(document == undefined){
+        res.status(404).json({message: "Document not found!"});
+        return;
+    }
+
+    var image = req.body.image;
+    if(image == undefined){
+        image = document.image;
+    }
+    var json = req.body.json;
+    if(json == undefined){
+        json = document.json;
+    }
+
+    await db.updateDoc("Document", {_id: docId}, {image: image, json: json, datetime: new Date()});
+    res.status(200).json({message: "Document updated!"});
+})
 
 /**
  * @api {get} /api/environment Gets data from the current environment...
