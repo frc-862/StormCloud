@@ -69,6 +69,10 @@ const models = {
         json: String,
         datetime: Date,
         image: String
+    })),
+    'Schema' : mongoose.model('Schema', new mongoose.Schema({
+        Name: String,
+        Parts: [Object]
     }))
 }
 

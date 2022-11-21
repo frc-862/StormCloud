@@ -328,6 +328,38 @@ router.post('/environment/setup', async function(req, res, next) {
     }
 });
 
+/**
+ * @api {post} /api/schema Create a new schema
+ * @apiName POST Schema
+ * @apiGroup Schemas
+ */
+router.post("/schema", async (req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
+
+    var name = req.body.name;
+    var data = req.body.data;
+
+    var docs = await db.getDocs("Schema", {Name: name});
+    if(docs.length > 0){
+        await db.updateDoc("Schema", {Name: name}, {Parts: data});
+        return;
+    }
+    db.createDoc("Schema", {Name: name, Parts: data});
+    res.status(200).json({message: "Schema created!"});
+});
+
+router.get("/schema*", async (req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
+
+    var name = req.query.name;
+    var docs = await db.getDocs("Schema", {Name: name});
+    if(docs.length > 0){
+        res.status(200).json({schema: docs[0]});
+        return;
+    }
+    res.status(404).json({message: "Schema not found!"});
+});
+
 
 
 module.exports = router;

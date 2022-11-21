@@ -27,5 +27,413 @@ function post(link, headers, data, callback){
     })
 }
 
-var items = [];
 
+
+function loadSchemaData(){
+    var name = "Test";
+    get("/api/schema?name=" + name, {}, function(success, data){
+        if(success){
+            sections = data["schema"]["Parts"];
+            reshowSections();
+        }else{
+            alert("Error loading schema data");
+        }
+    
+    })
+}
+
+function saveSchemaData(){
+    var name = "Test";
+    post("/api/schema", {}, {name: name, data: sections}, function(success, data){
+        if(!success){
+            alert("Error saving schema data");
+        }
+    });
+}
+
+
+var sections = [{
+    Name: "Autonomous",
+    _id: "2983jdnjqwd",
+    Time: 0,
+    Components: [{
+        Name: "Autonomous",
+        Type: "Stepper",
+        Max: 10,
+        Min: 0,
+        Default: 0
+    }]
+}];
+
+function editItem(element, field, sectionId){
+    var _id = element.dataset.id;
+    var index = sections.findIndex(s => s._id == sectionId);
+    var itemIndex = sections[index].Components.findIndex(i => i._id == _id);
+    var value = element.value;
+    if(field == "Options"){
+        var options = value.split(";");
+        sections[index].Components[itemIndex][field] = options;
+        return;
+    }
+    if(field == "Max" || field == "Min" || field == "Default"){
+        value = parseInt(value);
+        sections[index].Components[itemIndex][field] = value;
+        return;
+    }
+    sections[index].Components[itemIndex][field] = value;
+}
+
+function moveItem(element, direction, sectionId){
+    var _id = element.dataset.id;
+    var index = sections.findIndex(s => s._id == sectionId);
+
+    var itemIndex = sections[index].Components.findIndex(i => i._id == _id);
+    if((direction == 1 && itemIndex < sections[index].Components.length - 1) || (direction == -1 && itemIndex > 0)){
+        var temp = sections[index].Components[itemIndex];
+        sections[index].Components[itemIndex] = sections[index].Components[itemIndex + direction];
+        sections[index].Components[itemIndex + direction] = temp;
+        reshowItems(sectionId);
+    }
+    
+}
+
+function deleteItem(element, section){
+    var _id = element.dataset.id;
+    var index = sections.findIndex(s => s._id == section);
+    var itemIndex = sections[index].Components.findIndex(i => i._id == _id);
+    sections[index].Components.splice(itemIndex, 1);
+    reshowItems(section);
+}
+
+function addItem(element, type){
+    var _id = element.dataset.id;
+    var index = sections.findIndex(s => s._id == _id);
+    var item = {
+        Name: "",
+        Type: type,
+        _id: Math.random().toString(36).substring(7)
+    }
+
+    switch(type){
+        case "Step":
+            item.Max = 0;
+            item.Min = 0;
+            item.Default = 0;
+            break;
+        case "Check":
+            item.On = "";
+            item.Off = "";
+            break;
+        case "Select":
+            item.Options = [];
+            break;
+        case "Event":
+            item.Trigger = "";
+            item.Max = 0;
+            break;
+        case "Timer":
+            item.Max = 0;
+            break;
+    }
+
+    sections[index].Components.push(item);
+    reshowItems(_id);
+}
+
+function editSection(element, field){
+    var _id = element.dataset.id;
+    var index = sections.findIndex(s => s._id == _id);
+    var value = element.value;
+    sections[index][field] = value;
+}
+
+function deleteSection(element){
+    var _id = element.dataset.id;
+    var index = sections.findIndex(s => s._id == _id);
+    sections.splice(index, 1);
+    reshowSections();
+}
+
+function addSection(){
+    var section = {
+        Name: "",
+        _id: Math.random().toString(36).substring(7),
+        Time: 0,
+        Components: []
+    }
+    sections.push(section);
+    reshowSections();
+}
+
+function moveSection(element, direction){
+    var _id = element.dataset.id;
+    var index = sections.findIndex(s => s._id == _id);
+    if((direction == 1 && index < sections.length - 1) || (direction == -1 && index > 0)){
+        var temp = sections[index];
+        sections[index] = sections[index + direction];
+        sections[index + direction] = temp;
+        reshowSections();
+    }
+    
+}
+
+function reshowSections(){
+    document.getElementById("sections").innerHTML = "";
+    sections.forEach(s => {
+        document.getElementById("sections").innerHTML += `
+            <div class="level1bg container" style="width:80%;display:inline-block;margin:10px" data-id="${s._id}">
+                <div class="flex_apart" style="margin:10px 0px 20px 0px">
+                    <div style="width:40%;text-align:left">
+                        <span class="text caption" style="margin: 5px 10px;text-align:left">Section Name</span>
+                        <input class="input small" value="${s.Name}" data-id="${s._id}" onchange="editSection(this, 'Name')" type="text" placeholder="Points" style="width:90%;display:inline-block"/>
+                        
+                    </div>
+                    
+                    <div style="width:20%">
+                        <span class="text caption" style="margin: 5px 10px;text-align:left">Time Start (sec)</span>
+                        <input class="input small" value="${s.Time}" data-id="${s._id}" onchange="editSection(this, 'Time')" type="number" placeholder="0" style="width:90%"/>
+                        
+                    </div>
+                    <div class="flex_apart" style="width:10%;justify-content:right">
+                        <div class="container level2bg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${s._id}" onclick="moveSection(this, -1)">
+                            <span class="text regular material-symbols-rounded">arrow_upward</span>
+                        </div>
+                        <div class="container level2bg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${s._id}" onclick="moveSection(this, 1)">
+                            <span class="text regular material-symbols-rounded">arrow_downward</span>
+                        </div>
+                        <div class="container redbg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${s._id}" onclick="deleteSection(this)">
+                            <span class="text regular material-symbols-rounded">close</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex_center" style="margin:10px 0px">
+                    <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px" data-id="${s._id}" onclick="addItem(this, 'Step')">
+                        <span class="text caption">+ Stepper</span>
+                    </div>
+                    <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px" data-id="${s._id}" onclick="addItem(this, 'Check')">
+                        <span class="text caption">+ Toggle</span>
+                    </div>
+                    <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px" data-id="${s._id}" onclick="addItem(this, 'Select')">
+                        <span class="text caption">+ Dropdown</span>
+                    </div>
+                    <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px" data-id="${s._id}" onclick="addItem(this, 'Event')">
+                        <span class="text caption">+ Event</span>
+                    </div>
+                    <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px" data-id="${s._id}" onclick="addItem(this, 'Timer')">
+                        <span class="text caption">+ Timer</span>
+                    </div>
+                </div>
+
+                
+                <div style="margin: 10px 0px;" class="items" data-id="${s._id}">
+                    
+                </div>
+                
+                
+                
+            </div>
+        `
+        reshowItems(s._id);
+    })
+}
+
+function reshowItems(sectionId){
+    var items = sections.find(s => s._id == sectionId).Components;
+    var contentElement = document.querySelector(".items[data-id='" + sectionId + "']");
+    contentElement.innerHTML = "";
+
+    items.forEach(i => {
+        switch(i.Type){
+            case "Step":
+                contentElement.innerHTML += `
+                <div class="level2bg container flex_apart" style="margin:5px 0px">
+                    
+                    <div style="width:20%">
+                        <span class="text caption" style="margin: 5px 10px;text-align:left">Stepper Label</span>
+                        <input class="input small" type="text" value="${i.Name}" placeholder="Points" data-id="${i._id}" onchange="editItem(this, 'Name', '${sectionId}')"/>
+                    </div>
+
+                    <div style="width:40%" class="flex_apart">
+                        <div style="width:30%;text-align:left">
+                            <span class="text caption" style="margin: 5px 10px;text-align:left">Min</span>
+                            <input class="input small" value="${i.Min}" style="display: inline-block;width:80px;text-align:center" type="number" placeholder="0" data-id="${i._id}" onchange="editItem(this, 'Min', '${sectionId}')"/>
+                        </div>
+                        <div style="width:30%;text-align:left">
+                            <span class="text caption" style="margin: 5px 10px;text-align:left">Default</span>
+                            <input class="input small" value="${i.Default}" style="display: inline-block;width:80px;text-align:center" type="number" placeholder="0" data-id="${i._id}" onchange="editItem(this, 'Default', '${sectionId}')"/>
+                        </div>
+                        <div style="width:30%;text-align:left">
+                            <span class="text caption" style="margin: 5px 10px;text-align:left">Max</span>
+                            <input class="input small" value="${i.Max}" style="display: inline-block;width:80px;text-align:center" type="number" placeholder="0" data-id="${i._id}" onchange="editItem(this, 'Max', '${sectionId}')"/>
+                        </div>
+                        
+                    </div>
+
+                    <div class="flex_apart" style="width:10%;justify-content:right">
+                        <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="moveItem(this, -1, '${sectionId}')">
+                            <span class="text regular material-symbols-rounded">arrow_upward</span>
+                        </div>
+                        <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="moveItem(this, 1, '${sectionId}')">
+                            <span class="text regular material-symbols-rounded">arrow_downward</span>
+                        </div>
+                        <div class="container redbg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="deleteItem(this, '${sectionId}')">
+                            <span class="text regular material-symbols-rounded">close</span>
+                        </div>
+                    </div>
+                </div>
+                `;
+                break;
+            case "Check":
+                contentElement.innerHTML += `
+                    <div class="level2bg container flex_apart" style="margin:5px 0px">
+                        
+                        <div style="width:20%">
+                            <span class="text caption" style="margin: 5px 10px;text-align:left">Toggle Label</span>
+                            <input class="input small" value="${i.Name}" type="text" placeholder="Jumped?" data-id="${i._id}" onchange="editItem(this, 'Name', '${sectionId}')"/>
+                        </div>
+
+                        <div style="width:40%" class="flex_apart">
+                            <div style="width:50%;text-align:left">
+                                <span class="text caption" style="margin: 5px 10px;text-align:left">Value for OFF</span>
+                                <input class="input small" value="${i.Off}" style="display: inline-block;width:160px" type="text" placeholder="No" data-id="${i._id}" onchange="editItem(this, 'Off', '${sectionId}')"/>
+                            </div>
+                            <div style="width:50%;text-align:left">
+                                <span class="text caption" style="margin: 5px 10px;text-align:left">Value for ON</span>
+                                <input class="input small" value="${i.On}" style="display: inline-block;width:160px" type="text" placeholder="Yes" data-id="${i._id}" onchange="editItem(this, 'On', '${sectionId}')"/>
+                            </div>
+                            
+                            
+                        </div>
+    
+                        <div class="flex_apart" style="width:10%;justify-content:right">
+                            <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="moveItem(this, -1, '${sectionId}')">
+                                <span class="text regular material-symbols-rounded">arrow_upward</span>
+                            </div>
+                            <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="moveItem(this, 1, '${sectionId}')">
+                                <span class="text regular material-symbols-rounded">arrow_downward</span>
+                            </div>
+                            <div class="container redbg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="deleteItem(this, '${sectionId}')">
+                                <span class="text regular material-symbols-rounded">close</span>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                break;
+            case "Select":
+                var optionsString = "";
+                i.Options.forEach(o => {
+                    optionsString += o + ";";
+                });
+                optionsString = optionsString.slice(0, -1);
+                contentElement.innerHTML += `
+                    <div class="level2bg container flex_apart" style="margin:5px 0px">
+                        
+                        <div style="width:20%">
+                            <span class="text caption" style="margin: 5px 10px;text-align:left">Dropdown Label</span>
+                            <input class="input small" value="${i.Name}" type="text" placeholder="Level Achieved" data-id="${i._id}" onchange="editItem(this, 'Name', '${sectionId}')"/>
+                        </div>
+
+                        <div style="width:40%" class="flex_apart">
+                            <div style="width:100%;text-align:left">
+                                <span class="text caption" style="margin: 5px 10px;text-align:left">Options (separate by ";")</span>
+                                <input class="input small" value="${optionsString}" style="display: inline-block;width:400px" type="text" placeholder="Yes;No" data-id="${i._id}" onchange="editItem(this, 'Options', '${sectionId}')"/>
+                            </div>
+                            
+                            
+                        </div>
+    
+                        <div class="flex_apart" style="width:10%;justify-content:right">
+                            <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="moveItem(this, -1, '${sectionId}')">
+                                <span class="text regular material-symbols-rounded">arrow_upward</span>
+                            </div>
+                            <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="moveItem(this, 1, '${sectionId}')">
+                                <span class="text regular material-symbols-rounded">arrow_downward</span>
+                            </div>
+                            <div class="container redbg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="deleteItem(this, '${sectionId}')">
+                                <span class="text regular material-symbols-rounded">close</span>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                break;
+            case "Event":
+                contentElement.innerHTML += `
+                    <div class="level2bg container flex_apart" style="margin:5px 0px">
+                        
+                        <div style="width:20%">
+                            <span class="text caption" style="margin: 5px 10px;text-align:left">Event Label</span>
+                            <input class="input small" value="${i.Name}" type="text" placeholder="Exploded" type="text" placeholder="BOOM!" data-id="${i._id}" onchange="editItem(this, 'Name', '${sectionId}')"/>
+                        </div>
+
+                        <div style="width:40%" class="flex_apart">
+                            <div style="width:60%;text-align:left">
+                                <span class="text caption" style="margin: 5px 10px;text-align:left">Event Button Text</span>
+                                <input class="input small" value="${i.Trigger}" style="display: inline-block;width:200px" type="text" placeholder="BOOM!" data-id="${i._id}" onchange="editItem(this, 'Trigger', '${sectionId}')"/>
+                            </div>
+                            <div style="width:40%;text-align:left">
+                                <span class="text caption" style="margin: 5px 10px;text-align:left">Max Times</span>
+                                <input class="input small" value="${i.Max}" style="display: inline-block;width:120px" type="number" placeholder="0" data-id="${i._id}" onchange="editItem(this, 'Max', '${sectionId}')"/>
+                            </div>
+                            
+                            
+                        </div>
+    
+                        <div class="flex_apart" style="width:10%;justify-content:right">
+                            <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="moveItem(this, -1, '${sectionId}')">
+                                <span class="text regular material-symbols-rounded">arrow_upward</span>
+                            </div>
+                            <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="moveItem(this, 1, '${sectionId}')">
+                                <span class="text regular material-symbols-rounded">arrow_downward</span>
+                            </div>
+                            <div class="container redbg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="deleteItem(this, '${sectionId}')">
+                                <span class="text regular material-symbols-rounded">close</span>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                break;
+            case "Timer":
+                contentElement.innerHTML += `
+                    <div class="level2bg container flex_apart" style="margin:5px 0px">
+                        
+                        <div style="width:20%">
+                            <span class="text caption" style="margin: 5px 10px;text-align:left">Timer Label</span>
+                            <input class="input small" value="${i.Name}" type="text" placeholder="Disabled" data-id="${i._id}" onchange="editItem(this, 'Name', '${sectionId}')"/>
+                        </div>
+
+                        <div style="width:40%" class="flex_apart">
+                            <div style="width:100%;text-align:left">
+                                <span class="text caption" style="margin: 5px 10px;text-align:left">Max Seconds (0 for infinite)</span>
+                                <input class="input small" value="${i.Max}" style="display: inline-block;width:120px" type="number" placeholder="0" data-id="${i._id}" onchange="editItem(this, 'Max', '${sectionId}')"/>
+                            </div>
+                            
+                            
+                        </div>
+    
+                        <div class="flex_apart" style="width:10%;justify-content:right">
+                            <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="moveItem(this, -1, '${sectionId}')">
+                                <span class="text regular material-symbols-rounded">arrow_upward</span>
+                            </div>
+                            <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="moveItem(this, 1, '${sectionId}')">
+                                <span class="text regular material-symbols-rounded">arrow_downward</span>
+                            </div>
+                            <div class="container redbg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="deleteItem(this, '${sectionId}')">
+                                <span class="text regular material-symbols-rounded">close</span>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                break;
+        }
+    });
+}
+
+
+
+
+reshowSections();
+
+function changeInput(evt){
+    // need the input tag name, the value, and the id
+}
