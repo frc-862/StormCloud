@@ -23,7 +23,7 @@
     <body class="background">
         <div class="topidentifier">
             <div class="flex_center">
-                <div class="level1bg container clickable" style="padding: 10px;margin-right:14px">
+                <div class="level1bg container clickable" style="padding: 10px;margin-right:14px" onclick="window.location='/'">
                     <span class="text regular material-symbols-rounded">house</span>
                 </div>
                 <span class="text regular" style="font-weight:600">Data Scouting Form</span>
@@ -35,230 +35,51 @@
                 <div class="level1bg container clickable" style="padding: 10px;margin:5px" onclick="addSection()">
                     <span class="text caption">+ Section</span>
                 </div>
-                <div class="bluebg container clickable" style="padding: 10px;margin:5px" onclick="loadSchemaData()">
+                <div class="bluebg container clickable" style="padding: 10px;margin:5px" onclick="loadSchemas()">
                     <span class="text caption">Load</span>
                 </div>
-                <div class="greenbg container clickable" style="padding: 10px;margin-right:14px" onclick="saveSchemaData()">
+                <div class="greenbg container clickable" style="padding: 10px;margin:5px" onclick="saveSchemaData()">
                     <span class="text caption">Save</span>
+                </div>
+                <div class="level2bg container clickable" style="padding: 10px;margin-right:14px" onclick="showQrCode()">
+                    <span class="text caption">Show QR Code</span>
                 </div>
             </div>
             
         </div> 
         <div class="centercontent flex_center">
             <div id="sections" style="width:100%;text-align:center">
-                <div class="level1bg container" style="width:80%">
-                    <div class="flex_apart" style="margin:10px 0px 20px 0px">
-                        <div style="width:40%">
-                            <span class="text caption" style="margin: 5px 10px;text-align:left">Section Name</span>
-                            <input class="input small" type="text" placeholder="Points" style="width:90%"/>
-                            
-                        </div>
-                        
-                        <div style="width:20%">
-                            <span class="text caption" style="margin: 5px 10px;text-align:left">Time Start (sec)</span>
-                            <input class="input small" type="number" placeholder="0" style="width:90%"/>
-                            
-                        </div>
-                        <div class="flex_apart" style="width:10%;justify-content:right">
-                            <div class="container level2bg clickable" style="padding: 10px;margin:5px;width:50px">
-                                <span class="text regular material-symbols-rounded">arrow_upward</span>
-                            </div>
-                            <div class="container level2bg clickable" style="padding: 10px;margin:5px;width:50px">
-                                <span class="text regular material-symbols-rounded">arrow_downward</span>
-                            </div>
-                            <div class="container redbg clickable" style="padding: 10px;margin:5px;width:50px">
-                                <span class="text regular material-symbols-rounded">close</span>
-                            </div>
-                        </div>
-                    </div>
-    
-                    <div class="flex_center" style="margin:10px 0px">
-                        <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px">
-                            <span class="text caption">+ Stepper</span>
-                        </div>
-                        <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px">
-                            <span class="text caption">+ Toggle</span>
-                        </div>
-                        <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px">
-                            <span class="text caption">+ Dropdown</span>
-                        </div>
-                        <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px">
-                            <span class="text caption">+ Event</span>
-                        </div>
-                        <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px">
-                            <span class="text caption">+ Timer</span>
-                        </div>
-                    </div>
-                    <div style="margin: 10px 0px;">
-                        <div class="level2bg container flex_apart" style="margin:5px 0px">
-                        
-                            <div style="width:20%">
-                                <span class="text caption" style="margin: 5px 10px;text-align:left">Stepper Label</span>
-                                <input class="input small" type="text" placeholder="Points"/>
-                            </div>
-        
-                            <div style="width:40%" class="flex_apart">
-                                <div style="width:30%">
-                                    <span class="text caption" style="margin: 5px 10px;text-align:left">Min</span>
-                                    <input class="input small" style="display: inline-block;width:80px;text-align:center" type="number" placeholder="0"/>
-                                </div>
-                                <div style="width:30%">
-                                    <span class="text caption" style="margin: 5px 10px;text-align:left">Default</span>
-                                    <input class="input small" style="display: inline-block;width:80px;text-align:center" type="number" placeholder="0"/>
-                                </div>
-                                <div style="width:30%">
-                                    <span class="text caption" style="margin: 5px 10px;text-align:left">Max</span>
-                                    <input class="input small" style="display: inline-block;width:80px;text-align:center" type="number" placeholder="0"/>
-                                </div>
-                                
-                            </div>
-        
-                            <div class="flex_apart" style="width:10%;justify-content:right">
-                                <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px">
-                                    <span class="text regular material-symbols-rounded">arrow_upward</span>
-                                </div>
-                                <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px">
-                                    <span class="text regular material-symbols-rounded">arrow_downward</span>
-                                </div>
-                                <div class="container redbg clickable" style="padding: 10px;margin:5px;width:50px">
-                                    <span class="text regular material-symbols-rounded">close</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="level2bg container flex_apart" style="margin:5px 0px">
-                            
-                            <div style="width:20%">
-                                <span class="text caption" style="margin: 5px 10px;text-align:left">Toggle Label</span>
-                                <input class="input small" type="text" placeholder="Jumped?"/>
-                            </div>
-        
-                            <div style="width:40%" class="flex_apart">
-                                <div style="width:50%">
-                                    <span class="text caption" style="margin: 5px 10px;text-align:left">Value for OFF</span>
-                                    <input class="input small" style="display: inline-block;width:160px" type="text" placeholder="No"/>
-                                </div>
-                                <div style="width:50%">
-                                    <span class="text caption" style="margin: 5px 10px;text-align:left">Value for ON</span>
-                                    <input class="input small" style="display: inline-block;width:160px" type="text" placeholder="Yes"/>
-                                </div>
-                                
-                                
-                            </div>
-        
-                            <div class="flex_apart" style="width:10%;justify-content:right">
-                                <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px">
-                                    <span class="text regular material-symbols-rounded">arrow_upward</span>
-                                </div>
-                                <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px">
-                                    <span class="text regular material-symbols-rounded">arrow_downward</span>
-                                </div>
-                                <div class="container redbg clickable" style="padding: 10px;margin:5px;width:50px">
-                                    <span class="text regular material-symbols-rounded">close</span>
-                                </div>
-                            </div>
-                        </div>
-        
-                        <div class="level2bg container flex_apart" style="margin:5px 0px">
-                            
-                            <div style="width:20%">
-                                <span class="text caption" style="margin: 5px 10px;text-align:left">Dropdown Label</span>
-                                <input class="input small" type="text" placeholder="Level Achieved"/>
-                            </div>
-        
-                            <div style="width:40%" class="flex_apart">
-                                <div style="width:100%">
-                                    <span class="text caption" style="margin: 5px 10px;text-align:left">Options (separate by ";")</span>
-                                    <input class="input small" style="display: inline-block;width:400px" type="text" placeholder="Yes;No"/>
-                                </div>
-                                
-                                
-                            </div>
-        
-                            <div class="flex_apart" style="width:10%;justify-content:right">
-                                <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px">
-                                    <span class="text regular material-symbols-rounded">arrow_upward</span>
-                                </div>
-                                <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px">
-                                    <span class="text regular material-symbols-rounded">arrow_downward</span>
-                                </div>
-                                <div class="container redbg clickable" style="padding: 10px;margin:5px;width:50px">
-                                    <span class="text regular material-symbols-rounded">close</span>
-                                </div>
-                            </div>
-                        </div>
-        
-                        <div class="level2bg container flex_apart" style="margin:5px 0px">
-                            
-                            <div style="width:20%">
-                                <span class="text caption" style="margin: 5px 10px;text-align:left">Event Label</span>
-                                <input class="input small" type="text" placeholder="Exploded"/>
-                            </div>
-        
-                            <div style="width:40%" class="flex_apart">
-                                <div style="width:60%">
-                                    <span class="text caption" style="margin: 5px 10px;text-align:left">Event Button Text</span>
-                                    <input class="input small" style="display: inline-block;width:200px" type="text" placeholder="BOOM!"/>
-                                </div>
-                                <div style="width:40%">
-                                    <span class="text caption" style="margin: 5px 10px;text-align:left">Max Times</span>
-                                    <input class="input small" style="display: inline-block;width:120px" type="number" placeholder="0"/>
-                                </div>
-                                
-                                
-                            </div>
-        
-                            <div class="flex_apart" style="width:10%;justify-content:right">
-                                <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px">
-                                    <span class="text regular material-symbols-rounded">arrow_upward</span>
-                                </div>
-                                <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px">
-                                    <span class="text regular material-symbols-rounded">arrow_downward</span>
-                                </div>
-                                <div class="container redbg clickable" style="padding: 10px;margin:5px;width:50px">
-                                    <span class="text regular material-symbols-rounded">close</span>
-                                </div>
-                            </div>
-                        </div>
-        
-                        <div class="level2bg container flex_apart" style="margin:5px 0px">
-                            
-                            <div style="width:20%">
-                                <span class="text caption" style="margin: 5px 10px;text-align:left">Timer Label</span>
-                                <input class="input small" type="text" placeholder="Disabled"/>
-                            </div>
-        
-                            <div style="width:40%" class="flex_apart">
-                                <div style="width:100%">
-                                    <span class="text caption" style="margin: 5px 10px;text-align:left">Max Seconds (0 for infinite)</span>
-                                    <input class="input small" style="display: inline-block;width:120px" type="number" placeholder="0"/>
-                                </div>
-                                
-                                
-                            </div>
-        
-                            <div class="flex_apart" style="width:10%;justify-content:right">
-                                <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px">
-                                    <span class="text regular material-symbols-rounded">arrow_upward</span>
-                                </div>
-                                <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px">
-                                    <span class="text regular material-symbols-rounded">arrow_downward</span>
-                                </div>
-                                <div class="container redbg clickable" style="padding: 10px;margin:5px;width:50px">
-                                    <span class="text regular material-symbols-rounded">close</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    
-                    
-                </div>
+                
             </div>
             
             
         </div>
+        <div class="overlay" id="overlay" style="display: none;">
+            <div class="flex_center" style="width: 100%;height:100%">
+                <div class="container level1bg" style="width:50%">
+                    <div id="overlayContent">
+                        
+                    </div>
+                    <div class="flex_apart" style="margin-top: 20px;">
+                        
+                        <span class="text caption" style="font-weight:600;opacity:0.5;text-align:left" id="overlayTitle">Document #1</span>
+                        <div class="flex_center" style="justify-content:right">
+                            <div class="container level2bg clickable" style="padding: 10px;margin-right:10px" id="overlayDone">
+                                <span class="text regular material-symbols-rounded">check</span>
+                            </div>
+                            <div class="container level2bg clickable" style="padding: 10px" id="overlayClose">
+                                <span class="text regular material-symbols-rounded">close</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+        </div>
+        <script src="qrcode/qrcode.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script src="js/dataform.js"></script>
+        
     </body>
 </html>

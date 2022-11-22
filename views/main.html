@@ -49,13 +49,10 @@
             <div class="topoptions screen" data-screen="3">
                 <div class="flex_center">
                     <div class="level1bg container clickable changeSubscreen" style="padding: 10px;margin-right:14px" data-subscreen="1">
-                        <span class="text caption">Roles</span>
+                        <span class="text caption">Settings</span>
                     </div>
                     <div class="level1bg container clickable changeSubscreen" style="padding: 10px;margin-right:14px" data-subscreen="2">
-                        <span class="text caption">Competitions</span>
-                    </div>
-                    <div class="level1bg container clickable changeSubscreen" style="padding: 10px;margin-right:14px" data-subscreen="3">
-                        <span class="text caption">Change Environment</span>
+                        <span class="text caption">Data Transfer</span>
                     </div>
                     
                 </div>
@@ -211,7 +208,7 @@
                 
             </div>
             <div class="center screen" data-screen="3">
-                <div class="flex_center subscreen" data-subscreen="1" style="width:100%">
+                <div style="display:none">
                     <div class="flex_apart" style="width:90%">
                         <div style="width:30%">
                             <div class="container level1bg clickable"  id="role_add">
@@ -249,6 +246,50 @@
     
                             </div>
                         </div>
+                    </div>
+                    
+                </div>
+                <div class="flex_center subscreen" data-subscreen="1" style="width:100%">
+                    <div class="container level1bg" style="width:80%;padding:20px">
+                        <div class="flex_center" style="margin: 20px;">
+                            <span class="text important">Application Configuration</span>
+                            
+                            
+                        </div>
+                        <div class="flex_apart" style="margin:10px">
+                            <span class="textslim" style="width:40%">Environment Name</span>
+                            <input type="text" class="input text important" style="pointer-events: all;width:60%" value="" placeholder="Scouting123" data-type="input" data-setting="envName"/>
+                        </div>
+                        <div class="flex_apart" style="margin:10px">
+                            <span class="textslim" style="width:40%">Selected Schema</span>
+                            <div class="flex_apart" style="width:60%">
+                                <select style="pointer-events: all" class="input text important" data-type="select" data-setting="selectedSchema">
+                                    <option value="1">Scouting123</option>
+                                    
+                                </select>
+                                <div class="level2bg container clickable" style="padding:10px; margin:7px;pointer-events: all;width:40%" onclick="window.location = '/dataform'">
+                                    <span class="text caption">Edit Schemas</span>
+                                </div>
+                            </div>
+                            
+                        </div>
+                        <div class="flex_apart" style="margin:10px">
+                            <span class="textslim" style="width:40%">Delegation</span>
+                            <div class="flex_apart" style="width:60%">
+                                <select style="pointer-events: all" class="input text important" data-type="select" data-setting="delegation">
+                                    <option value="local">Local Server</option>
+                                    <option value="global">Global Server</option>
+                                    
+                                </select>
+                                <div class="level2bg container clickable" style="padding:10px; margin:7px;pointer-events: all;width:40%" onclick="window.location = '/dataform'">
+                                    <span class="text caption">Edit Schemas</span>
+                                </div>
+                            </div>
+                            
+                        </div>
+                        
+                        
+
                     </div>
                     
                 </div>

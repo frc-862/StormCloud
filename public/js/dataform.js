@@ -1,3 +1,6 @@
+var overlaySaveData = {};
+var overlaySaveFunction = ()=>{};
+
 function get(link, headers, callback){
     $.ajax({
         url: link,
@@ -27,13 +30,106 @@ function post(link, headers, data, callback){
     })
 }
 
+function showQrCode(){
+    document.querySelector("#overlayClose").style.display = "none";
+    document.querySelector("#overlayContent").innerHTML = `<div class="flex_center" style="width:100%"><div style="background-color:#680991;padding:10px;border-radius:8px;inline-block;text-align:center;width:500px"><div id="overlay_qrcode"></div></div></div>`;
+
+    document.querySelector("#overlayTitle").innerHTML = "QR Code";
+
+    var string = JSON.stringify(sections);
+
+
+    var qrcode = new QRCode(document.querySelector("#overlay_qrcode"), {
+        text: string,
+        width: 500,
+        height: 500,
+        colorDark : "#190024",
+        colorLight : "#680991",
+        correctLevel : QRCode.CorrectLevel.H
+    });
+
+    document.querySelector("#overlay").style.display = "";
+
+    overlaySaveFunction = ()=>{
+        document.querySelector("#overlay").style.display = "none";
+    };
+}
+
+document.querySelector("#overlayClose").addEventListener("click", function(e){
+    document.querySelector("#overlay").style.display = "none";
+    document.querySelector("#overlayContent").innerHTML = "";
+    document.querySelector("#overlayClose").style.display = "";
+    document.querySelector("#overlayDone").style.display = "";
+    overlaySaveData = {};
+});
+
+document.querySelector("#overlayDone").addEventListener("click", function(e){
+    overlaySaveFunction();
+    overlaySaveData = {};
+});
+
+function loadSchemas(){
+    get("/api/schemas", {}, function(success, data){
+        console.log(success);
+        if(success){
+            document.querySelector("#overlayClose").style.display = "";
+            document.querySelector("#overlayContent").innerHTML = `<div id="overlay_schemas" style="max-height:50vh"></div>`;
+
+            var index = 0;
+            data["schemas"].forEach(function(schema){
+                var date = "Sometime...";
+                if(schema["Updated"] != undefined){
+                    date = new Date(schema["Updated"]).toLocaleString();
+                }
+                document.querySelector("#overlay_schemas").innerHTML += `
+                    <div class="container level2bg flex_apart clickable overlay_selectSchema" data-id="${index}" style="margin:5px">
+                        <span class="text regular">${schema.Name}</span>
+                        <span class="text regular">${date}</span>
+                    </div>
+                `;
+                index++;
+            });
+
+            overlaySaveData["schemas"] = data["schemas"];
+            overlaySaveData["currentSchema"] = undefined;
+
+            overlaySaveFunction = ()=>{
+                if(overlaySaveData["currentSchema"] != undefined){
+                    sections = overlaySaveData["schemas"][overlaySaveData["currentSchema"]]["Parts"];
+                    cached = sections;
+                    document.querySelector("#overlay").style.display = "none";
+                    reshowSections();
+                }
+            }
+
+            Array.from(document.querySelectorAll(".overlay_selectSchema")).forEach(function(element){
+                element.addEventListener("click", function(e){
+                    var index = element.dataset.id;
+
+                    if(overlaySaveData["currentSchema"] != undefined){
+                        var oldElement = document.querySelector(`.overlay_selectSchema[data-id="${overlaySaveData["currentSchema"]}"]`);
+                        oldElement.style.backgroundColor = "";
+                    }
+
+                    element.style.backgroundColor = "#680991";
+                    overlaySaveData["currentSchema"] = parseInt(index);
+                });
+            });
+
+            document.querySelector("#overlayTitle").innerHTML = "Select Schema";
+            document.querySelector("#overlay").style.display = "";
+        }
+    });
+}
 
 
 function loadSchemaData(){
-    var name = "Test";
+    var name = prompt("Name of the schema to load");
     get("/api/schema?name=" + name, {}, function(success, data){
         if(success){
             sections = data["schema"]["Parts"];
+            cached = sections;
+            showQrCode();
             reshowSections();
         }else{
             alert("Error loading schema data");
@@ -43,27 +139,21 @@ function loadSchemaData(){
 }
 
 function saveSchemaData(){
-    var name = "Test";
+    var name = prompt("Name of the schema to save as");
     post("/api/schema", {}, {name: name, data: sections}, function(success, data){
+        cached = sections;
+        showQrCode();
         if(!success){
             alert("Error saving schema data");
+        }else{
+            
         }
     });
 }
 
+var cached = [];
 
-var sections = [{
-    Name: "Autonomous",
-    _id: "2983jdnjqwd",
-    Time: 0,
-    Components: [{
-        Name: "Autonomous",
-        Type: "Stepper",
-        Max: 10,
-        Min: 0,
-        Default: 0
-    }]
-}];
+var sections = [];
 
 function editItem(element, field, sectionId){
     var _id = element.dataset.id;

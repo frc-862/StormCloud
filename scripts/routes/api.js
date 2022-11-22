@@ -341,13 +341,25 @@ router.post("/schema", async (req, res, next) => {
 
     var docs = await db.getDocs("Schema", {Name: name});
     if(docs.length > 0){
-        await db.updateDoc("Schema", {Name: name}, {Parts: data});
+        await db.updateDoc("Schema", {Name: name}, {Parts: data, Updated: new Date()});
         return;
     }
-    db.createDoc("Schema", {Name: name, Parts: data});
+    db.createDoc("Schema", {Name: name, Parts: data, Updated: new Date()});
     res.status(200).json({message: "Schema created!"});
 });
 
+router.get("/schemas", async (req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
+
+    var docs = await db.getDocs("Schema", {});
+    res.json({schemas: docs});
+}); 
+
+/**
+ * @api {get} /api/schema Get a schema
+ * @apiName GET Schema
+ * @apiGroup Schemas
+ */
 router.get("/schema*", async (req, res, next) => {
     var env = await authTools.getEnvironment(environment);
 
@@ -359,7 +371,6 @@ router.get("/schema*", async (req, res, next) => {
     }
     res.status(404).json({message: "Schema not found!"});
 });
-
 
 
 module.exports = router;
