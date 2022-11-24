@@ -441,6 +441,7 @@ router.post("/submit/data", async (req, res, next) => {
 
     var dataPieces = JSON.parse(req.body.documents);
 
+    console.log(dataPieces);
     dataPieces.forEach(async (dataPiece) => {
         var document = {
             environment: env.friendlyId,
@@ -455,6 +456,7 @@ router.post("/submit/data", async (req, res, next) => {
 
 
         var doc = await db.createDoc("Document", document);
+        console.log(doc);
 
         if(associatedMatch.length > 0){
             associatedMatch = associatedMatch[0];
