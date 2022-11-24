@@ -428,7 +428,46 @@ router.get("/setup", async (req, res, next) => {
     schema = schema[0];
    
     res.json({settings: settings, schema: schema});
+}); 
+
+/**
+ * @api {post} /api/submit/data Submits data documents from a device
+ * @apiName POST Submit Data
+ * @apiGroup Submit
+ */
+//TODO: Add authentication
+router.post("/submit/data", async (req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
+
+    var dataPieces = JSON.parse(req.body.documents);
+
+    dataPieces.forEach(async (dataPiece) => {
+        var document = {
+            environment: env.friendlyId,
+            dataType: "data",
+            json: JSON.stringify(dataPiece),
+            datetime: new Date(dataPiece.Created)
+        }
+
+        var associatedMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: dataPiece.Number});
+
+        
+
+
+        var doc = await db.createDoc("Document", document);
+
+        if(associatedMatch.length > 0){
+            associatedMatch = associatedMatch[0];
+            associatedMatch.documents.push(doc._id);
+
+            await db.updateDoc("Match", {_id: associatedMatch._id}, {documents: associatedMatch.documents});
+        }
+
+    });
+
+    res.status(200).json({message: "Data submitted!"});
 });
+
 
 
 module.exports = router;
