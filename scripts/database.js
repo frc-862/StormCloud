@@ -27,7 +27,8 @@ const models = {
         compIds: [String],
         settings: {
             teamsPerColor: Number,
-            teamsPerAlliance: Number
+            teamsPerAlliance: Number,
+            selectedSchema: String
         },
         master: {
             hash: String,

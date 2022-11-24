@@ -30,13 +30,35 @@ function post(link, headers, data, callback){
     })
 }
 
+function stripIds(schema){
+    schema.forEach(function(section){
+        delete section._id;
+        section.Components.forEach(function(component){
+            delete component._id;
+        });
+    });
+    return schema;
+}
+
+function generateIds(schema){
+    schema.forEach(function(section){
+        section._id = Math.random().toString(36).substring(7);
+        section.Components.forEach(function(component){
+            component._id = Math.random().toString(36).substring(7);
+        });
+    });
+    return schema;
+}
+
 function showQrCode(){
     document.querySelector("#overlayClose").style.display = "none";
     document.querySelector("#overlayContent").innerHTML = `<div class="flex_center" style="width:100%"><div style="background-color:#680991;padding:10px;border-radius:8px;inline-block;text-align:center;width:500px"><div id="overlay_qrcode"></div></div></div>`;
 
     document.querySelector("#overlayTitle").innerHTML = "QR Code";
 
-    var string = JSON.stringify(sections);
+
+
+    var string = JSON.stringify(stripIds(sections));
 
 
     var qrcode = new QRCode(document.querySelector("#overlay_qrcode"), {
@@ -96,7 +118,7 @@ function loadSchemas(){
             overlaySaveFunction = ()=>{
                 if(overlaySaveData["currentSchema"] != undefined){
                     sections = overlaySaveData["schemas"][overlaySaveData["currentSchema"]]["Parts"];
-                    cached = sections;
+                    cached = generateIds(sections);
                     document.querySelector("#overlay").style.display = "none";
                     reshowSections();
                 }
@@ -140,8 +162,9 @@ function loadSchemaData(){
 
 function saveSchemaData(){
     var name = prompt("Name of the schema to save as");
-    post("/api/schema", {}, {name: name, data: sections}, function(success, data){
-        cached = sections;
+    var data = stripIds(sections);
+    post("/api/schema", {}, {name: name, data: data}, function(success, data){
+        cached = data;
         showQrCode();
         if(!success){
             alert("Error saving schema data");

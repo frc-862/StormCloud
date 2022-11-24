@@ -310,9 +310,10 @@ router.put("/document", async (req, res, next) => {
  */
 router.get("/environment", async function(req, res, next) {
     var env = await authTools.getEnvironment(environment);
+    var schemas = await db.getDocs("Schema", {});
     var setup = !(authTools.isEnvironmentSetup(env));
     console.log(setup);
-    res.json({environment: env, needsSetup: setup});
+    res.json({environment: env, needsSetup: setup, schemas: schemas});
 });
 
 router.post('/environment/setup', async function(req, res, next) {
@@ -342,6 +343,7 @@ router.post("/schema", async (req, res, next) => {
     var docs = await db.getDocs("Schema", {Name: name});
     if(docs.length > 0){
         await db.updateDoc("Schema", {Name: name}, {Parts: data, Updated: new Date()});
+        res.status(200).json({message: "Schema updated!"});
         return;
     }
     db.createDoc("Schema", {Name: name, Parts: data, Updated: new Date()});
@@ -370,6 +372,62 @@ router.get("/schema*", async (req, res, next) => {
         return;
     }
     res.status(404).json({message: "Schema not found!"});
+});
+
+
+
+/**
+ * @api {get} /api/settings Get the settings for the current environment
+ * @apiName GET Settings
+ * @apiGroup Settings
+ */
+router.get("/settings", async (req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
+
+    res.json({settings: env.settings});
+})
+
+/**
+ * @api {post} /api/setting Sets the value of a setting for the current environment
+ * @apiName POST Setting
+ * @apiGroup Settings
+ */
+router.post("/setting", async (req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
+
+    var key = req.body.key;
+    var value = req.body.value;
+
+    env.settings[key] = value;
+    await db.updateDoc("Environment", {friendlyId: env.friendlyId}, {settings: env.settings});
+    res.status(200).json({message: "Setting updated!"});
+});
+
+
+
+/**
+ * @api {get} /api/setup Gets the setup configuration for a new device
+ * @apiName GET Setup
+ * @apiGroup Setup
+ */
+router.get("/setup", async (req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
+
+
+    var settings = env.settings;
+    if(settings == undefined || settings["selectedSchema"] == undefined){
+        res.status(500).json({message: "No schema selected!"});
+        return;
+    }
+
+    var schema = (await db.getDocs("Schema", {Name: settings["selectedSchema"]}));
+    if(schema.length == 0){
+        res.status(500).json({message: "Selected schema not found!"});
+        return;
+    }
+    schema = schema[0];
+   
+    res.json({settings: settings, schema: schema});
 });
 
 

@@ -257,13 +257,17 @@
                             
                         </div>
                         <div class="flex_apart" style="margin:10px">
-                            <span class="textslim" style="width:40%">Environment Name</span>
-                            <input type="text" class="input text important" style="pointer-events: all;width:60%" value="" placeholder="Scouting123" data-type="input" data-setting="envName"/>
+                            <span class="textslim" style="width:40%">Teams Per Color</span>
+                            <input type="number" class="input text important setting" style="pointer-events: all;width:60%" value="" placeholder="3" data-type="input" data-setting="teamsPerColor" onkeyup="settingChange(this)"/>
+                        </div>
+                        <div class="flex_apart" style="margin:10px">
+                            <span class="textslim" style="width:40%">Teams Per Alliance</span>
+                            <input type="number" class="input text important setting" style="pointer-events: all;width:60%" value="" placeholder="3" data-type="input" data-setting="teamsPerAlliance" onkeyup="settingChange(this)"/>
                         </div>
                         <div class="flex_apart" style="margin:10px">
                             <span class="textslim" style="width:40%">Selected Schema</span>
                             <div class="flex_apart" style="width:60%">
-                                <select style="pointer-events: all" class="input text important" data-type="select" data-setting="selectedSchema">
+                                <select style="pointer-events: all" class="input text important setting" data-type="select" data-setting="selectedSchema" onchange="settingChange(this)">
                                     <option value="1">Scouting123</option>
                                     
                                 </select>
@@ -273,20 +277,7 @@
                             </div>
                             
                         </div>
-                        <div class="flex_apart" style="margin:10px">
-                            <span class="textslim" style="width:40%">Delegation</span>
-                            <div class="flex_apart" style="width:60%">
-                                <select style="pointer-events: all" class="input text important" data-type="select" data-setting="delegation">
-                                    <option value="local">Local Server</option>
-                                    <option value="global">Global Server</option>
-                                    
-                                </select>
-                                <div class="level2bg container clickable" style="padding:10px; margin:7px;pointer-events: all;width:40%" onclick="window.location = '/dataform'">
-                                    <span class="text caption">Edit Schemas</span>
-                                </div>
-                            </div>
-                            
-                        </div>
+                        
                         
                         
 

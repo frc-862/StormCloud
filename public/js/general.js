@@ -2,8 +2,9 @@ var environmentData = {};
 var persistantData = {};
 var overlaySaveData = {};
 var overlaySaveFunction = ()=>{};
-
+var settings = {};
 var showingContent = false;
+var schemas = [];
 
 
 function readFromCookie(name){
@@ -28,6 +29,27 @@ function try_show_content(){
     }
 }
 
+function show_settings(){
+
+    document.querySelector(".setting[data-setting='selectedSchema']").innerHTML = "";
+    schemas.forEach((i) => {
+        document.querySelector(".setting[data-setting='selectedSchema']").innerHTML += `<option value="${i["Name"]}">${i["Name"]}</option>`
+    });
+
+    Object.keys(settings).forEach((name) => {
+        var value = settings[name];
+        var element = document.querySelector(`.setting[data-setting="${name}"]`);
+        if(element != null && element != undefined){
+            if(element.dataset.type == "input"){
+                element.value = value;
+            }
+            element.value = value;
+        }
+            
+        
+    });
+}
+
 
 function pull_environment(){
     get("/api/environment", {}, function(success, data){
@@ -36,7 +58,7 @@ function pull_environment(){
             environmentData = data["environment"];
 
             var needToSetup = data["needsSetup"];
-
+            
             if(needToSetup){
                 window.location = "/setup";
                 return;
@@ -47,8 +69,10 @@ function pull_environment(){
                 window.location = "/login";
                 return;
             }
-
+            settings = data["environment"]["settings"];
+            schemas = data["schemas"];
             
+            show_settings();
             try_show_content();
             handle_environment(environmentData);
         }
@@ -124,6 +148,12 @@ function put(link, headers, data, callback){
     })
 }
 
+function settingChange(element){
+    settings[element.dataset.setting] = element.value;
+    post("/api/setting", {}, {key: element.dataset.setting, value: element.value}, function(success, data){
+
+    });
+}
 
 
 Array.from(document.getElementsByClassName("clickable")).forEach((item)=>{
