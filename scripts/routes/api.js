@@ -442,13 +442,16 @@ router.post("/submit/data", async (req, res, next) => {
     var dataPieces = JSON.parse(req.body.documents);
 
     console.log(dataPieces);
-    dataPieces.forEach(async (dataPiece) => {
+    console.log(dataPieces.length);
+    for(var i = 0; i < dataPieces.length; i++){
+        var dataPiece = dataPieces[i];
         var document = {
             environment: env.friendlyId,
-            dataType: "data",
+            dataType: "tablet",
             json: JSON.stringify(dataPiece),
             datetime: new Date(dataPiece.Created)
         }
+        console.log(document);
 
         var associatedMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: dataPiece.Number});
 
@@ -465,7 +468,8 @@ router.post("/submit/data", async (req, res, next) => {
             await db.updateDoc("Match", {_id: associatedMatch._id}, {documents: associatedMatch.documents});
         }
 
-    });
+    }
+    
 
     res.status(200).json({message: "Data submitted!"});
 });
