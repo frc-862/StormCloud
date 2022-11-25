@@ -419,11 +419,162 @@ function handle_document_click(id){
         case "tablet":
             var teamNumber = data["team"]
             var schema = schemas.find(s => s.Name == data["schema"]);
+            
             if(schema == undefined){
                 document.querySelector("#overlayContent").innerHTML = `
                 <span class="textslim"><i>Sorry, we couldn't find a schema...</i></span>
+                <div class="flex_center" style="margin:10px">
+                    <div class="container level2bg clickable" id="overlayContent_deleteDocument" style="padding:10px">
+                        <span class="text caption">Delete Document</span>
+                    </div>
+                </div>
+                `;
+            }else{
+                var f = "";
+                var n = 0;
+                var formData = JSON.parse(data["data"]);
+                schema.Parts.forEach(p => {
+                    f += `
+                    <div class="flex_center" style="margin:10px;margin-top:20px">
+                        <span class="text regular" style="margin:5px;display:inline-block">${p.Name}  <span class="caption highlightedtext level2bg" style="width:50px;font-size:16px">${p.Time}s</span></span>
+                        
+                    </div>
+                    `;
+
+                    p.Components.forEach(c => {
+
+                        switch(c.Type){
+                            case "Step":
+                                f += `
+                                <div class="flex_apart" style="margin:5px">
+                                    <span class="text small" style="margin:5px;display:inline-block;width:50%">${c.Name}</span>
+                                    <input disabled type="number" class="input text small" style="pointer-events: all;width:50%" value="${formData[n]}"/>
+                                </div>
+                                `;
+                                break;
+                            case "Check":
+                                f += `
+                                <div class="flex_apart" style="margin:5px">
+                                    <span class="text small" style="margin:5px;display:inline-block;width:50%">${c.Name}</span>
+                                    <div class="flex_center" style="width:50%">
+                                        <div class="container ${c.Off == formData[n] ? "primarybg" : "level2bg"} clickable" style="padding:10px;margin:0px 5px;width:40%">
+                                            <span class="text caption">${c.Off}</span>
+                                        </div>
+                                        <div class="container ${c.On == formData[n] ? "primarybg" : "level2bg"} clickable" style="padding:10px;margin:0px 5px;width:40%">
+                                            <span class="text caption">${c.On}</span>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                                `;
+                                break;
+                            case "Select":
+
+                                var options = "";
+                                c.Options.forEach(o => {
+                                    options += `
+                                    <option value="${o}" ${o == formData[n] ? "selected" : ""}>${o}</option>
+                                    `;
+                                });
+
+                                f += `
+                                <div class="flex_apart" style="margin:5px">
+                                    <span class="text small" style="margin:5px;display:inline-block;width:50%">${c.Name}</span>
+                                    <select disabled class="input text small" style="pointer-events: all;width:50%">${options}</select>
+                                    
+                                </div>
+                                `;
+                                break;
+                            case "Event":
+
+                                var events = formData[n].split(";");
+                                var eventDivs = "";
+                                events.forEach(e => {
+                                    eventDivs += `
+                                        <div class="container level2bg" style="margin:2px;padding:4px 6px">
+                                            <span class="text small">${Math.round(parseInt(e)/1000.0)}s</span>
+                                        </div>
+                                        `;
+                                });
+
+                                f += `
+                                <div class="flex_apart" style="margin:5px">
+                                    <span class="text small" style="margin:5px;display:inline-block;width:50%">${c.Name}</span>
+                                    <div class="flex_center" style="width:50%">
+                                        ${eventDivs}
+                                    </div>
+                                    
+                                </div>
+                                `;
+                                break;
+                            case "Timer":
+                                f += `
+                                <div class="flex_apart" style="margin:5px">
+                                    <span class="text small" style="margin:5px;display:inline-block;width:50%">${c.Name} (in seconds)</span>
+                                    <input disabled type="number" class="input text small" style="pointer-events: all;width:50%" value="${parseInt(formData[n])/1000.0}"/>
+                                </div>
+                                `;
+                                break;
+                        }
+                        n += 1;
+                        
+                    });
+
+                })
+
+                document.querySelector("#overlayContent").innerHTML = `<div class="flex_center" style="max-height:50vh;overflow-y:scroll">
+                    <div style="width:90%">${f}</div>
+                </div>
+
+                <div class="flex_center" style="margin:10px">
+                    <div class="container level2bg clickable" id="overlayContent_deleteDocument" style="padding:10px">
+                        <span class="text caption">Delete Document</span>
+                    </div>
+                </div>
                 `;
             }
+
+            document.querySelector("#overlayContent_deleteDocument").addEventListener("click", function(e){
+                if(!overlaySaveData["deleteConfirm"]){
+                    overlaySaveData["deleteTime"] = new Date();
+                    document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Are You Sure?</span>`;
+                    document.querySelector("#overlayContent_deleteDocument").classList = "container redbg clickable";
+                    overlaySaveData["deleteConfirm"] = true;
+                }else{
+                    if(overlaySaveData["deleteTime"] == undefined){
+                        document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Delete Document</span>`;
+                        document.querySelector("#overlayContent_deleteDocument").classList = "container level2bg clickable";
+                        overlaySaveData["deleteConfirm"] = false;
+                    }
+                    if(new Date() - overlaySaveData["deleteTime"] > 1500){
+                        document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Delete Document</span>`;
+                        document.querySelector("#overlayContent_deleteDocument").classList = "container level2bg clickable";
+                        overlaySaveData["deleteConfirm"] = false;
+                        return;
+                    }
+                    document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Deleting...</span>`;
+                    document.querySelector("#overlayContent_deleteDocument").classList = "container redbg clickable";
+                    overlaySaveData["deleteConfirm"] = false;
+
+                    remove("/api/document", {}, {docId: overlaySaveData["document"]}, (success, data) => {
+                        if(success){
+                            document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Deleted</span>`;
+                            document.querySelector("#overlayContent_deleteDocument").classList = "container redbg clickable";
+                            currentMatch["documents"].splice(currentMatch["documents"].indexOf(d => d._id == overlaySaveData["document"]), 1);
+                            handle_match_click(currentMatch["_id"]);
+                            setTimeout(function(){
+                                document.querySelector("#overlayClose").click();
+                            }, 500);
+                        }else{
+                            document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Delete Document</span>`;
+                            document.querySelector("#overlayContent_deleteDocument").classList = "container level2bg clickable";
+                            overlaySaveData["deleteConfirm"] = false;
+                        }
+                    });
+                    
+                }
+            });
+
             document.querySelector("#overlayTitle").innerHTML = `Data Document - Team ${teamNumber}${data["completed"] == undefined || data["completed"] == false ? " (Incomplete)" : ""}`;
             break;
         case "note":
