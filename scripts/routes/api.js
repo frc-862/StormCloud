@@ -449,13 +449,14 @@ router.post("/submit/data", async (req, res, next) => {
             completed: true,
             data: dataPiece.Data,
             author: dataPiece.Scouter,
-            schema: dataPiece.Schema
+            schema: dataPiece.Schema,
+            type: "data"
         }
 
 
         var document = {
             environment: env.friendlyId,
-            dataType: "tablet",
+            dataType: "match",
             json: JSON.stringify(generatedData),
             datetime: new Date(dataPiece.Created)
         }
