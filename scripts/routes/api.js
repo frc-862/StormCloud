@@ -450,7 +450,7 @@ router.post("/submit/data", async (req, res, next) => {
             data: dataPiece.Data,
             author: dataPiece.Scouter,
             schema: dataPiece.Schema,
-            type: "data"
+            type: "tablet"
         }
 
 
