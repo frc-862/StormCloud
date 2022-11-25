@@ -418,6 +418,12 @@ function handle_document_click(id){
             break;
         case "tablet":
             var teamNumber = data["team"]
+            var schema = schemas.find(s => s.Name == data["schema"]);
+            if(schema == undefined){
+                document.querySelector("#overlayContent").innerHTML = `
+                <span class="textslim"><i>Sorry, we couldn't find a schema...</i></span>
+                `;
+            }
             document.querySelector("#overlayTitle").innerHTML = `Data Document - Team ${teamNumber}${data["completed"] == undefined || data["completed"] == false ? " (Incomplete)" : ""}`;
             break;
         case "note":

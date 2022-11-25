@@ -441,17 +441,24 @@ router.post("/submit/data", async (req, res, next) => {
 
     var dataPieces = JSON.parse(req.body.documents);
 
-    console.log(dataPieces);
-    console.log(dataPieces.length);
     for(var i = 0; i < dataPieces.length; i++){
         var dataPiece = dataPieces[i];
+
+        var generatedData = {
+            team: dataPiece.Team,
+            completed: true,
+            data: dataPiece.Data,
+            author: dataPiece.Scouter,
+            schema: dataPiece.Schema
+        }
+
+
         var document = {
             environment: env.friendlyId,
             dataType: "tablet",
-            json: JSON.stringify(dataPiece),
+            json: JSON.stringify(generatedData),
             datetime: new Date(dataPiece.Created)
         }
-        console.log(document);
 
         var associatedMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: dataPiece.Number});
 
