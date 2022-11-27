@@ -235,6 +235,8 @@ document.querySelector("#overlayDone").addEventListener("click", function(e){
 });
 
 
+var matches = [];
+
 /*
     Differently Defined API Actions
 */
@@ -916,6 +918,152 @@ document.querySelector('#match_view_close').addEventListener('click', function()
     }
 });
 
+var deleteMatchTimer = undefined;
+var deleteMatchConfirm = false;
+document.querySelector('#match_view_delete').addEventListener('click', function(){
+    if(!deleteMatchConfirm){
+        deleteMatchTimer = new Date();
+        document.querySelector('#match_view_delete').innerHTML = `<span class="text caption">Are You Sure?</span>`;
+        document.querySelector('#match_view_delete').classList = "container redbg clickable";
+        deleteMatchConfirm = true;
+    }else{
+        if(deleteMatchTimer == undefined){
+            document.querySelector('#match_view_delete').innerHTML = `<span class="text caption">Delete Match</span>`;
+            document.querySelector('#match_view_delete').classList = "container level2bg clickable";
+            deleteMatchConfirm = false;
+        }
+        if(new Date() - deleteMatchTimer > 1500){
+            document.querySelector('#match_view_delete').innerHTML = `<span class="text caption">Delete Match</span>`;
+            document.querySelector('#match_view_delete').classList = "container level2bg clickable";
+            deleteMatchConfirm = false;
+            return;
+        }
+        document.querySelector('#match_view_delete').innerHTML = `<span class="text caption">Deleting...</span>`;
+        document.querySelector('#match_view_delete').classList = "container redbg clickable";
+        deleteMatchConfirm = false;
+
+        remove("/api/match", {}, {matchId: currentMatch["_id"]}, (success, data) => {
+            if(success){
+                document.querySelector('#match_view_delete').innerHTML = `<span class="text caption">Deleted</span>`;
+                document.querySelector('#match_view_delete').classList = "container redbg clickable";
+                pull_matches((ms, uD)=>{
+                    matches = ms;
+                    document.querySelector('#match_list').innerHTML = "";
+                    document.querySelector('#match_view_container').style.display = "none";
+                    persistantData["matches"] = ms;
+                    if(uD.length > 0){
+                        document.querySelector('#match_unallocated_documents').style.display = "";
+                    }else{
+                        document.querySelector('#match_unallocated_documents').style.display = "none";
+                    }
+                    unassignedDocuments = uD;
+                    handle_matches(ms);
+                });
+                setTimeout(function(){
+                    document.querySelector('#match_view_container').style.display = "none";
+                    document.querySelector('#match_view_delete').innerHTML = `<span class="text caption">Delete Match</span>`;
+                    document.querySelector('#match_view_delete').classList = "container level2bg clickable";
+                }, 500);
+            }else{
+                document.querySelector('#match_view_delete').innerHTML = `<span class="text caption">Delete Match</span>`;
+                document.querySelector('#match_view_delete').classList = "container level2bg clickable";
+                deleteMatchConfirm = false;
+            }
+        });
+        
+    }
+});
+
+document.querySelector("#match_createMatch").addEventListener("click", function(){
+    document.querySelector("#overlayTitle").innerHTML = "Create Match";
+    document.querySelector("#overlayClose").style.display = "";
+
+
+    var redTeamEntryHTML = ""
+    var blueTeamEntryHTML = ""
+    for(var i = 1; i <= settings["teamsPerColor"]; i++){
+        redTeamEntryHTML += `
+            <input type="number" class="input text regular redbg overlay_team" data-num="${i}" style="pointer-events: all;margin:5px" placeholder="999${i}">
+        `;
+        blueTeamEntryHTML += `
+        <input type="number" class="input text regular bluebg overlay_team" data-num="${i+parseInt(settings["teamsPerColor"])}" style="pointer-events: all;margin:5px" placeholder="999${i+parseInt(settings["teamsPerColor"])}">
+        `
+    }
+
+    document.querySelector("#overlayContent").innerHTML = `
+    <div>
+        <div class="flex_apart" style="margin:25px 5px">
+            <span class="text small" style="margin:5px;display:inline-block;width:50%">Match Number</span>
+            <input type="number" class="input text small" style="pointer-events: all;width:50%" id="overlay_matchNumber"/>
+        </div>
+        <span class="text small" style="margin:10px">Teams (#1 on left)</span>
+        <div class="container dimredbg flex_apart" style="margin:5px;padding:10px">
+        ${redTeamEntryHTML}
+        </div>
+        <div class="container dimbluebg flex_apart" style="margin:5px;padding:10px">
+        ${blueTeamEntryHTML}
+        </div>
+    </div>
+        
+    `;
+
+    overlaySaveFunction = (e) => {
+        var sendObject = {
+            "matchNumber": parseInt(document.querySelector("#overlay_matchNumber").value),
+            "environment": environmentData["friendlyId"],
+            "teams": [],
+            "competition": environmentData["compIds"][0],
+            "documents": []
+        }
+
+        for(var i = 1; i <= settings["teamsPerColor"]*2; i++){
+            var teamNumber = parseInt(document.querySelector(".overlay_team[data-num='" + i + "']").value);
+            if(!isNaN(teamNumber)){
+                sendObject["teams"].push({
+                    team: teamNumber,
+                    color: i <= settings["teamsPerColor"] ? "red" : "blue"
+                });
+            }else{
+                return;
+            }
+        }
+
+        document.querySelector("#overlayDone").style.display = "none";
+
+        post("/api/match", {}, {
+            "matchNumber": sendObject["matchNumber"],
+            "competition": sendObject["competition"],
+            "environment": sendObject["environment"],
+            "documents": sendObject["documents"],
+            "teams": sendObject["teams"],
+            "locked": false,
+            "date": new Date()
+        }, function(success, data){
+            pull_matches((ms, uD)=>{
+                matches = ms;
+                document.querySelector('#match_list').innerHTML = "";
+                document.querySelector('#match_view_container').style.display = "none";
+                persistantData["matches"] = ms;
+                if(uD.length > 0){
+                    document.querySelector('#match_unallocated_documents').style.display = "";
+                }else{
+                    document.querySelector('#match_unallocated_documents').style.display = "none";
+                }
+                unassignedDocuments = uD;
+                handle_matches(ms);
+            });
+        })
+
+        matches.push(sendObject);
+        document.querySelector("#overlay").style.display = "none";
+        persistantData["matches"] = matches;
+        handle_matches(matches);
+
+    };
+    document.querySelector("#overlay").style.display = "";
+});
+
+
 
 var currentScreen = 0;
 
@@ -925,6 +1073,7 @@ var onScreenEvents = {
     },
     1: function(){
         pull_matches((ms, uD)=>{
+            matches = ms;
             document.querySelector('#match_list').innerHTML = "";
             document.querySelector('#match_view_container').style.display = "none";
             persistantData["matches"] = ms;
