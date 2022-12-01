@@ -430,6 +430,18 @@ router.get("/setup", async (req, res, next) => {
     res.json({settings: settings, schema: schema});
 }); 
 
+router.post("/submit/paper", async (req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
+
+    var dataPieces  = JSON.parse(req.body.images);
+
+    console.log(dataPieces);
+
+
+    // TODO: Add files to the server's public directory and then add reference to them to the database
+    res.status(200).json({message: "Data submitted!"});
+});
+
 /**
  * @api {post} /api/submit/data Submits data documents from a device
  * @apiName POST Submit Data
