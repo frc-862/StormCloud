@@ -14,8 +14,8 @@ db.testAddData();
 var environment = "test";
 
 app.use(express.static(__dirname + '/public'));
-app.use(parser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(parser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
 app.get("/", function(req, res) {
     res.sendFile(__dirname + "/views/main.html");
