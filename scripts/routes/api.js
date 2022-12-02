@@ -433,9 +433,9 @@ router.get("/setup", async (req, res, next) => {
 router.post("/submit/paper", async (req, res, next) => {
     var env = await authTools.getEnvironment(environment);
 
-    var dataPieces  = JSON.parse(req.body.images);
-
-    console.log(dataPieces);
+    
+    console.log(req);
+    console.log(req.body);
 
 
     // TODO: Add files to the server's public directory and then add reference to them to the database
