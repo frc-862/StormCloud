@@ -436,6 +436,7 @@ router.post("/submit/paper", async (req, res, next) => {
     
     console.log(req);
     console.log(req.body);
+    console.log(req.files);
 
 
     // TODO: Add files to the server's public directory and then add reference to them to the database

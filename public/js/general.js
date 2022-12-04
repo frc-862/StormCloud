@@ -494,7 +494,7 @@ function handle_document_click(id){
                                 events.forEach(e => {
                                     eventDivs += `
                                         <div class="container level2bg" style="margin:2px;padding:4px 6px">
-                                            <span class="text small">${Math.round(parseInt(e)/1000.0)}s</span>
+                                            <span class="text small">${Math.round(parseInt(e))}s</span>
                                         </div>
                                         `;
                                 });
@@ -513,7 +513,7 @@ function handle_document_click(id){
                                 f += `
                                 <div class="flex_apart" style="margin:5px">
                                     <span class="text small" style="margin:5px;display:inline-block;width:50%">${c.Name} (in seconds)</span>
-                                    <input disabled type="number" class="input text small" style="pointer-events: all;width:50%" value="${parseInt(formData[n])/1000.0}"/>
+                                    <input disabled type="number" class="input text small" style="pointer-events: all;width:50%" value="${parseInt(formData[n])}"/>
                                 </div>
                                 `;
                                 break;
