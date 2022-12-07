@@ -14,6 +14,7 @@ db.testAddData();
 var environment = "test";
 
 app.use(express.static(__dirname + '/public'));
+app.use(express.static(__dirname + '/images'));
 app.use(parser.json({limit: '500mb'}));
 app.use(bodyParser.urlencoded({ extended: true, limit: '500mb' }));
 app.use(cookieParser());

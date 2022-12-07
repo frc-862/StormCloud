@@ -437,6 +437,19 @@ router.post("/submit/paper", async (req, res, next) => {
     console.log(req);
     console.log(req.body);
 
+    var path = __dirname + "/images/" + req.body.name + ".png";
+    var image = req.body.image;
+
+    let m =  image.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+  
+    let b =  Buffer.from(m[2],'base64');
+    fs.writeFile(path,b,function(err){
+        if(!err){
+            console.log("file is created")
+        }
+    });
+
+
 
     // TODO: Add files to the server's public directory and then add reference to them to the database
     res.status(200).json({message: "Data submitted!"});
