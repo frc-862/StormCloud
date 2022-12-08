@@ -435,20 +435,24 @@ router.post("/submit/paper", async (req, res, next) => {
 
     
     console.log(req);
+    console.log(new Date());
     console.log(req.body);
-    console.log(req.files);
 
     var path = __dirname + "/images/" + req.body.name + ".png";
+    console.log(path);
     var image = req.body.image;
 
     res.status(200).json({message: "Data submitted!"});
     let m =  image.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    console.log(m);
   
     let b =  Buffer.from(m[2],'base64');
+    console.log(b);
     fs.writeFile(path,b,function(err){
         if(!err){
             console.log("file is created");
         }
+        console.log(err);
     });
 
 
