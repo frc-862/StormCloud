@@ -4,7 +4,7 @@ var db = require('../database.js');
 var authTools = require('../tools/authHelper.js');
 var bodyParser = require('body-parser');
 let environment = "test";
-
+var fs = require('fs');
 
 
 /**
