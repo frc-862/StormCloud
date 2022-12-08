@@ -443,10 +443,8 @@ router.post("/submit/paper", async (req, res, next) => {
     var image = req.body.image;
 
     res.status(200).json({message: "Data submitted!"});
-    let m =  image.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-    console.log(m);
   
-    let b =  Buffer.from(m[2],'base64');
+    let b =  Buffer.from(image,'base64');
     console.log(b);
     fs.writeFile(path,b,function(err){
         if(!err){
