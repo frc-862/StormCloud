@@ -438,7 +438,10 @@ router.post("/submit/paper", async (req, res, next) => {
     console.log(new Date());
     console.log(req.body);
 
-    var path = __dirname + "/images/" + req.body.name + ".png";
+
+    var fName = req.body.name.split(" ")[0] + "__" + req.body.name.split(" ")[1];
+
+    var path = process.env.HOME_FOLDER + "/images/" + fName + ".png";
     console.log(path);
     var image = req.body.image;
 

@@ -11,6 +11,8 @@ console.log(process.env.DB_PW);
 db.init(process.env.DB_PW);
 db.testAddData();
 
+process.env.HOME_FOLDER = __dirname;
+
 var environment = "test";
 
 app.use(express.static(__dirname + '/public'));
@@ -36,6 +38,8 @@ app.get("/setup", function(req, res) {
 });
 
 // direct all API requests to the API router
+
+
 app.use('/api', require('./scripts/routes/api.js'));
 app.use('/auth', require('./scripts/routes/auth.js'));
 
