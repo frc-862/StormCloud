@@ -423,7 +423,7 @@ function handle_document_click(id){
         case "paper":
             var teamNumber = data["team"]
             document.querySelector("#overlayContent").innerHTML = `
-            <img src="${data["path"]}" style="width:100%"/>
+            <img src="${data["path"]}.png" style="width:100%"/>
             `;
             document.querySelector("#overlayTitle").innerHTML = `Paper Document - Team ${teamNumber}`;
             break;
