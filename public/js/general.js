@@ -422,6 +422,9 @@ function handle_document_click(id){
     switch(data["type"]){
         case "paper":
             var teamNumber = data["team"]
+            document.querySelector("#overlayContent").innerHTML = `
+            <img src="${data["path"]}" style="width:100%"/>
+            `;
             document.querySelector("#overlayTitle").innerHTML = `Paper Document - Team ${teamNumber}`;
             break;
         case "tablet":
@@ -861,7 +864,7 @@ function handle_match_click(m){
                         <div class="flex_apart" style="width:100%;pointer-events:none">
                             <span class="text regular material-symbols-rounded" style="width:20%">edit_document</span>
                             <div style="width:80%">
-                                <span class="text caption" style="font-weight:600">Team ${data["Team"]}</span>
+                                <span class="text caption" style="font-weight:600">Team ${data["team"]}</span>
                                 <span class="text tiny">${datetime}</span>
                             </div>
                         </div>
