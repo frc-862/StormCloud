@@ -472,7 +472,9 @@ router.post("/submit/paper", async (req, res, next) => {
             var possibleMatches = await db.getDocs("Match", {environment: env.friendlyId});
             if(matches != undefined){
                 matches.forEach(async (match) => {
+                    print("Match: " + match)
                     var associatedMatch = possibleMatches.find((m) => m.matchNumber == match);
+                    console.log("Associated: " + associatedMatch);
                     if(associatedMatch != undefined){
                         associatedMatch.documents.push(doc._id);
     
