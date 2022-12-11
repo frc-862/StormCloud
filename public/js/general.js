@@ -247,6 +247,12 @@ function pull_matches(cb=()=>{}){
     })
 }
 
+function pull_teams(cb=()=>{}){
+    get("/api/teams", {}, function(success,data){
+        cb(data["teams"]);
+    })
+}
+
 
 /*
     Handle Different API Actions
@@ -435,105 +441,130 @@ function handle_document_click(id){
                 var f = "";
                 var n = 0;
                 var formData = JSON.parse(data["data"]);
-                schema.Parts.forEach(p => {
-                    f += `
-                    <div class="flex_center" style="margin:10px;margin-top:20px">
-                        <span class="text regular" style="margin:5px;display:inline-block">${p.Name}  <span class="caption highlightedtext level2bg" style="width:50px;font-size:16px">${p.Time}s</span></span>
-                        
+                try{
+
+                    schema.Parts.forEach(p => {
+                        f += `
+                        <div class="flex_center" style="margin:10px;margin-top:20px">
+                            <span class="text regular" style="margin:5px;display:inline-block">${p.Name}  <span class="caption highlightedtext level2bg" style="width:50px;font-size:16px">${p.Time}s</span></span>
+                            
+                        </div>
+                        `;
+    
+                        p.Components.forEach(c => {
+    
+                            switch(c.Type){
+                                case "Step":
+                                    f += `
+                                    <div class="flex_apart" style="margin:5px">
+                                        <span class="text small" style="margin:5px;display:inline-block;width:50%">${c.Name}</span>
+                                        <input disabled type="number" class="input text small" style="pointer-events: all;width:50%" value="${formData[n]}"/>
+                                    </div>
+                                    `;
+                                    break;
+                                case "Check":
+                                    f += `
+                                    <div class="flex_apart" style="margin:5px">
+                                        <span class="text small" style="margin:5px;display:inline-block;width:50%">${c.Name}</span>
+                                        <div class="flex_center" style="width:50%">
+                                            <div class="container ${c.Off == formData[n] ? "primarybg" : "level2bg"} clickable" style="padding:10px;margin:0px 5px;width:40%">
+                                                <span class="text caption">${c.Off}</span>
+                                            </div>
+                                            <div class="container ${c.On == formData[n] ? "primarybg" : "level2bg"} clickable" style="padding:10px;margin:0px 5px;width:40%">
+                                                <span class="text caption">${c.On}</span>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                    `;
+                                    break;
+                                case "Select":
+    
+                                    var options = "";
+                                    c.Options.forEach(o => {
+                                        options += `
+                                        <option value="${o}" ${o == formData[n] ? "selected" : ""}>${o}</option>
+                                        `;
+                                    });
+    
+                                    f += `
+                                    <div class="flex_apart" style="margin:5px">
+                                        <span class="text small" style="margin:5px;display:inline-block;width:50%">${c.Name}</span>
+                                        <select disabled class="input text small" style="pointer-events: all;width:50%">${options}</select>
+                                        
+                                    </div>
+                                    `;
+                                    break;
+                                case "Event":
+    
+                                    var events = formData[n].split(";");
+                                    var eventDivs = "";
+                                    events.forEach(e => {
+                                        eventDivs += `
+                                            <div class="container level2bg" style="margin:2px;padding:4px 6px">
+                                                <span class="text small">${Math.round(parseInt(e))}s</span>
+                                            </div>
+                                            `;
+                                    });
+    
+                                    f += `
+                                    <div class="flex_apart" style="margin:5px">
+                                        <span class="text small" style="margin:5px;display:inline-block;width:50%">${c.Name}</span>
+                                        <div class="flex_center" style="width:50%">
+                                            ${eventDivs}
+                                        </div>
+                                        
+                                    </div>
+                                    `;
+                                    break;
+                                case "Timer":
+                                    f += `
+                                    <div class="flex_apart" style="margin:5px">
+                                        <span class="text small" style="margin:5px;display:inline-block;width:50%">${c.Name} (in seconds)</span>
+                                        <input disabled type="number" class="input text small" style="pointer-events: all;width:50%" value="${parseInt(formData[n])}"/>
+                                    </div>
+                                    `;
+                                    break;
+                            }
+                            n += 1;
+                            
+                        });
+    
+                    })
+    
+                    document.querySelector("#overlayContent").innerHTML = `<div class="flex_center" style="max-height:50vh;overflow-y:scroll">
+                        <div style="width:90%">${f}</div>
+                    </div>
+    
+                    <div class="flex_center" style="margin:10px">
+                        <div class="container level2bg clickable" id="overlayContent_deleteDocument" style="padding:10px">
+                            <span class="text caption">Delete Document</span>
+                        </div>
                     </div>
                     `;
-
-                    p.Components.forEach(c => {
-
-                        switch(c.Type){
-                            case "Step":
-                                f += `
-                                <div class="flex_apart" style="margin:5px">
-                                    <span class="text small" style="margin:5px;display:inline-block;width:50%">${c.Name}</span>
-                                    <input disabled type="number" class="input text small" style="pointer-events: all;width:50%" value="${formData[n]}"/>
-                                </div>
-                                `;
-                                break;
-                            case "Check":
-                                f += `
-                                <div class="flex_apart" style="margin:5px">
-                                    <span class="text small" style="margin:5px;display:inline-block;width:50%">${c.Name}</span>
-                                    <div class="flex_center" style="width:50%">
-                                        <div class="container ${c.Off == formData[n] ? "primarybg" : "level2bg"} clickable" style="padding:10px;margin:0px 5px;width:40%">
-                                            <span class="text caption">${c.Off}</span>
-                                        </div>
-                                        <div class="container ${c.On == formData[n] ? "primarybg" : "level2bg"} clickable" style="padding:10px;margin:0px 5px;width:40%">
-                                            <span class="text caption">${c.On}</span>
-                                        </div>
-                                    </div>
-                                    
-                                </div>
-                                `;
-                                break;
-                            case "Select":
-
-                                var options = "";
-                                c.Options.forEach(o => {
-                                    options += `
-                                    <option value="${o}" ${o == formData[n] ? "selected" : ""}>${o}</option>
-                                    `;
-                                });
-
-                                f += `
-                                <div class="flex_apart" style="margin:5px">
-                                    <span class="text small" style="margin:5px;display:inline-block;width:50%">${c.Name}</span>
-                                    <select disabled class="input text small" style="pointer-events: all;width:50%">${options}</select>
-                                    
-                                </div>
-                                `;
-                                break;
-                            case "Event":
-
-                                var events = formData[n].split(";");
-                                var eventDivs = "";
-                                events.forEach(e => {
-                                    eventDivs += `
-                                        <div class="container level2bg" style="margin:2px;padding:4px 6px">
-                                            <span class="text small">${Math.round(parseInt(e))}s</span>
-                                        </div>
-                                        `;
-                                });
-
-                                f += `
-                                <div class="flex_apart" style="margin:5px">
-                                    <span class="text small" style="margin:5px;display:inline-block;width:50%">${c.Name}</span>
-                                    <div class="flex_center" style="width:50%">
-                                        ${eventDivs}
-                                    </div>
-                                    
-                                </div>
-                                `;
-                                break;
-                            case "Timer":
-                                f += `
-                                <div class="flex_apart" style="margin:5px">
-                                    <span class="text small" style="margin:5px;display:inline-block;width:50%">${c.Name} (in seconds)</span>
-                                    <input disabled type="number" class="input text small" style="pointer-events: all;width:50%" value="${parseInt(formData[n])}"/>
-                                </div>
-                                `;
-                                break;
-                        }
-                        n += 1;
-                        
+                }catch(e){
+                    var fieldHTML = "";
+                    formData.forEach(f => {
+                        fieldHTML += `
+                            <div class="container level2bg" style="margin:2px;padding:4px 6px">
+                                <span class="text small">${f}</span>
+                            </div>
+                        `
                     });
 
-                })
-
-                document.querySelector("#overlayContent").innerHTML = `<div class="flex_center" style="max-height:50vh;overflow-y:scroll">
-                    <div style="width:90%">${f}</div>
-                </div>
-
-                <div class="flex_center" style="margin:10px">
-                    <div class="container level2bg clickable" id="overlayContent_deleteDocument" style="padding:10px">
-                        <span class="text caption">Delete Document</span>
+                    document.querySelector("#overlayContent").innerHTML = `
+                    <span class="textslim"><i>Sorry, we found your schema, but something went wrong parsing it with the following data</i></span>
+                    <div class="flex_center" style="margin:5px">
+                        ${fieldHTML}
                     </div>
-                </div>
-                `;
+                    <div class="flex_center" style="margin:10px">
+                        <div class="container level2bg clickable" id="overlayContent_deleteDocument" style="padding:10px">
+                            <span class="text caption">Delete Document</span>
+                        </div>
+                    </div>
+                    `;
+                }
+                
             }
 
             document.querySelector("#overlayContent_deleteDocument").addEventListener("click", function(e){
@@ -830,7 +861,7 @@ function handle_match_click(m){
                         <div class="flex_apart" style="width:100%;pointer-events:none">
                             <span class="text regular material-symbols-rounded" style="width:20%">edit_document</span>
                             <div style="width:80%">
-                                <span class="text caption" style="font-weight:600">Team ${data["team"]}</span>
+                                <span class="text caption" style="font-weight:600">Team ${data["Team"]}</span>
                                 <span class="text tiny">${datetime}</span>
                             </div>
                         </div>

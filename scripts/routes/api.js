@@ -444,17 +444,50 @@ router.post("/submit/paper", async (req, res, next) => {
     var path = process.env.HOME_FOLDER + "/images/" + fName + ".png";
     console.log(path);
     var image = req.body.image;
+    var team = req.body.team;
+    var matches = JSON.parse(req.body.matches);
 
     res.status(200).json({message: "Data submitted!"});
   
     let b =  Buffer.from(image,'base64');
     console.log(b);
-    fs.writeFile(path,b,function(err){
+    fs.writeFile(path,b,async function(err){
         if(!err){
             console.log("file is created");
+            var generatedData = {
+                team: team,
+                completed: true,
+                path: fName,
+                type: "paper"
+            }
+            var document = {
+                environment: env.friendlyId,
+                dataType: "match",
+                json: JSON.stringify(generatedData),
+                datetime: new Date(dataPiece.Created)
+            }
+
+            var doc = await db.createDoc("Document", document);
+
+            var possibleMatches = await db.getDocs("Match", {environment: env.friendlyId});
+            if(matches != undefined){
+                matches.forEach(async (match) => {
+                    var associatedMatch = possibleMatches.find((m) => m.matchNumber == match);
+                    if(associatedMatch != undefined){
+                        associatedMatch.documents.push(doc._id);
+    
+                        await db.updateDoc("Match", {_id: associatedMatch._id}, {documents: associatedMatch.documents});
+                    }
+                });
+            }
+            
         }
         console.log(err);
     });
+
+
+
+
 
 
 
