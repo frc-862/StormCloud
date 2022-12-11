@@ -424,7 +424,7 @@ function handle_document_click(id){
             var teamNumber = data["team"]
             document.querySelector("#overlayContent").innerHTML = `
             <div class="flex_center">
-                <img src="${data["path"]}.png" style="max-height:40vh"/>
+                <img src="${data["path"]}.png" style="max-height:40vh;border-radius:8px"/>
             </div>
             
             `;
