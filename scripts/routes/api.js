@@ -465,13 +465,17 @@ router.post("/submit/paper", async (req, res, next) => {
                 environment: env.friendlyId,
                 dataType: "match",
                 json: JSON.stringify(generatedData),
-                datetime: new Date(dataPiece.Created)
+                datetime: new Date()
             }
 
             var doc = await db.createDoc("Document", document);
 
+            console.log(doc);
             var possibleMatches = await db.getDocs("Match", {environment: env.friendlyId});
+            console.log(possibleMatches);
+            console.log(matches);
             if(matches != undefined){
+                console.log("WORK");
                 matches.forEach(async (match) => {
                     console.log("Match: " + match)
                     var associatedMatch = possibleMatches.find((m) => m.matchNumber == match);
