@@ -446,6 +446,7 @@ router.post("/submit/paper", async (req, res, next) => {
     var image = req.body.image;
     var team = req.body.team;
     var matches = JSON.parse(req.body.matches);
+    console.log(matches);
 
     res.status(200).json({message: "Data submitted!"});
   
@@ -472,7 +473,7 @@ router.post("/submit/paper", async (req, res, next) => {
             var possibleMatches = await db.getDocs("Match", {environment: env.friendlyId});
             if(matches != undefined){
                 matches.forEach(async (match) => {
-                    print("Match: " + match)
+                    console.log("Match: " + match)
                     var associatedMatch = possibleMatches.find((m) => m.matchNumber == match);
                     console.log("Associated: " + associatedMatch);
                     if(associatedMatch != undefined){
