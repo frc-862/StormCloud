@@ -36,10 +36,12 @@ router.get('/matches*', async function(req, res, next) {
     }
 
     var matches = await db.getDocs("Match", {environment: env.friendlyId});
+    var teams = await db.getDocs("Team", {environment: env.friendlyId});
 
     var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match"});
 
     var sendBackMatches = [];
+    var sendBackTeams = [];
     matches.forEach(match => {
         var matchData = {
             environment: match.environment,
@@ -50,6 +52,8 @@ router.get('/matches*', async function(req, res, next) {
             documents: [],
             _id: match._id
         }
+
+
         documents.forEach(doc => {
             if(match.documents.includes(doc._id.toString())){
                 matchData.documents.push(doc);
@@ -57,7 +61,15 @@ router.get('/matches*', async function(req, res, next) {
             }
         })
         sendBackMatches.push(matchData);
+
+        match.teams.forEach(team => {
+            if(teams.filter(t => t.teamNumber == team).length == 0){
+                teams.push({teamNumber: team, name: "Unknown Team", environment: match.environment});
+            }
+        })
     });
+    
+   
 
 
     res.json({matches: sendBackMatches, unassignedDocuments: documents});
@@ -445,6 +457,7 @@ router.post("/submit/paper", async (req, res, next) => {
     console.log(path);
     var image = req.body.image;
     var team = req.body.team;
+    var identifier = req.body.identifier;
     var matches = JSON.parse(req.body.matches);
     console.log(matches);
 
@@ -455,12 +468,24 @@ router.post("/submit/paper", async (req, res, next) => {
     fs.writeFile(path,b,async function(err){
         if(!err){
             console.log("file is created");
+
+            var allDocs = await db.getDocs("Document", {environment: env.friendlyId});
+            var prevDoc = allDocs.find((doc) => JSON.parse(doc.json).identifier == identifier);
+
             var generatedData = {
                 team: team,
                 completed: true,
                 path: fName,
+                identifier: identifier,
                 type: "paper"
             }
+
+            if(prevDoc != undefined){
+                await db.updateDoc("Document", {_id: prevDoc._id}, {json: JSON.stringify(generatedData), datetime: new Date()});
+                return;
+            }
+
+            
             var document = {
                 environment: env.friendlyId,
                 dataType: "match",
@@ -522,7 +547,15 @@ router.post("/submit/data", async (req, res, next) => {
             data: dataPiece.Data,
             author: dataPiece.Scouter,
             schema: dataPiece.Schema,
+            identifier: dataPiece.Identifier,
             type: "tablet"
+        }
+
+        var allDocs = await db.getDocs("Document", {environment: env.friendlyId});
+        var prevDoc = allDocs.find((doc) => JSON.parse(doc.json).identifier == dataPiece.Identifier);
+        if(prevDoc != undefined){
+            await db.updateDoc("Document", {_id: prevDoc._id}, {json: JSON.stringify(generatedData), datetime: new Date(dataPiece.Created)});
+            continue;
         }
 
 

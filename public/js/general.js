@@ -426,8 +426,53 @@ function handle_document_click(id){
             <div class="flex_center">
                 <img src="${data["path"]}.png" style="max-height:40vh;border-radius:8px"/>
             </div>
+            <div class="flex_center" style="margin:10px">
+                    <div class="container level2bg clickable" id="overlayContent_deleteDocument" style="padding:10px">
+                        <span class="text caption">Delete Document</span>
+                    </div>
+                </div>
             
             `;
+            document.querySelector("#overlayContent_deleteDocument").addEventListener("click", function(e){
+                if(!overlaySaveData["deleteConfirm"]){
+                    overlaySaveData["deleteTime"] = new Date();
+                    document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Are You Sure?</span>`;
+                    document.querySelector("#overlayContent_deleteDocument").classList = "container redbg clickable";
+                    overlaySaveData["deleteConfirm"] = true;
+                }else{
+                    if(overlaySaveData["deleteTime"] == undefined){
+                        document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Delete Document</span>`;
+                        document.querySelector("#overlayContent_deleteDocument").classList = "container level2bg clickable";
+                        overlaySaveData["deleteConfirm"] = false;
+                    }
+                    if(new Date() - overlaySaveData["deleteTime"] > 1500){
+                        document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Delete Document</span>`;
+                        document.querySelector("#overlayContent_deleteDocument").classList = "container level2bg clickable";
+                        overlaySaveData["deleteConfirm"] = false;
+                        return;
+                    }
+                    document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Deleting...</span>`;
+                    document.querySelector("#overlayContent_deleteDocument").classList = "container redbg clickable";
+                    overlaySaveData["deleteConfirm"] = false;
+
+                    remove("/api/document", {}, {docId: overlaySaveData["document"]}, (success, data) => {
+                        if(success){
+                            document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Deleted</span>`;
+                            document.querySelector("#overlayContent_deleteDocument").classList = "container redbg clickable";
+                            currentMatch["documents"].splice(currentMatch["documents"].indexOf(d => d._id == overlaySaveData["document"]), 1);
+                            handle_match_click(currentMatch["_id"]);
+                            setTimeout(function(){
+                                document.querySelector("#overlayClose").click();
+                            }, 500);
+                        }else{
+                            document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Delete Document</span>`;
+                            document.querySelector("#overlayContent_deleteDocument").classList = "container level2bg clickable";
+                            overlaySaveData["deleteConfirm"] = false;
+                        }
+                    });
+                    
+                }
+            });
             document.querySelector("#overlayTitle").innerHTML = `Paper Document - Team ${teamNumber}`;
             break;
         case "tablet":
