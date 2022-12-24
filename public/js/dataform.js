@@ -52,7 +52,7 @@ function generateIds(schema){
 
 function showQrCode(){
     document.querySelector("#overlayClose").style.display = "none";
-    document.querySelector("#overlayContent").innerHTML = `<div class="flex_center" style="width:100%"><div style="background-color:#680991;padding:10px;border-radius:8px;inline-block;text-align:center;width:500px"><div id="overlay_qrcode"></div></div></div>`;
+    document.querySelector("#overlayContent").innerHTML = `<div class="flex_center" style="width:100%"><div style="background-color:#ffffff;padding:10px;border-radius:8px;inline-block;text-align:center;width:500px"><div id="overlay_qrcode"></div></div></div>`;
 
     document.querySelector("#overlayTitle").innerHTML = "QR Code";
 
