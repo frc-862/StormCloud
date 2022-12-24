@@ -46,6 +46,18 @@
                 </div>
                 
             </div> 
+            <div class="topoptions screen" data-screen="2">
+                <div class="flex_center">
+                    <div class="level1bg container clickable changeSubscreen" style="padding: 10px;margin-right:14px" data-subscreen="1">
+                        <span class="text caption">Data</span>
+                    </div>
+                    <div class="level1bg container clickable changeSubscreen" style="padding: 10px;margin-right:14px" data-subscreen="2">
+                        <span class="text caption">Settings</span>
+                    </div>
+                    
+                </div>
+                
+            </div> 
             <div class="topoptions screen" data-screen="3">
                 <div class="flex_center">
                     <div class="level1bg container clickable changeSubscreen" style="padding: 10px;margin-right:14px" data-subscreen="1">
@@ -208,7 +220,34 @@
                 
             </div>
             <div class="center screen" data-screen="2">
-                <span class="text header" style="margin-bottom: 20px;">This is Data</span>
+                <div class="flex_center subscreen" data-subscreen="1" style="width:100%">
+                    
+                </div>
+                <div class="flex_center subscreen" data-subscreen="2" style="width:100%">
+                    <div class="flex_center subscreen" data-subscreen="1" style="width:100%">
+                        <div class="container level1bg" style="width:80%;padding:20px">
+                            <div class="flex_apart" style="margin:10px">
+                                <span class="textslim" style="width:40%">Sync</span>
+                                <div class="flex_apart" style="width:60%">
+                                    <select style="pointer-events: all" class="input text important setting" data-type="select" data-setting="currentSync" onkeyup="settingChange(this)">
+                                        <option value="no">Do Not Sync</option>
+                                        <option value="part">Only Additive Syncing, No Deletion</option>
+                                        <option value="full">Full Sync</option>
+                                        
+                                    </select>
+                                    <input type="text" class="input text important setting" style="pointer-events: all;width:60%" value="MI2022" placeholder="Competition Code" data-type="input" data-setting="competitionCode" onkeyup="settingChange(this)"/>
+                                </div>
+                                
+                            </div>
+                        </div>
+
+                        <div class="level2bg container clickable" style="padding:10px; margin:7px;pointer-events: all;width:40%">
+                            <span class="text caption">Sync Now!</span>
+                        </div>
+                    </div>
+                    
+                </div>
+                
                 
                 
                 

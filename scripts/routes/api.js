@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var db = require('../database.js');
 var authTools = require('../tools/authHelper.js');
+var firstApiTools = require('../tools/firstApi.js');
 var bodyParser = require('body-parser');
 let environment = "test";
 var fs = require('fs');
@@ -587,6 +588,28 @@ router.post("/submit/data", async (req, res, next) => {
     res.status(200).json({message: "Data submitted!"});
 });
 
+
+
+router.get("/first/ping", async (req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
+
+    var fRes = await firstApiTools.testConnectivity();
+
+    res.status(fRes ? 200 : 500).json({connected: fRes});
+});
+
+router.get("/first/schedule", async (req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
+
+    var fRes = await firstApiTools.getSchedule(2022, "MIMIL", "Qualification");
+
+    var path = process.env.HOME_FOLDER + "/cache/" + "schedule.json";
+    // if(fRes.error != undefined){
+    //     var contents = JSON.stringify(fRes);
+    // }
+
+    res.status(fRes.error != undefined ? 200 : 500).json({data: fRes});
+});
 
 
 module.exports = router;

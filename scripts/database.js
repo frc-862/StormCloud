@@ -28,7 +28,9 @@ const models = {
         settings: {
             teamsPerColor: Number,
             teamsPerAlliance: Number,
-            selectedSchema: String
+            selectedSchema: String,
+            currentSync: String,
+            competitionCode: String
         },
         master: {
             hash: String,

@@ -66,7 +66,7 @@ function showQrCode(){
         width: 500,
         height: 500,
         colorDark : "#190024",
-        colorLight : "#680991",
+        colorLight : "#ffffff",
         correctLevel : QRCode.CorrectLevel.H
     });
 
