@@ -61,10 +61,17 @@ const models = {
         documents: [String]
     })),
     'Team' : mongoose.model('Team', new mongoose.Schema({
-        environment: String,
         teamNumber: Number,
         name: String,
-        documents: [String]
+        notes: [String],
+        extraData: {
+            record: {
+                wins: Number,
+                losses: Number,
+                ties: Number
+            },
+            comps: [String]
+        }
     })),
     'Document' : mongoose.model('Document', new mongoose.Schema({
         environment: String,

@@ -77,6 +77,14 @@ function pull_environment(){
             handle_environment(environmentData);
         }
     })
+
+    // also need to get known teams
+    get("/api/teams", {}, function(success, data){
+        if(success){
+            persistantData["knownTeams"] = data;
+        }
+        
+    });
 }
 
 document.addEventListener('DOMContentLoaded', function(){
@@ -243,7 +251,7 @@ var matches = [];
 
 function pull_matches(cb=()=>{}){
     get("/api/matches", {}, function(success,data){
-        cb(data["matches"], data["unassignedDocuments"]);
+        cb(data["matches"], data["allDocuments"]);
     })
 }
 
@@ -284,7 +292,7 @@ function handle_matches(ms){
         
 
         f += `
-        <div class="container level1bg clickable selectMatch" style="width:100%;margin: 10px 0px" data-id="${m["_id"]}">
+        <div class="container level1bg clickable selectMatch" style="width:80%;margin: 10px 10px" data-id="${m["_id"]}">
             <span class="text caption" style="text-align: left">Match ${m["matchNumber"]}</span>
             <span class="text small" style="text-align: left">${m["documents"].length} Document${m["documents"].length != 1 ? "s" : ""}</span>
             
@@ -301,6 +309,83 @@ function handle_matches(ms){
         })
     });
 
+    // teams are automatically assumed to be the teams in the matches. This is not always the case, so we need to check against the known teams as well.
+
+    
+
+    handle_assumedteams(ms);
+
+}
+
+function handle_assumedteams(ms){
+
+    var teams = [];
+    ms.forEach((m)=>{
+        m["teams"].forEach((t)=>{
+            if(!teams.includes(t["number"])){
+                teams.push(t["number"]);
+            }
+        })
+    });
+
+    // from database
+    persistantData["knownTeams"].forEach((t)=>{
+        if(!teams.includes(t["teamNumber"])){
+            teams.push(t["teamNumber"]);
+        }
+    });
+
+    // from all of the documents
+    persistantData["allDocuments"].forEach((d)=>{
+        try{
+            let obj = JSON.parse(d["json"]);
+            if(obj["team"] != undefined && !teams.includes(obj["team"])){
+                teams.push(obj["team"]);
+            }
+        }catch(e){
+
+        }
+    });
+
+    document.querySelector('#team_view_container').style.display = "none";
+    document.querySelector('#team_list').innerHTML = "";
+
+    var f = "";
+
+
+    persistantData["teams"] = [];
+
+    // persistentData["knownTeams"] stores all of the known team identities. Check against this list when interpreting the teams.
+    // sort by team number
+    teams.sort((a,b)=>a-b);
+    teams.forEach((t)=>{
+        if(t == undefined){
+            return;
+        }
+        var knownTeam = persistantData["knownTeams"].find((kt)=>kt["teamNumber"] == t);
+        var teamObj = {
+            "number": t,
+            "documents": persistantData["allDocuments"].filter((d)=>{
+                try{
+                    let obj = JSON.parse(d["json"]);
+                    return obj["team"] == t;
+                }
+                catch(e){
+                    return false;
+                }
+            })
+        };
+        f += `
+            <div class="container level1bg clickable selectTeam" style="width:80%;margin: 10px 10px" data-id="${t}">
+                <span class="text caption" style="text-align: left">Team ${t}</span>
+                <span class="text small" style="text-align: left">${teamObj["documents"].length} Documents${knownTeam == undefined ? " (Unknown)" : ""}</span>
+                
+            </div>
+        `;
+        persistantData["teams"].push(teamObj);
+    });
+
+    document.querySelector('#team_list').innerHTML = f;
 }
 
 
@@ -475,6 +560,61 @@ function handle_document_click(id){
             });
             document.querySelector("#overlayTitle").innerHTML = `Paper Document - Team ${teamNumber}`;
             break;
+        case "photo":
+                var teamNumber = data["team"]
+                document.querySelector("#overlayContent").innerHTML = `
+                <div class="flex_center">
+                    <img src="${data["path"]}.png" style="max-height:40vh;border-radius:8px"/>
+                </div>
+                <div class="flex_center" style="margin:10px">
+                        <div class="container level2bg clickable" id="overlayContent_deleteDocument" style="padding:10px">
+                            <span class="text caption">Delete Document</span>
+                        </div>
+                    </div>
+                
+                `;
+                document.querySelector("#overlayContent_deleteDocument").addEventListener("click", function(e){
+                    if(!overlaySaveData["deleteConfirm"]){
+                        overlaySaveData["deleteTime"] = new Date();
+                        document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Are You Sure?</span>`;
+                        document.querySelector("#overlayContent_deleteDocument").classList = "container redbg clickable";
+                        overlaySaveData["deleteConfirm"] = true;
+                    }else{
+                        if(overlaySaveData["deleteTime"] == undefined){
+                            document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Delete Document</span>`;
+                            document.querySelector("#overlayContent_deleteDocument").classList = "container level2bg clickable";
+                            overlaySaveData["deleteConfirm"] = false;
+                        }
+                        if(new Date() - overlaySaveData["deleteTime"] > 1500){
+                            document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Delete Document</span>`;
+                            document.querySelector("#overlayContent_deleteDocument").classList = "container level2bg clickable";
+                            overlaySaveData["deleteConfirm"] = false;
+                            return;
+                        }
+                        document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Deleting...</span>`;
+                        document.querySelector("#overlayContent_deleteDocument").classList = "container redbg clickable";
+                        overlaySaveData["deleteConfirm"] = false;
+    
+                        remove("/api/document", {}, {docId: overlaySaveData["document"]}, (success, data) => {
+                            if(success){
+                                document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Deleted</span>`;
+                                document.querySelector("#overlayContent_deleteDocument").classList = "container redbg clickable";
+                                currentMatch["documents"].splice(currentMatch["documents"].indexOf(d => d._id == overlaySaveData["document"]), 1);
+                                handle_match_click(currentMatch["_id"]);
+                                setTimeout(function(){
+                                    document.querySelector("#overlayClose").click();
+                                }, 500);
+                            }else{
+                                document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Delete Document</span>`;
+                                document.querySelector("#overlayContent_deleteDocument").classList = "container level2bg clickable";
+                                overlaySaveData["deleteConfirm"] = false;
+                            }
+                        });
+                        
+                    }
+                });
+                document.querySelector("#overlayTitle").innerHTML = `Photo Document - Team ${teamNumber}`;
+                break;
         case "tablet":
             var teamNumber = data["team"]
             var schema = schemas.find(s => s.Name == data["schema"]);
@@ -919,6 +1059,21 @@ function handle_match_click(m){
                     </div>
                 `
                 break;
+            case "photo":
+
+                
+                df += `
+                    <div class="container level2bg clickable document" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}">
+                        <div class="flex_apart" style="width:100%;pointer-events:none">
+                            <span class="text regular material-symbols-rounded" style="width:20%">camera</span>
+                            <div style="width:80%">
+                                <span class="text caption" style="font-weight:600">Team ${data["team"]}</span>
+                                <span class="text tiny">${datetime}</span>
+                            </div>
+                        </div>
+                    </div>
+                `
+                break;
             case "tablet":
                 var completed = data["completed"];
                 if(completed == undefined){
@@ -1154,18 +1309,17 @@ var onScreenEvents = {
 
     },
     1: function(){
-        pull_matches((ms, uD)=>{
+        pull_matches((ms, allDocs)=>{
             matches = ms;
             document.querySelector('#match_list').innerHTML = "";
             document.querySelector('#match_view_container').style.display = "none";
             persistantData["matches"] = ms;
-            if(uD.length > 0){
-                document.querySelector('#match_unallocated_documents').style.display = "";
-            }else{
-                document.querySelector('#match_unallocated_documents').style.display = "none";
-            }
-            unassignedDocuments = uD;
+            persistantData["allDocuments"] = allDocs;
+            
             handle_matches(ms);
+
+
+
         });
         
     },

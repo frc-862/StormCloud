@@ -40,6 +40,8 @@ router.get('/matches*', async function(req, res, next) {
     var teams = await db.getDocs("Team", {environment: env.friendlyId});
 
     var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match"});
+    // copy documents array
+    var allDocuments = documents.slice(0);
 
     var sendBackMatches = [];
     var sendBackTeams = [];
@@ -73,7 +75,7 @@ router.get('/matches*', async function(req, res, next) {
    
 
 
-    res.json({matches: sendBackMatches, unassignedDocuments: documents});
+    res.json({matches: sendBackMatches, allDocuments: allDocuments});
 });
 
 /**
@@ -215,6 +217,20 @@ router.delete("/match", async (req, res, next) => {
     await db.deleteDoc("Match", {_id: matchId});
     res.status(200).json({message: "Match deleted!"});
 
+});
+
+
+/**
+ * @api {get} /api/teams Gets all of the KNOWN teams in the application database
+ * @apiName GET Teams
+ * @apiGroup Teams
+ * */
+router.get("/teams", async (req, res, next) => {
+    let env = await authTools.getEnvironment(environment);
+
+    // just informational for the user's convienence, serves no actual purpose...
+    var teams = await db.getDocs("Team");
+    res.status(200).json(teams);
 });
 
 
@@ -443,13 +459,79 @@ router.get("/setup", async (req, res, next) => {
     res.json({settings: settings, schema: schema});
 }); 
 
-router.post("/submit/paper", async (req, res, next) => {
+router.post("/submit/photo", async (req, res, next) => {
     var env = await authTools.getEnvironment(environment);
 
+
+    var fName = req.body.name.split(" ")[0] + "__" + req.body.name.split(" ")[1];
+
+    var path = process.env.HOME_FOLDER + "/images/" + fName + ".png";
+    console.log(path);
+    var image = req.body.image;
+    var team = req.body.team;
+    var identifier = req.body.identifier;
+    var matches = JSON.parse(req.body.matches);
+    console.log(matches);
+
+    res.status(200).json({message: "Data submitted!"});
+  
+    let b =  Buffer.from(image,'base64');
+    console.log(b);
+    fs.writeFile(path,b,async function(err){
+        if(!err){
+            console.log("file is created");
+
+            var allDocs = await db.getDocs("Document", {environment: env.friendlyId});
+            var prevDoc = allDocs.find((doc) => JSON.parse(doc.json).identifier == identifier);
+
+            var generatedData = {
+                team: team,
+                completed: true,
+                path: fName,
+                identifier: identifier,
+                type: "photo"
+            }
+
+            if(prevDoc != undefined){
+                await db.updateDoc("Document", {_id: prevDoc._id}, {json: JSON.stringify(generatedData), datetime: new Date()});
+                return;
+            }
+
+            
+            var document = {
+                environment: env.friendlyId,
+                dataType: "match",
+                json: JSON.stringify(generatedData),
+                datetime: new Date()
+            }
+
+            var doc = await db.createDoc("Document", document);
+
+            console.log(doc);
+            var possibleMatches = await db.getDocs("Match", {environment: env.friendlyId});
+            console.log(possibleMatches);
+            console.log(matches);
+            if(matches != undefined){
+                console.log("WORK");
+                matches.forEach(async (match) => {
+                    console.log("Match: " + match)
+                    var associatedMatch = possibleMatches.find((m) => m.matchNumber == match);
+                    console.log("Associated: " + associatedMatch);
+                    if(associatedMatch != undefined){
+                        associatedMatch.documents.push(doc._id);
     
-    console.log(req);
-    console.log(new Date());
-    console.log(req.body);
+                        await db.updateDoc("Match", {_id: associatedMatch._id}, {documents: associatedMatch.documents});
+                    }
+                });
+            }
+            
+        }
+        console.log(err);
+    });
+});
+
+router.post("/submit/paper", async (req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
 
 
     var fName = req.body.name.split(" ")[0] + "__" + req.body.name.split(" ")[1];

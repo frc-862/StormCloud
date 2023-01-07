@@ -58,7 +58,12 @@ function showQrCode(){
 
 
 
-    var string = JSON.stringify(stripIds(sections));
+    var qrObj = {
+        serverAddress: window.location.host
+    }
+
+
+    var string = JSON.stringify(qrObj);
 
 
     var qrcode = new QRCode(document.querySelector("#overlay_qrcode"), {
@@ -257,6 +262,9 @@ function editSection(element, field){
     var _id = element.dataset.id;
     var index = sections.findIndex(s => s._id == _id);
     var value = element.value;
+    if(field == "Time"){
+        value = parseInt(value);
+    }
     sections[index][field] = value;
 }
 
