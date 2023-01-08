@@ -60,14 +60,14 @@ router.get('/matches*', async function(req, res, next) {
         documents.forEach(doc => {
             if(match.documents.includes(doc._id.toString())){
                 matchData.documents.push(doc);
-                documents.splice(documents.indexOf(doc), 1);
+                
             }
         })
         sendBackMatches.push(matchData);
 
         match.teams.forEach(team => {
             if(teams.filter(t => t.teamNumber == team).length == 0){
-                teams.push({teamNumber: team, name: "Unknown Team", environment: match.environment});
+                sendBackTeams.push({teamNumber: team, name: "Unknown Team", environment: match.environment});
             }
         })
     });

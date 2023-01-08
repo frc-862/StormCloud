@@ -723,8 +723,8 @@ function handle_document_click(id){
     
                     })
     
-                    document.querySelector("#overlayContent").innerHTML = `<div class="flex_center" style="max-height:50vh;overflow-y:scroll">
-                        <div style="width:90%">${f}</div>
+                    document.querySelector("#overlayContent").innerHTML = `<div class="flex_center">
+                        <div style="width:90%;max-height:50vh;overflow-y:scroll">${f}</div>
                     </div>
     
                     <div class="flex_center" style="margin:10px">
@@ -1122,7 +1122,7 @@ function handle_match_click(m){
         `;
     }
 
-    document.querySelector('#match_view_container_UD').style.display = "none";
+    
     document.querySelector('#match_view_documents').innerHTML = df;
 
 
@@ -1183,17 +1183,12 @@ document.querySelector('#match_view_delete').addEventListener('click', function(
             if(success){
                 document.querySelector('#match_view_delete').innerHTML = `<span class="text caption">Deleted</span>`;
                 document.querySelector('#match_view_delete').classList = "container redbg clickable";
-                pull_matches((ms, uD)=>{
+                pull_matches((ms, allDocs)=>{
                     matches = ms;
                     document.querySelector('#match_list').innerHTML = "";
                     document.querySelector('#match_view_container').style.display = "none";
                     persistantData["matches"] = ms;
-                    if(uD.length > 0){
-                        document.querySelector('#match_unallocated_documents').style.display = "";
-                    }else{
-                        document.querySelector('#match_unallocated_documents').style.display = "none";
-                    }
-                    unassignedDocuments = uD;
+                    persistantData["allDocuments"] = allDocs;
                     handle_matches(ms);
                 });
                 setTimeout(function(){
@@ -1276,17 +1271,12 @@ document.querySelector("#match_createMatch").addEventListener("click", function(
             "locked": false,
             "date": new Date()
         }, function(success, data){
-            pull_matches((ms, uD)=>{
+            pull_matches((ms, allDocs)=>{
                 matches = ms;
                 document.querySelector('#match_list').innerHTML = "";
                 document.querySelector('#match_view_container').style.display = "none";
                 persistantData["matches"] = ms;
-                if(uD.length > 0){
-                    document.querySelector('#match_unallocated_documents').style.display = "";
-                }else{
-                    document.querySelector('#match_unallocated_documents').style.display = "none";
-                }
-                unassignedDocuments = uD;
+                persistantData["allDocuments"] = allDocs;
                 handle_matches(ms);
             });
         })

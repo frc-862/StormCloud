@@ -238,6 +238,9 @@ function addItem(element, type){
             item.Min = 0;
             item.Default = 0;
             break;
+        case "Label":
+            item.Contents = "";
+            break;
         case "Check":
             item.On = "";
             item.Off = "";
@@ -344,6 +347,9 @@ function reshowSections(){
                     <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px" data-id="${s._id}" onclick="addItem(this, 'Timer')">
                         <span class="text caption">+ Timer</span>
                     </div>
+                    <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px" data-id="${s._id}" onclick="addItem(this, 'Label')">
+                        <span class="text caption">+ Text Label</span>
+                    </div>
                 </div>
 
                 
@@ -388,6 +394,38 @@ function reshowItems(sectionId){
                             <span class="text caption" style="margin: 5px 10px;text-align:left">Max</span>
                             <input class="input small" value="${i.Max}" style="display: inline-block;width:80px;text-align:center" type="number" placeholder="0" data-id="${i._id}" onchange="editItem(this, 'Max', '${sectionId}')"/>
                         </div>
+                        
+                    </div>
+
+                    <div class="flex_apart" style="width:10%;justify-content:right">
+                        <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="moveItem(this, -1, '${sectionId}')">
+                            <span class="text regular material-symbols-rounded">arrow_upward</span>
+                        </div>
+                        <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="moveItem(this, 1, '${sectionId}')">
+                            <span class="text regular material-symbols-rounded">arrow_downward</span>
+                        </div>
+                        <div class="container redbg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="deleteItem(this, '${sectionId}')">
+                            <span class="text regular material-symbols-rounded">close</span>
+                        </div>
+                    </div>
+                </div>
+                `;
+                break;
+            case "Label":
+                contentElement.innerHTML += `
+                <div class="level2bg container flex_apart" style="margin:5px 0px">
+                    
+                    <div style="width:40%">
+                        <span class="text caption" style="margin: 5px 10px;text-align:left">Static Label</span>
+                        <input class="input small" type="text" value="${i.Name}" placeholder="Title (not required)" data-id="${i._id}" onchange="editItem(this, 'Name', '${sectionId}')"/>
+                    </div>
+
+                    <div style="width:40%" class="flex_apart">
+                        <div style="width:90%;text-align:left">
+                            <span class="text caption" style="margin: 5px 10px;text-align:left">Extra Text</span>
+                            <input class="input small" value="${i.Contents}" style="display: inline-block;text-align:center" type="number" placeholder="Contents" data-id="${i._id}" onchange="editItem(this, 'Contents', '${sectionId}')"/>
+                        </div>
+                        
                         
                     </div>
 
