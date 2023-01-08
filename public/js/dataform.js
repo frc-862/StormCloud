@@ -59,6 +59,7 @@ function showQrCode(){
 
 
     var qrObj = {
+        type: "config",
         serverAddress: window.location.host
     }
 
@@ -415,15 +416,15 @@ function reshowItems(sectionId){
                 contentElement.innerHTML += `
                 <div class="level2bg container flex_apart" style="margin:5px 0px">
                     
-                    <div style="width:40%">
+                    <div style="width:30%">
                         <span class="text caption" style="margin: 5px 10px;text-align:left">Static Label</span>
-                        <input class="input small" type="text" value="${i.Name}" placeholder="Title (not required)" data-id="${i._id}" onchange="editItem(this, 'Name', '${sectionId}')"/>
+                        <input class="input small" style="width:100%" type="text" value="${i.Name}" placeholder="Title (not required)" data-id="${i._id}" onchange="editItem(this, 'Name', '${sectionId}')"/>
                     </div>
 
-                    <div style="width:40%" class="flex_apart">
+                    <div style="width:50%" class="flex_apart">
                         <div style="width:90%;text-align:left">
                             <span class="text caption" style="margin: 5px 10px;text-align:left">Extra Text</span>
-                            <input class="input small" value="${i.Contents}" style="display: inline-block;text-align:center" type="number" placeholder="Contents" data-id="${i._id}" onchange="editItem(this, 'Contents', '${sectionId}')"/>
+                            <input class="input small" value="${i.Contents}" style="display: inline-block;text-align:left;width:100%" type="text" placeholder="Contents" data-id="${i._id}" onchange="editItem(this, 'Contents', '${sectionId}')"/>
                         </div>
                         
                         
