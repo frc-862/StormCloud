@@ -799,7 +799,7 @@ function handle_document_click(id){
                 }
             });
 
-            document.querySelector("#overlayTitle").innerHTML = `Data Document - Team ${teamNumber}${data["completed"] == undefined || data["completed"] == false ? " (Incomplete)" : ""}`;
+            document.querySelector("#overlayTitle").innerHTML = `Data Document - Team ${teamNumber}${data["author"] == undefined || data["author"] == "" ? "" : " - By " + data["author"]}${data["completed"] == undefined || data["completed"] == false ? " (Incomplete)" : ""}`;
             break;
         case "note":
             var teamNumber = data["team"];
