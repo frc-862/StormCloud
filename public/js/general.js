@@ -285,6 +285,10 @@ function handle_environment(env){
 function handle_matches(ms){
     document.querySelector('#match_list').innerHTML = "";
     var f = "";
+
+    ms.sort((a,b)=>{
+        return a["matchNumber"] - b["matchNumber"];
+    })
     ms.forEach((m)=>{
         
         var tf = "";
@@ -322,8 +326,8 @@ function handle_assumedteams(ms){
     var teams = [];
     ms.forEach((m)=>{
         m["teams"].forEach((t)=>{
-            if(!teams.includes(t["number"])){
-                teams.push(t["number"]);
+            if(!teams.includes(t["team"])){
+                teams.push(t["team"]);
             }
         })
     });
@@ -385,7 +389,14 @@ function handle_assumedteams(ms){
         persistantData["teams"].push(teamObj);
     });
 
+
+
     document.querySelector('#team_list').innerHTML = f;
+    Array.from(document.querySelectorAll('.selectTeam')).forEach((i) => {
+        i.addEventListener('click', function(e){
+            handle_team_click(e.srcElement.dataset.id);
+        })
+    });
 }
 
 
@@ -394,7 +405,11 @@ function handle_assumedteams(ms){
     Handle Different Interations
 */
 
+
+var activeItem = undefined;
+
 var currentMatch = undefined;
+var currentTeam = undefined;
 var currentTeamsFiltered = [];
 var cachedDocuments = [];
 var unassignedDocuments = [];
@@ -506,7 +521,8 @@ function handle_document_click(id){
     document.querySelector("#overlayContent").innerHTML = ``;
     switch(data["type"]){
         case "paper":
-            var teamNumber = data["team"]
+            var teamNumber = data["team"];
+            var matches = data["matches"] | [];
             document.querySelector("#overlayContent").innerHTML = `
             <div class="flex_center">
                 <img src="${data["path"]}.png" style="max-height:40vh;border-radius:8px"/>
@@ -544,8 +560,13 @@ function handle_document_click(id){
                         if(success){
                             document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Deleted</span>`;
                             document.querySelector("#overlayContent_deleteDocument").classList = "container redbg clickable";
-                            currentMatch["documents"].splice(currentMatch["documents"].indexOf(d => d._id == overlaySaveData["document"]), 1);
-                            handle_match_click(currentMatch["_id"]);
+                            activeItem["documents"].splice(activeItem["documents"].indexOf(d => d._id == overlaySaveData["document"]), 1);
+                            if(activeItem["number"] == undefined){
+                                handle_match_click(currentMatch["_id"]);
+                            }else{
+                                handle_team_click(currentTeam["number"]);
+                            }
+                            
                             setTimeout(function(){
                                 document.querySelector("#overlayClose").click();
                             }, 500);
@@ -558,10 +579,18 @@ function handle_document_click(id){
                     
                 }
             });
-            document.querySelector("#overlayTitle").innerHTML = `Paper Document - Team ${teamNumber}`;
+            var matchesText = matches.length > 0 ? "- Matches " : "";
+            if(matches != undefined && matches.length > 0){
+                matches.forEach((i) => {
+                    matchesText += i + " ";
+                });
+            }
+            
+            document.querySelector("#overlayTitle").innerHTML = `Paper Document - Team ${teamNumber}${matchesText}`;
             break;
         case "photo":
                 var teamNumber = data["team"]
+                var matches = data["matches"] | [];
                 document.querySelector("#overlayContent").innerHTML = `
                 <div class="flex_center">
                     <img src="${data["path"]}.png" style="max-height:40vh;border-radius:8px"/>
@@ -599,8 +628,12 @@ function handle_document_click(id){
                             if(success){
                                 document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Deleted</span>`;
                                 document.querySelector("#overlayContent_deleteDocument").classList = "container redbg clickable";
-                                currentMatch["documents"].splice(currentMatch["documents"].indexOf(d => d._id == overlaySaveData["document"]), 1);
-                                handle_match_click(currentMatch["_id"]);
+                                activeItem["documents"].splice(activeItem["documents"].indexOf(d => d._id == overlaySaveData["document"]), 1);
+                                if(activeItem["number"] == undefined){
+                                    handle_match_click(currentMatch["_id"]);
+                                }else{
+                                    handle_team_click(currentTeam["number"]);
+                                }
                                 setTimeout(function(){
                                     document.querySelector("#overlayClose").click();
                                 }, 500);
@@ -613,12 +646,18 @@ function handle_document_click(id){
                         
                     }
                 });
-                document.querySelector("#overlayTitle").innerHTML = `Photo Document - Team ${teamNumber}`;
+                var matchesText = matches.length > 0 ? "- Matches " : "";
+                if(matches != undefined && matches.length > 0){
+                    matches.forEach((i) => {
+                        matchesText += i + " ";
+                    });
+                }
+                document.querySelector("#overlayTitle").innerHTML = `Photo Document - Team ${teamNumber}${matchesText}`;
                 break;
         case "tablet":
             var teamNumber = data["team"]
             var schema = schemas.find(s => s.Name == data["schema"]);
-            
+            var match = data["match"];
             if(schema == undefined){
                 document.querySelector("#overlayContent").innerHTML = `
                 <span class="textslim"><i>Sorry, we couldn't find a schema...</i></span>
@@ -784,8 +823,12 @@ function handle_document_click(id){
                         if(success){
                             document.querySelector("#overlayContent_deleteDocument").innerHTML = `<span class="text caption">Deleted</span>`;
                             document.querySelector("#overlayContent_deleteDocument").classList = "container redbg clickable";
-                            currentMatch["documents"].splice(currentMatch["documents"].indexOf(d => d._id == overlaySaveData["document"]), 1);
-                            handle_match_click(currentMatch["_id"]);
+                            activeItem["documents"].splice(activeItem["documents"].indexOf(d => d._id == overlaySaveData["document"]), 1);
+                            if(activeItem["number"] == undefined){
+                                handle_match_click(currentMatch["_id"]);
+                            }else{
+                                handle_team_click(currentTeam["number"]);
+                            }
                             setTimeout(function(){
                                 document.querySelector("#overlayClose").click();
                             }, 500);
@@ -798,14 +841,16 @@ function handle_document_click(id){
                     
                 }
             });
-
-            document.querySelector("#overlayTitle").innerHTML = `Data Document - Team ${teamNumber}${data["author"] == undefined || data["author"] == "" ? "" : " - By " + data["author"]}${data["completed"] == undefined || data["completed"] == false ? " (Incomplete)" : ""}`;
+            var matchText = match != undefined ? ` - Match ${match}` : "";
+            document.querySelector("#overlayTitle").innerHTML = `Data Document - Team ${teamNumber}${data["author"] == undefined || data["author"] == "" ? "" : " - By " + data["author"]}${data["completed"] == undefined || data["completed"] == false ? " (Incomplete)" : ""}${matchText}`;
             break;
         case "note":
             var teamNumber = data["team"];
             var contents = data["contents"] == undefined ? "" : data["contents"];
             var author = data["author"] == undefined ? "Anonymous" : data["author"];
-            document.querySelector("#overlayTitle").innerHTML = `Extra Note${teamNumber != undefined && teamNumber != "" ? " (" + teamNumber + ")" : ""} - By ${author}`;
+            var match = data["match"];
+            var matchText = match != undefined ? ` - Match ${match}` : "";
+            document.querySelector("#overlayTitle").innerHTML = `Extra Note${teamNumber != undefined && teamNumber != "" ? " (" + teamNumber + ")" : ""} - By ${author}${matchText}`;
 
             document.querySelector("#overlayContent").innerHTML = `
             <textarea class="input" id="overlayContent_contents" style="width:100%;height:200px;resize:none" disabled>${contents}</textarea>
@@ -827,11 +872,12 @@ function handle_document_click(id){
                     document.querySelector("#overlayContent_editDocument").classList = "container primarybg clickable";
                     document.querySelector("#overlayContent_contents").disabled = true;
                     overlaySaveData["editing"] = false;
-                    var editedDocument = currentMatch["documents"].find((i) => i["_id"] == overlaySaveData["document"]);
+                    var editedDocument = activeItem["documents"].find((i) => i["_id"] == overlaySaveData["document"]);
                     var object = JSON.parse(editedDocument["json"]);
                     object["contents"] = document.querySelector("#overlayContent_contents").value;
                     editedDocument["json"] = JSON.stringify(object);
-                    currentMatch["documents"][currentMatch["documents"].findIndex((i) => i["_id"] == overlaySaveData["document"])] = editedDocument;
+                    
+                    activeItem["documents"][activeItem["documents"].findIndex((i) => i["_id"] == overlaySaveData["document"])] = editedDocument;
                     put("/api/document", {}, {docId: overlaySaveData["document"], json: editedDocument["json"]}, (success, data) => {
                         document.querySelector("#overlayContent_editDocument").innerHTML = `<span class="text caption">Edit Contents</span>`;
                         document.querySelector("#overlayContent_editDocument").classList = "container level2bg clickable";
@@ -958,30 +1004,30 @@ document.querySelector("#match_view_create_document").addEventListener("click", 
     document.querySelector("#overlay").style.display = "";
 });
 
-function handle_team_click(num, color){
+function handle_team_match_click(num, color){
     if(num == "*"){
         currentTeamsFiltered.filter((i) => i["match"] == currentMatch["_id"]).forEach((i) => {
-            document.querySelector('.selectTeam[data-team="'+i["team"]+'"]').classList = "highlightedtext caption dim" + i["color"] + "bg textslim clickable selectTeam nonselected_border";
+            document.querySelector('.selectTeamMatch[data-team="'+i["team"]+'"]').classList = "highlightedtext caption dim" + i["color"] + "bg textslim clickable selectTeamMatch nonselected_border";
             currentTeamsFiltered.splice(currentTeamsFiltered.indexOf(i), 1);
         });
-        document.querySelector('.selectTeam[data-team="*"]').classList = "highlightedtext caption whitebg textslim clickable selectTeam selected_border";
+        document.querySelector('.selectTeamMatch[data-team="*"]').classList = "highlightedtext caption whitebg textslim clickable selectTeamMatch selected_border";
         show_hide_documents();
         return;
     }
     var currentInstance = currentTeamsFiltered.find((i) => i["team"] == num && i["color"] == color && i["match"] == currentMatch["_id"]);
     if(currentInstance == undefined){
-        document.querySelector('.selectTeam[data-team="'+num+'"]').classList = "highlightedtext caption " + color + "bg textslim clickable selectTeam selected_border";
+        document.querySelector('.selectTeamMatch[data-team="'+num+'"]').classList = "highlightedtext caption " + color + "bg textslim clickable selectTeamMatch selected_border";
         currentTeamsFiltered.push({
             "team": num,
             "color": color,
             "match": currentMatch["_id"]
         })
-        document.querySelector('.selectTeam[data-team="*"]').classList = "highlightedtext caption dimwhitebg textslim clickable selectTeam nonselected_border";
+        document.querySelector('.selectTeamMatch[data-team="*"]').classList = "highlightedtext caption dimwhitebg textslim clickable selectTeamMatch nonselected_border";
     }else{
-        document.querySelector('.selectTeam[data-team="'+num+'"]').classList = "highlightedtext caption dim" + color + "bg textslim clickable selectTeam nonselected_border";
+        document.querySelector('.selectTeamMatch[data-team="'+num+'"]').classList = "highlightedtext caption dim" + color + "bg textslim clickable selectTeamMatch nonselected_border";
         currentTeamsFiltered.splice(currentTeamsFiltered.indexOf(currentInstance), 1);
         if(currentTeamsFiltered.filter((i) => i["match"] == currentMatch["_id"]).length == 0){
-            document.querySelector('.selectTeam[data-team="*"]').classList = "highlightedtext caption whitebg textslim clickable selectTeam selected_border";
+            document.querySelector('.selectTeamMatch[data-team="*"]').classList = "highlightedtext caption whitebg textslim clickable selectTeamMatch selected_border";
         }
     }
     show_hide_documents();
@@ -994,18 +1040,19 @@ function handle_match_click(m){
     if(currentMatch != undefined){
         Array.from(document.querySelectorAll('.selectMatch[data-id="' + currentMatch["_id"] + '"]')).forEach((i) => {
             i.classList = "container level1bg clickable selectMatch";
-            i.style.marginLeft = "0px";
+            i.style.marginLeft = "10px";
         });
     }
 
     currentMatch = match;
+    activeItem = currentMatch;
     if(match == undefined){
         return;
     }
 
     Array.from(document.querySelectorAll('.selectMatch[data-id="' + currentMatch["_id"] + '"]')).forEach((i) => {
         i.classList = "container primarybg clickable selectMatch";
-        i.style.marginLeft = "10px";
+        i.style.marginLeft = "20px";
     });
 
     var matchDocuments = match["documents"].filter(i => i["dataType"] == "paper");
@@ -1020,11 +1067,11 @@ function handle_match_click(m){
     match["teams"].forEach((t)=>{
         var existingInstance = currentTeamsFiltered.find((i) => i["team"] == t["team"] && i["color"] == t["color"] && i["match"] == match["_id"]);
         tf += `
-        <span style="font-size:18px;width:10%;border-radius:16px;pointer-events:all" class="highlightedtext caption ${existingInstance == undefined ? "nonselected_border dim" : "selected_border "}${t["color"]}bg textslim selectTeam clickable" data-team="${t["team"]}" data-color="${t["color"]}">${t["team"]}</span>
+        <span style="font-size:18px;width:10%;border-radius:16px;pointer-events:all" class="highlightedtext caption ${existingInstance == undefined ? "nonselected_border dim" : "selected_border "}${t["color"]}bg textslim selectTeamMatch clickable" data-team="${t["team"]}" data-color="${t["color"]}">${t["team"]}</span>
         `;
     });
     tf += `
-        <span style="font-size:18px;width:10%;border-radius:16px;pointer-events:all" class="highlightedtext caption dimwhitebg textslim selectTeam clickable nonselected_border" data-team="*" data-color="white">ALL</span>
+        <span style="font-size:18px;width:10%;border-radius:16px;pointer-events:all" class="highlightedtext caption dimwhitebg textslim selectTeamMatch clickable nonselected_border" data-team="*" data-color="white">ALL</span>
         `;
 
         
@@ -1032,7 +1079,7 @@ function handle_match_click(m){
     document.querySelector('#match_view_teams').innerHTML = tf;
 
     if(currentTeamsFiltered.filter((i) => i["match"] == match["_id"]).length == 0){
-        document.querySelector('.selectTeam[data-team="*"]').classList = "highlightedtext caption whitebg textslim clickable selectTeam selected_border";
+        document.querySelector('.selectTeamMatch[data-team="*"]').classList = "highlightedtext caption whitebg textslim clickable selectTeamMatch selected_border";
     }
     var df = "";
     
@@ -1132,24 +1179,173 @@ function handle_match_click(m){
         });
     })
 
-    Array.from(document.querySelectorAll('.selectTeam')).forEach((i) => {
+    Array.from(document.querySelectorAll('.selectTeamMatch')).forEach((i) => {
         i.addEventListener('click', function(e){
-            handle_team_click(e.srcElement.dataset.team, e.srcElement.dataset.color);
+            handle_team_match_click(e.srcElement.dataset.team, e.srcElement.dataset.color);
         })
     });
 
-    show_hide_documents();
 
     document.querySelector('#match_view_container').style.display = "";
 
     
 }
 
+
+
+
+function handle_team_click(t){
+    var team = persistantData["teams"].find(i => i["number"] == t);
+
+    if(currentTeam != undefined){
+        Array.from(document.querySelectorAll('.selectTeam[data-id="' + currentTeam["number"] + '"]')).forEach((i) => {
+            i.classList = "container level1bg clickable selectTeam";
+            i.style.marginLeft = "10px";
+        });
+    }
+
+    currentTeam = team;
+    activeItem = currentTeam;
+    if(team == undefined){
+        return;
+    }
+
+    Array.from(document.querySelectorAll('.selectTeam[data-id="' + currentTeam["number"] + '"]')).forEach((i) => {
+        i.classList = "container primarybg clickable selectTeam";
+        i.style.marginLeft = "20px";
+    });
+
+    var teamDocuments = team["documents"].filter(i => i["dataType"] == "paper");
+
+
+    var knownTeam = persistantData["knownTeams"].find(i => i["teamNumber"] == team["teamNumber"]);
+    if(knownTeam != undefined){
+        document.querySelector('#team_view_name').innerHTML = `${knownTeam["name"]}`;
+    }else{
+        document.querySelector('#team_view_name').innerHTML = `Unnamed Team`;
+    }
+    
+    document.querySelector('#team_view_number').innerHTML = `#${team["number"]}`;
+
+    
+    var df = "";
+    
+    cachedDocuments = team["documents"];
+    team["documents"].forEach((d)=>{
+        var data = JSON.parse(d["json"]);
+        var datetime = new Date(d["datetime"]);
+        datetime = datetime.toLocaleString();
+
+
+        switch(data["type"]){
+            case "paper":
+
+                
+                df += `
+                    <div class="container level2bg clickable document" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}">
+                        <div class="flex_apart" style="width:100%;pointer-events:none">
+                            <span class="text regular material-symbols-rounded" style="width:20%">edit_document</span>
+                            <div style="width:80%">
+                                <span class="text caption" style="font-weight:600">${data["match"] == undefined ? "Unknown Match" : `Match ${data["match"]}`}</span>
+                                <span class="text tiny">${datetime}</span>
+                            </div>
+                        </div>
+                    </div>
+                `
+                break;
+            case "photo":
+
+                
+                df += `
+                    <div class="container level2bg clickable document" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}">
+                        <div class="flex_apart" style="width:100%;pointer-events:none">
+                            <span class="text regular material-symbols-rounded" style="width:20%">camera</span>
+                            <div style="width:80%">
+                                <span class="text caption" style="font-weight:600">${data["match"] == undefined ? "Unknown Match" : `Match ${data["match"]}`}</span>
+                                <span class="text tiny">${datetime}</span>
+                            </div>
+                        </div>
+                    </div>
+                `
+                break;
+            case "tablet":
+                var completed = data["completed"];
+                if(completed == undefined){
+                    completed = false;
+                }
+                df += `
+                    <div class="container level2bg clickable document" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}">
+                        <div class="flex_apart" style="width:100%;pointer-events:none">
+                            <span class="text regular material-symbols-rounded" style="width:20%">bar_chart</span>
+                            <div style="width:80%">
+                                <span class="text caption" style="font-weight:600">${data["match"] == undefined ? "Unknown Match" : `Match ${data["match"]}`}</span>
+                                <span class="text tiny">${completed ? "" : "Not "}Complete</span>
+                            </div>
+                        </div>
+                    </div>
+                `
+                break;
+            case "note":
+                
+                var teamConcerned = data["team"];
+                var author = data["author"];
+
+                df += `
+                    <div class="container level2bg clickable document" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}">
+                        <div class="flex_apart" style="width:100%;pointer-events:none">
+                            <span class="text regular material-symbols-rounded" style="width:20%">format_quote</span>
+                            <div style="width:80%">
+                                <span class="text caption" style="font-weight:600">A Note</span>
+                                <span class="text tiny">By ${data["author"] == undefined ? "Anonymous" : data["author"]}</span>
+                            </div>
+                        </div>
+                    </div>
+                `
+        }
+
+        
+    });
+
+    if(team["documents"].length == 0){
+        df += `
+        <span class="text regular" style="font-weight:600;opacity:0.5">No Documents :(</span>
+        `;
+    }
+
+    
+    document.querySelector('#team_view_documents').innerHTML = df;
+
+
+    Array.from(document.querySelectorAll(".document")).forEach((i) => {
+        i.addEventListener("click", (e) => {
+            handle_document_click(e.target.dataset.id);
+        });
+    })
+
+    show_hide_documents();
+
+    document.querySelector('#team_view_container').style.display = "";
+
+    
+}
+
+
+
 document.querySelector('#match_view_close').addEventListener('click', function(){
     document.querySelector('#match_view_container').style.display = "none";
     if(currentMatch != undefined){
         Array.from(document.querySelectorAll('.selectMatch[data-id="' + currentMatch["_id"] + '"]')).forEach((i) => {
             i.classList = "container level1bg clickable selectMatch";
+            i.style.marginLeft = "0px";
+        });
+    }
+});
+
+document.querySelector('#team_view_close').addEventListener('click', function(){
+    document.querySelector('#team_view_container').style.display = "none";
+    if(currentMatch != undefined){
+        Array.from(document.querySelectorAll('.selectTeam[data-id="' + currentTeam["number"] + '"]')).forEach((i) => {
+            i.classList = "container level1bg clickable selectTeam";
             i.style.marginLeft = "0px";
         });
     }

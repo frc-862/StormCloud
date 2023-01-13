@@ -30,7 +30,8 @@ const models = {
             teamsPerAlliance: Number,
             selectedSchema: String,
             currentSync: String,
-            competitionCode: String
+            competitionCode: String,
+            competitionYear: Number
         },
         master: {
             hash: String,

@@ -560,7 +560,8 @@ router.post("/submit/paper", async (req, res, next) => {
                 completed: true,
                 path: fName,
                 identifier: identifier,
-                type: "paper"
+                type: "paper",
+                matches: matches
             }
 
             if(prevDoc != undefined){
@@ -630,7 +631,9 @@ router.post("/submit/data", async (req, res, next) => {
             data: dataPiece.Data,
             author: dataPiece.Scouter,
             schema: dataPiece.Schema,
+            deviceId: dataPiece.DeviceID,
             identifier: dataPiece.Identifier,
+            match: dataPiece.Number,
             type: "tablet"
         }
 
@@ -680,17 +683,80 @@ router.get("/first/ping", async (req, res, next) => {
     res.status(fRes ? 200 : 500).json({connected: fRes});
 });
 
-router.get("/first/schedule", async (req, res, next) => {
+router.get("/first/schedule*", async (req, res, next) => {
     var env = await authTools.getEnvironment(environment);
 
-    var fRes = await firstApiTools.getSchedule(2022, "MIMIL", "Qualification");
+
+
+
+    var year = req.query.year;
+    var competition = req.query.competition;
+    var matchType = req.query.matchType;
+
+    
+    console.log("Match Type: " + matchType)
+    console.log("Year: " + year)
+    console.log("Competition: " + competition)
+
+
+    if(matchType != "Qualification" && matchType != "Playoff" && matchType != "Practice" && matchType != "None"){
+        matchType = "Qualification";
+    }
+
+    var doNotPush = req.query.doNotPush == "true";
+
+    var fRes = await firstApiTools.getSchedule(year, competition, matchType);
 
     var path = process.env.HOME_FOLDER + "/cache/" + "schedule.json";
-    // if(fRes.error != undefined){
-    //     var contents = JSON.stringify(fRes);
-    // }
+    var sendBackFRes = JSON.stringify(fRes);
 
-    res.status(fRes.error != undefined ? 200 : 500).json({data: fRes});
+    res.status(fRes.error == undefined ? 200 : 500).json({data: sendBackFRes});
+
+
+    if(fRes.error == undefined && !doNotPush){
+        var contents = JSON.stringify(fRes);
+        fs.writeFile(path, contents, (err) => {
+
+        });
+
+        var schedule = fRes["Schedule"];
+        schedule.forEach(async (match) => {
+
+
+            var existingMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: match["matchNumber"], competition: competition});
+            if(existingMatch.length > 0){
+                return;
+            }
+
+            var matchNumber = match["matchNumber"];
+            var teams = [];
+            match["teams"].forEach((team) => {
+                teams.push({
+                    team: team["teamNumber"],
+                    color: team["station"].substring(0, team["station"].length - 1)
+                });
+            });
+
+            var date = new Date(match["startTime"]);
+
+            var match = {
+                environment: env.friendlyId,
+                competition: competition,
+                matchNumber: matchNumber,
+                teams: teams,
+                locked: false,
+                documents: [],
+                date: date
+            }
+
+            await db.createDoc("Match", match);
+
+        });
+
+
+    }
+
+    
 });
 
 

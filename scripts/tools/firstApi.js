@@ -36,7 +36,6 @@ async function getSchedule(year, competition, phase){
     }catch(e){
         return {error:e};
     }
-
     res.data["status"] = res.status;
     return res.data;
     
