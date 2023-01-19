@@ -683,6 +683,48 @@ router.get("/first/ping", async (req, res, next) => {
     res.status(fRes ? 200 : 500).json({connected: fRes});
 });
 
+router.get("/first/teams*", async(req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
+
+    var year = req.query.year;
+    var competition = req.query.competition;
+    var doNotPush = req.query.doNotPush == "true";
+
+    var fRes = await firstApiTools.getTeams(year, competition);
+
+    var path = process.env.HOME_FOLDER + "/cache/" + "teams.json";
+    var sendBackFRes = JSON.stringify(fRes);
+    res.status(fRes.error == undefined ? 200 : 500).json({data: sendBackFRes});
+
+    if(fRes.error == undefined && !doNotPush){
+        fs.writeFile(path, sendBackFRes, (err) => {
+
+        });
+
+        var teams = fRes["teams"];
+        teams.forEach(async (team) => {
+            var existingTeam = await db.getDocs("Team", {environment: env.friendlyId, teamNumber: team.teamNumber});
+            if(existingTeam.length > 0){
+                return;
+            }
+
+            var teamNumber = team.teamNumber;
+            var newTeam = {
+                environment: env.friendlyId,
+                teamNumber: teamNumber,
+                name: team.nameShort,
+                notes: [],
+                extraData: {}
+            }
+
+            await db.createDoc("Team", newTeam);
+
+
+
+        });
+    }
+})
+
 router.get("/first/schedule*", async (req, res, next) => {
     var env = await authTools.getEnvironment(environment);
 

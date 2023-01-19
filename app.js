@@ -18,8 +18,8 @@ var environment = "test";
 app.use(express.static(__dirname + '/public'));
 
 app.use(express.static(__dirname + '/images'));
-app.use(parser.json({limit: '2gb'}));
-app.use(bodyParser.urlencoded({ extended: true, limit: '2gb' }));
+app.use(parser.json({limit: '4gb'}));
+app.use(bodyParser.urlencoded({ extended: true, limit: '4gb' }));
 app.use(cookieParser());
 app.get("/", function(req, res) {
     res.sendFile(__dirname + "/views/main.html");
@@ -42,6 +42,7 @@ app.get("/setup", function(req, res) {
 
 app.use('/api', require('./scripts/routes/api.js'));
 app.use('/auth', require('./scripts/routes/auth.js'));
+app.use('/sync', require('./scripts/routes/sync.js'));
 
 app.listen(port, function() {
     console.log("Server started @ localhost:" + port);

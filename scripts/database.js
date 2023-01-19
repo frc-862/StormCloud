@@ -63,6 +63,7 @@ const models = {
     })),
     'Team' : mongoose.model('Team', new mongoose.Schema({
         teamNumber: Number,
+        environment: String,
         name: String,
         notes: [String],
         extraData: {
