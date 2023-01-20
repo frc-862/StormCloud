@@ -164,6 +164,28 @@ function settingChange(element){
 }
 
 
+function tryRequestAPI(button, link){
+    if(button.opacity == 0.5){
+        return;
+    }
+    Array.from(document.getElementsByClassName("firstSyncOption")).forEach((item)=>{
+        item.disabled = true;
+        item.opacity = 0.5;
+    });
+
+    var year = settings["competitionYear"];
+    var code = settings["competitionCode"];
+    var phase = "Qualification";
+
+    get(link + `?competition=${competition}&year=${year}&phase=${phase}`, {}, function(success, data){
+        Array.from(document.getElementsByClassName("firstSyncOption")).forEach((item)=>{
+            item.disabled = false;
+            item.opacity = 1;
+        });
+    });
+}
+
+
 Array.from(document.getElementsByClassName("clickable")).forEach((item)=>{
     item.addEventListener("click", function(e){
         if(e.srcElement.dataset.triggers == undefined){

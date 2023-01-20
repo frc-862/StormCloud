@@ -40,7 +40,7 @@
                         <span class="text caption">Team</span>
                     </div>
                     <div class="level1bg container clickable changeSubscreen" style="padding: 10px;margin-right:14px" data-subscreen="3">
-                        <span class="text caption">Settings</span>
+                        <span class="text caption">Devices</span>
                     </div>
                     
                 </div>
@@ -49,10 +49,10 @@
             <div class="topoptions screen" data-screen="2">
                 <div class="flex_center">
                     <div class="level1bg container clickable changeSubscreen" style="padding: 10px;margin-right:14px" data-subscreen="1">
-                        <span class="text caption">Data</span>
+                        <span class="text caption"><i>FIRST</i> Data</span>
                     </div>
                     <div class="level1bg container clickable changeSubscreen" style="padding: 10px;margin-right:14px" data-subscreen="2">
-                        <span class="text caption">Settings</span>
+                        <span class="text caption">Logs</span>
                     </div>
                     
                 </div>
@@ -115,7 +115,7 @@
                                 <span class="text hugeicon material-symbols-rounded">newspaper</span>
                             </div>
                             <div style="width:100%;margin-left:14px;margin-right:14px">
-                                <span class="text important" style="margin-bottom: 5px;">Competition Data</span>
+                                <span class="text important" style="margin-bottom: 5px;">All Data</span>
                                 <span class="text small">Select this item if you are looking to observe, edit, or update competition data from the current competition...</span>
         
                             </div>
@@ -243,18 +243,22 @@
             </div>
             <div class="center screen" data-screen="2">
                 <div class="flex_center subscreen" data-subscreen="1" style="width:100%">
-                    
-                </div>
-                <div class="flex_center subscreen" data-subscreen="2" style="width:100%">
-                    <div class="flex_center subscreen" data-subscreen="1" style="width:100%">
-                        <div class="container level1bg" style="width:80%;padding:20px">
-                            
+                    <div class="flex_center" style="width:100%">
+                        <div class="level2bg container clickable firstSyncOption" style="padding:10px; margin:7px;pointer-events: all" onclick="tryRequestAPI(this, '/api/first/schedule')">
+                            <span class="text caption">Match Schedule</span>
                         </div>
-
-                        <div class="level2bg container clickable" style="padding:10px; margin:7px;pointer-events: all;width:40%">
-                            <span class="text caption">Sync Now!</span>
+                        <div class="level2bg container clickable firstSyncOption" style="padding:10px; margin:7px;pointer-events: all" onclick="tryRequestAPI(this, '/api/first/teams')">
+                            <span class="text caption">Teams</span>
+                        </div>
+                        <div class="level2bg container clickable firstSyncOption" style="padding:10px; margin:7px;pointer-events: all" onclick="tryRequestAPI(this, '/api/first/results')">
+                            <span class="text caption">Match Results</span>
                         </div>
                     </div>
+
+                   
+                </div>
+                <div class="flex_center subscreen" data-subscreen="2" style="width:100%">
+                    
                     
                 </div>
                 
