@@ -811,7 +811,7 @@ router.get("/first/results*", async(req, res, next) => {
 
     var doNotPush = req.query.doNotPush == "true";
 
-    var fRes = await firstApiTools.getMatchResults(year, competition, phase);
+    var fRes = await firstApiTools.getMatchResults(year, competition, matchType);
 
     var path = process.env.HOME_FOLDER + "/cache/" + "results.json";
     var sendBackFRes = JSON.stringify(fRes);
