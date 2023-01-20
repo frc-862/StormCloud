@@ -325,7 +325,7 @@ function handle_matches(ms){
 
         f += `
         <div class="container level1bg clickable selectMatch" style="width:80%;margin: 10px 10px" data-id="${m["_id"]}">
-            <span class="text caption" style="text-align: left">Match ${m["matchNumber"]} ${m["results"] != undefined ? "(Done)" : ""}</span>
+            <span class="text caption" style="text-align: left">Match ${m["matchNumber"]} ${m["results"]["finished"] ? "(Done)" : ""}</span>
             <span class="text small" style="text-align: left">${m["documents"].length} Document${m["documents"].length != 1 ? "s" : ""}</span>
             
         </div>`
@@ -1087,18 +1087,18 @@ function handle_match_click(m){
 
     document.querySelector('#match_view_name').innerHTML = `Match ${match["matchNumber"]}`;
     
-    if(match["results"] == undefined){
+    if(!match["results"]["finished"]){
         document.querySelector('#match_view_score').style.display = "none";
 
     }else{
         document.querySelector('#match_view_score').style.display = "";
-        document.querySelector('#match_view_score').innerHTML = `${match["results"]["red"] == match["results"]["blue"] ? "Tie" : (match["results"]["red"] > match["results"]["blue"] ? "Red" : "Blue")}`;
-        document.querySelector('#match_view_score').style.backgroundColor = `${match["results"]["red"] == match["results"]["blue"] ? "whitebg" : (match["results"]["red"] > match["results"]["blue"] ? "redbg" : "bluebg")}`;
+        document.querySelector('#match_view_score').innerHTML = `${match["results"]["red"] == match["results"]["blue"] ? `Tie (${match["results"]["red"]}-${match["results"]["blue"]})` : (match["results"]["red"] > match["results"]["blue"] ? `Red (${match["results"]["red"]}-${match["results"]["blue"]})` : `Blue (${match["results"]["blue"]}-${match["results"]["red"]})`)}`;
+        document.querySelector('#match_view_score').classList = `${match["results"]["red"] == match["results"]["blue"] ? "highlightedtext caption whitebg textslim" : (match["results"]["red"] > match["results"]["blue"] ? "highlightedtext caption redbg textslim" : "highlightedtext caption bluebg textslim")}`;
 
     }
 
-    document.querySelector('#match_view_status').innerHTML = `${match["results"] != undefined ? 'Past' : 'Waiting'}`;
-    document.querySelector('#match_view_status').classList = `${match["results"] != undefined ? 'highlightedtext caption greenbg textslim' : 'highlightedtext caption level2bg textslim'}`;
+    document.querySelector('#match_view_status').innerHTML = `${match["results"]["finished"] ? 'Past' : 'Waiting'}`;
+    document.querySelector('#match_view_status').classList = `${match["results"]["finished"] ? 'highlightedtext caption greenbg textslim' : 'highlightedtext caption level2bg textslim'}`;
     
     var tf = "";
 
@@ -1474,51 +1474,57 @@ document.querySelector("#match_createMatch").addEventListener("click", function(
     `;
 
     overlaySaveFunction = (e) => {
-        var sendObject = {
-            "matchNumber": parseInt(document.querySelector("#overlay_matchNumber").value),
-            "environment": environmentData["friendlyId"],
-            "teams": [],
-            "competition": environmentData["compIds"][0],
-            "documents": []
-        }
-
-        for(var i = 1; i <= settings["teamsPerColor"]*2; i++){
-            var teamNumber = parseInt(document.querySelector(".overlay_team[data-num='" + i + "']").value);
-            if(!isNaN(teamNumber)){
-                sendObject["teams"].push({
-                    team: teamNumber,
-                    color: i <= settings["teamsPerColor"] ? "red" : "blue"
-                });
-            }else{
-                return;
+        var prevMatchObject = persistantData["matches"].find((i) => i["matchNumber"] == parseInt(document.querySelector("#overlay_matchNumber").value));
+        if(prevMatchObject != undefined){
+            var sendObject = {
+                "matchNumber": parseInt(document.querySelector("#overlay_matchNumber").value),
+                "environment": environmentData["friendlyId"],
+                "teams": [],
+                "competition": environmentData["compIds"][0],
+                "documents": []
             }
+    
+            for(var i = 1; i <= settings["teamsPerColor"]*2; i++){
+                var teamNumber = parseInt(document.querySelector(".overlay_team[data-num='" + i + "']").value);
+                if(!isNaN(teamNumber)){
+                    sendObject["teams"].push({
+                        team: teamNumber,
+                        color: i <= settings["teamsPerColor"] ? "red" : "blue"
+                    });
+                }else{
+                    return;
+                }
+            }
+    
+            document.querySelector("#overlayDone").style.display = "none";
+    
+            post("/api/match", {}, {
+                "matchNumber": sendObject["matchNumber"],
+                "competition": sendObject["competition"],
+                "environment": sendObject["environment"],
+                "documents": sendObject["documents"],
+                "teams": sendObject["teams"],
+                "locked": false,
+                "date": new Date()
+            }, function(success, data){
+                pull_matches((ms, allDocs)=>{
+                    matches = ms;
+                    document.querySelector('#match_list').innerHTML = "";
+                    document.querySelector('#match_view_container').style.display = "none";
+                    persistantData["matches"] = ms;
+                    persistantData["allDocuments"] = allDocs;
+                    handle_matches(ms);
+                });
+            })
+    
+            matches.push(sendObject);
+            document.querySelector("#overlay").style.display = "none";
+            persistantData["matches"] = matches;
+            handle_matches(matches);
+        }else{
+            alert("Match " + document.querySelector("#overlay_matchNumber").value + " already exists!");
         }
-
-        document.querySelector("#overlayDone").style.display = "none";
-
-        post("/api/match", {}, {
-            "matchNumber": sendObject["matchNumber"],
-            "competition": sendObject["competition"],
-            "environment": sendObject["environment"],
-            "documents": sendObject["documents"],
-            "teams": sendObject["teams"],
-            "locked": false,
-            "date": new Date()
-        }, function(success, data){
-            pull_matches((ms, allDocs)=>{
-                matches = ms;
-                document.querySelector('#match_list').innerHTML = "";
-                document.querySelector('#match_view_container').style.display = "none";
-                persistantData["matches"] = ms;
-                persistantData["allDocuments"] = allDocs;
-                handle_matches(ms);
-            });
-        })
-
-        matches.push(sendObject);
-        document.querySelector("#overlay").style.display = "none";
-        persistantData["matches"] = matches;
-        handle_matches(matches);
+        
 
     };
     document.querySelector("#overlay").style.display = "";

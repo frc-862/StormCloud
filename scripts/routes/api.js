@@ -52,6 +52,7 @@ router.get('/matches*', async function(req, res, next) {
             matchNumber: match.matchNumber,
             teams: match.teams,
             locked: match.locked,
+            results: match.results,
             documents: [],
             _id: match._id
         }
@@ -183,6 +184,11 @@ router.post("/match", async (req, res, next) => {
         matchNumber: matchNumber,
         teams: teams,
         locked: locked,
+        results: {
+            finished: false,
+            red: -1,
+            blue: -1
+        },
         documents: [],
         date: date
     }
@@ -785,6 +791,11 @@ router.get("/first/schedule*", async (req, res, next) => {
                 matchNumber: matchNumber,
                 teams: teams,
                 locked: false,
+                results: {
+                    finished: false,
+                    red: -1,
+                    blue: -1
+                },
                 documents: [],
                 date: date
             }
@@ -824,17 +835,16 @@ router.get("/first/results*", async(req, res, next) => {
         });
         var matches = fRes["Matches"];
         matches.forEach(async (match) => {
-            var existingMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: match["matchNumber"], competition: competition});
+            var existingMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: match["matchNumber"], competition: year+competition});
             if(existingMatch.length == 0){
                 return;
             }
 
             existingMatch = existingMatch[0];
-            existingMatch.results = {
-                red: match.scoreRedFinal,
-                blue: match.scoreBlueFinal
-            }
-
+            existingMatch.results["finished"] = true;
+            existingMatch.results["red"] = match["scoreRedFinal"];
+            existingMatch.results["blue"] = match["scoreBlueFinal"];
+            
             await db.updateDoc("Match", {_id: existingMatch._id}, {results: existingMatch.results});
         });
     }

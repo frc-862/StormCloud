@@ -61,6 +61,7 @@ const models = {
         planned: Date,
         documents: [String],
         results:{
+            finished: Boolean,
             red: Number,
             blue: Number
         }
