@@ -804,7 +804,7 @@ router.get("/first/results*", async(req, res, next) => {
 
     var year = req.query.year;
     var competition = req.query.competition;
-    var phase = req.query.phase;
+    var matchType = req.query.matchType;
     if(matchType != "Qualification" && matchType != "Playoff" && matchType != "Practice" && matchType != "None"){
         matchType = "Qualification";
     }
@@ -817,6 +817,7 @@ router.get("/first/results*", async(req, res, next) => {
     var sendBackFRes = JSON.stringify(fRes);
 
     res.status(fRes.error == undefined ? 200 : 500).json({data: sendBackFRes});
+
     if(fRes.error == undefined && !doNotPush){
         fs.writeFile(path, sendBackFRes, (err) => {
 

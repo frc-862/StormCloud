@@ -179,9 +179,9 @@ function tryRequestAPI(button, link){
 
     var year = settings["competitionYear"];
     var competition = settings["competitionCode"];
-    var phase = "Qualification";
+    var matchType = "Qualification";
 
-    get(link + `?competition=${competition}&year=${year}&phase=${phase}`, {}, function(success, data){
+    get(link + `?competition=${competition}&year=${year}&matchType=${matchType}`, {}, function(success, data){
         Array.from(document.getElementsByClassName("firstSyncOption")).forEach((item)=>{
             item.disabled = false;
             item.classList = "level1bg container clickable firstSyncOption";
