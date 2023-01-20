@@ -325,7 +325,7 @@ function handle_matches(ms){
 
         f += `
         <div class="container level1bg clickable selectMatch" style="width:80%;margin: 10px 10px" data-id="${m["_id"]}">
-            <span class="text caption" style="text-align: left">Match ${m["matchNumber"]}</span>
+            <span class="text caption" style="text-align: left">Match ${m["matchNumber"]} ${m["results"] != undefined ? "(Done)" : ""}</span>
             <span class="text small" style="text-align: left">${m["documents"].length} Document${m["documents"].length != 1 ? "s" : ""}</span>
             
         </div>`
@@ -1087,8 +1087,18 @@ function handle_match_click(m){
 
     document.querySelector('#match_view_name').innerHTML = `Match ${match["matchNumber"]}`;
     
-    document.querySelector('#match_view_status').innerHTML = `${matchDocuments.length > environmentData["settings"]["teamsPerColor"]*2 ? 'Completed' : 'Waiting'}`;
-    document.querySelector('#match_view_status').classList = `${matchDocuments.length > environmentData["settings"]["teamsPerColor"]*2 ? 'highlightedtext caption greenbg textslim' : 'highlightedtext caption level2bg textslim'}`;
+    if(match["results"] == undefined){
+        document.querySelector('#match_view_score').style.display = "none";
+
+    }else{
+        document.querySelector('#match_view_score').style.display = "";
+        document.querySelector('#match_view_score').innerHTML = `${match["results"]["red"] == match["results"]["blue"] ? "Tie" : (match["results"]["red"] > match["results"]["blue"] ? "Red" : "Blue")}`;
+        document.querySelector('#match_view_score').style.backgroundColor = `${match["results"]["red"] == match["results"]["blue"] ? "whitebg" : (match["results"]["red"] > match["results"]["blue"] ? "redbg" : "bluebg")}`;
+
+    }
+
+    document.querySelector('#match_view_status').innerHTML = `${match["results"] != undefined ? 'Past' : 'Waiting'}`;
+    document.querySelector('#match_view_status').classList = `${match["results"] != undefined ? 'highlightedtext caption greenbg textslim' : 'highlightedtext caption level2bg textslim'}`;
     
     var tf = "";
 
@@ -1246,7 +1256,7 @@ function handle_team_click(t){
     var teamDocuments = team["documents"].filter(i => i["dataType"] == "paper");
 
 
-    var knownTeam = persistantData["knownTeams"].find(i => i["teamNumber"] == team["teamNumber"]);
+    var knownTeam = persistantData["knownTeams"].find(i => i["teamNumber"] == team["number"]);
     if(knownTeam != undefined){
         document.querySelector('#team_view_name').innerHTML = `${knownTeam["name"]}`;
     }else{
