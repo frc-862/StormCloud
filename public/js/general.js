@@ -168,10 +168,14 @@ function tryRequestAPI(button, link){
     if(button.opacity == 0.5){
         return;
     }
+    
     Array.from(document.getElementsByClassName("firstSyncOption")).forEach((item)=>{
         item.disabled = true;
+        item.classList = "level1bg container firstSyncOption";
+        item.style.cursor = "not-allowed";
         item.opacity = 0.5;
     });
+    button.classList = "primarybg container firstSyncOption";
 
     var year = settings["competitionYear"];
     var competition = settings["competitionCode"];
@@ -180,6 +184,8 @@ function tryRequestAPI(button, link){
     get(link + `?competition=${competition}&year=${year}&phase=${phase}`, {}, function(success, data){
         Array.from(document.getElementsByClassName("firstSyncOption")).forEach((item)=>{
             item.disabled = false;
+            item.classList = "level1bg container clickable firstSyncOption";
+            item.style.cursor = "";
             item.opacity = 1;
         });
     });

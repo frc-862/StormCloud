@@ -763,7 +763,7 @@ router.get("/first/schedule*", async (req, res, next) => {
         schedule.forEach(async (match) => {
 
 
-            var existingMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: match["matchNumber"], competition: competition});
+            var existingMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: match["matchNumber"], competition: year +competition});
             if(existingMatch.length > 0){
                 return;
             }
