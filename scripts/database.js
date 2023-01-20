@@ -59,7 +59,11 @@ const models = {
         }],
         locked: Boolean,
         planned: Date,
-        documents: [String]
+        documents: [String],
+        results:{
+            red: Number,
+            blue: Number
+        }
     })),
     'Team' : mongoose.model('Team', new mongoose.Schema({
         teamNumber: Number,
@@ -80,7 +84,8 @@ const models = {
         dataType: String,
         json: String,
         datetime: Date,
-        image: String
+        image: String,
+        competition: String
     })),
     'Schema' : mongoose.model('Schema', new mongoose.Schema({
         Name: String,
@@ -104,27 +109,8 @@ async function init(pw){
 async function testAddData(){
     var envs = await getDocs('Environment', {friendlyId: 'test'});
     if(envs.length == 0){
-        await createDoc('Environment', {name: 'Testing Environment', team: 0, friendlyId: 'test', compIds: ["mi_test_1"], settings: {teamsPerColor: 3, teamsPerAlliance: 3}, access: []});
-    }
-
-    var matches = await getDocs('Match', {environment: 'test'});
-    if(matches.length == 0){
-        await createDoc('Match', {environment: 'test', competition: 'mi_test_1', matchNumber: 1, teams: [{team: 10, color: 'red'}, {team: 20, color: 'red'}, {team: 30, color: 'red'}, {team: 40, color: 'blue'}, {team: 50, color: 'blue'}, {team: 60, color: 'blue'}], locked: false, planned: new Date(), documents: []});
-    }
-
-    var teams = await getDocs('Team', {environment: 'test'});
-    if(teams.length == 0){
-        await createDoc('Team', {environment: 'test', teamNumber: 10, name: 'Team 10', documents: []});
-        await createDoc('Team', {environment: 'test', teamNumber: 20, name: 'Team 20', documents: []});
-        await createDoc('Team', {environment: 'test', teamNumber: 30, name: 'Team 30', documents: []});
-        await createDoc('Team', {environment: 'test', teamNumber: 40, name: 'Team 40', documents: []});
-        await createDoc('Team', {environment: 'test', teamNumber: 50, name: 'Team 50', documents: []});
-        await createDoc('Team', {environment: 'test', teamNumber: 60, name: 'Team 60', documents: []});
-    }
-
-    var documents = await getDocs('Document', {environment: 'test'});
-    if(documents.length == 0){
-        await createDoc('Document', {environment: 'test', dataType: 'qual', json: '{"team" : 10}', datetime: new Date(), image: ''});
+        // obsolete db object
+        await createDoc('Environment', {name: 'Comp Environment', team: 0, friendlyId: 'test', compIds: ["mi_test_1"], settings: {teamsPerColor: 3, teamsPerAlliance: 3, competitionCode: "MIMIL", competitionYear: 2022}, access: []});
     }
 
 }

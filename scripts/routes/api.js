@@ -36,10 +36,10 @@ router.get('/matches*', async function(req, res, next) {
         return;
     }
 
-    var matches = await db.getDocs("Match", {environment: env.friendlyId});
+    var matches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
     var teams = await db.getDocs("Team", {environment: env.friendlyId});
 
-    var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match"});
+    var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match", competition: env.settings.competitionYear + env.settings.competitionCode});
     // copy documents array
     var allDocuments = documents.slice(0);
 
@@ -172,7 +172,6 @@ router.post("/match", async (req, res, next) => {
         return;
     }
 
-    var competition = req.body.competition;
     var matchNumber = req.body.matchNumber;
     var teams = req.body.teams;
     var locked = req.body.locked;
@@ -180,7 +179,7 @@ router.post("/match", async (req, res, next) => {
 
     var match = {
         environment: env.friendlyId,
-        competition: competition,
+        competition: env.settings.competitionYear + env.settings.competitionCode,
         matchNumber: matchNumber,
         teams: teams,
         locked: locked,
@@ -258,7 +257,8 @@ router.post("/document", async (req, res, next) => {
         dataType: dataType,
         json: req.body.json,
         image: req.body.image,
-        datetime: new Date()
+        datetime: new Date(),
+        competition: env.settings.competitionYear + env.settings.competitionCode
     }
 
     var doc = await db.createDoc("Document", document);
@@ -481,7 +481,7 @@ router.post("/submit/photo", async (req, res, next) => {
         if(!err){
             console.log("file is created");
 
-            var allDocs = await db.getDocs("Document", {environment: env.friendlyId});
+            var allDocs = await db.getDocs("Document", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
             var prevDoc = allDocs.find((doc) => JSON.parse(doc.json).identifier == identifier);
 
             var generatedData = {
@@ -502,7 +502,8 @@ router.post("/submit/photo", async (req, res, next) => {
                 environment: env.friendlyId,
                 dataType: "match",
                 json: JSON.stringify(generatedData),
-                datetime: new Date()
+                datetime: new Date(),
+                competition: env.settings.competitionYear + env.settings.competitionCode
             }
 
             var doc = await db.createDoc("Document", document);
@@ -552,7 +553,7 @@ router.post("/submit/paper", async (req, res, next) => {
         if(!err){
             console.log("file is created");
 
-            var allDocs = await db.getDocs("Document", {environment: env.friendlyId});
+            var allDocs = await db.getDocs("Document", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
             var prevDoc = allDocs.find((doc) => JSON.parse(doc.json).identifier == identifier);
 
             var generatedData = {
@@ -574,7 +575,8 @@ router.post("/submit/paper", async (req, res, next) => {
                 environment: env.friendlyId,
                 dataType: "match",
                 json: JSON.stringify(generatedData),
-                datetime: new Date()
+                datetime: new Date(),
+                competition: env.settings.competitionYear + env.settings.competitionCode
             }
 
             var doc = await db.createDoc("Document", document);
@@ -637,7 +639,7 @@ router.post("/submit/data", async (req, res, next) => {
             type: "tablet"
         }
 
-        var allDocs = await db.getDocs("Document", {environment: env.friendlyId});
+        var allDocs = await db.getDocs("Document", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
         var prevDoc = allDocs.find((doc) => JSON.parse(doc.json).identifier == dataPiece.Identifier);
         if(prevDoc != undefined){
             await db.updateDoc("Document", {_id: prevDoc._id}, {json: JSON.stringify(generatedData), datetime: new Date(dataPiece.Created)});
@@ -649,7 +651,8 @@ router.post("/submit/data", async (req, res, next) => {
             environment: env.friendlyId,
             dataType: "match",
             json: JSON.stringify(generatedData),
-            datetime: new Date(dataPiece.Created)
+            datetime: new Date(dataPiece.Created),
+            competition: env.settings.competitionYear + env.settings.competitionCode
         }
 
         var associatedMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: dataPiece.Number});
@@ -735,11 +738,6 @@ router.get("/first/schedule*", async (req, res, next) => {
     var competition = req.query.competition;
     var matchType = req.query.matchType;
 
-    
-    console.log("Match Type: " + matchType)
-    console.log("Year: " + year)
-    console.log("Competition: " + competition)
-
 
     if(matchType != "Qualification" && matchType != "Playoff" && matchType != "Practice" && matchType != "None"){
         matchType = "Qualification";
@@ -783,7 +781,7 @@ router.get("/first/schedule*", async (req, res, next) => {
 
             var match = {
                 environment: env.friendlyId,
-                competition: competition,
+                competition: year + competition,
                 matchNumber: matchNumber,
                 teams: teams,
                 locked: false,
@@ -799,6 +797,47 @@ router.get("/first/schedule*", async (req, res, next) => {
     }
 
     
+});
+
+router.get("/first/results*", async(req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
+
+    var year = req.query.year;
+    var competition = req.query.competition;
+    var phase = req.query.phase;
+    if(matchType != "Qualification" && matchType != "Playoff" && matchType != "Practice" && matchType != "None"){
+        matchType = "Qualification";
+    }
+
+    var doNotPush = req.query.doNotPush == "true";
+
+    var fRes = await firstApiTools.getMatchResults(year, competition, phase);
+
+    var path = process.env.HOME_FOLDER + "/cache/" + "results.json";
+    var sendBackFRes = JSON.stringify(fRes);
+
+    res.status(fRes.error == undefined ? 200 : 500).json({data: sendBackFRes});
+    if(fRes.error == undefined && !doNotPush){
+        fs.writeFile(path, sendBackFRes, (err) => {
+
+        });
+        var matches = fRes["Matches"];
+        matches.forEach(async (match) => {
+            var existingMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: match["matchNumber"], competition: competition});
+            if(existingMatch.length == 0){
+                return;
+            }
+
+            existingMatch = existingMatch[0];
+            existingMatch.results = {
+                red: match.scoreRedFinal,
+                blue: match.scoreBlueFinal
+            }
+
+            await db.updateDoc("Match", {_id: existingMatch._id}, {results: existingMatch.results});
+        });
+    }
+
 });
 
 
