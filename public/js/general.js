@@ -174,7 +174,7 @@ function tryRequestAPI(button, link){
     });
 
     var year = settings["competitionYear"];
-    var code = settings["competitionCode"];
+    var competition = settings["competitionCode"];
     var phase = "Qualification";
 
     get(link + `?competition=${competition}&year=${year}&phase=${phase}`, {}, function(success, data){
