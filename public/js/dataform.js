@@ -205,6 +205,7 @@ function saveSchemaData(){
             return;
         }
         var data = stripIds(sections);
+        document.querySelector("#overlay").style.display = "none";
         post("/api/schema", {}, {name: name, data: data}, function(success, data){
             cached = data;
             showQrCode();
@@ -603,6 +604,17 @@ function reshowItems(sectionId){
                     `;
                 break;
             case "Grid":
+                var rowString = "";
+                i.RowLabels.forEach(o => {
+                    rowString += o + ";";
+                });
+                rowString = rowString.slice(0, -1);
+
+                var colString = "";
+                i.ColumnLabels.forEach(o => {
+                    colString += o + ";";
+                });
+                colString = colString.slice(0, -1);
                 contentElement.innerHTML += `
                     <div class="level2bg container flex_apart" style="margin:5px 0px">
                         
@@ -617,14 +629,14 @@ function reshowItems(sectionId){
                                 <input class="input small" value="${i.Width}" style="display: inline-block;width:160px" type="number" placeholder="1" data-id="${i._id}" onchange="editItem(this, 'Width', '${sectionId}')"/>
 
                                 <span class="text caption" style="margin: 5px 10px;text-align:left">Column Labels</span>
-                                <input class="input small" value="${i.ColumnLabels}" style="display: inline-block;width:160px" type="number" placeholder="1" data-id="${i._id}" onchange="editItem(this, 'ColumnLabels', '${sectionId}')"/>
+                                <input class="input small" value="${colString}" style="display: inline-block;width:160px" type="number" placeholder="1" data-id="${i._id}" onchange="editItem(this, 'ColumnLabels', '${sectionId}')"/>
                             </div>
                             <div style="width:30%;text-align:left;margin:0px 5px">
                                 <span class="text caption" style="margin: 5px 10px;text-align:left">Height</span>
                                 <input class="input small" value="${i.Height}" style="display: inline-block;width:160px" type="text" placeholder="1" data-id="${i._id}" onchange="editItem(this, 'Height', '${sectionId}')"/>
 
                                 <span class="text caption" style="margin: 5px 10px;text-align:left">Row Labels</span>
-                                <input class="input small" value="${i.RowLabels}" style="display: inline-block;width:160px" type="text" placeholder="1" data-id="${i._id}" onchange="editItem(this, 'RowLabels', '${sectionId}')"/>
+                                <input class="input small" value="${rowString}" style="display: inline-block;width:160px" type="text" placeholder="1" data-id="${i._id}" onchange="editItem(this, 'RowLabels', '${sectionId}')"/>
                             </div>
                             <div style="width:30%;text-align:left;margin:0px 5px">
                                 <span class="text caption" style="margin: 5px 10px;text-align:left">Linked Group (optional)</span>
