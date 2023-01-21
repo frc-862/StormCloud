@@ -55,6 +55,8 @@ function stripIds(schema){
     return schema;
 }
 
+currentlySelectedSchema = "";
+
 function generateIds(schema){
     schema.forEach(function(section){
         section._id = Math.random().toString(36).substring(7);
@@ -143,6 +145,7 @@ function loadSchemas(){
 
             overlaySaveFunction = ()=>{
                 if(overlaySaveData["currentSchema"] != undefined){
+                    currentlySelectedSchema = overlaySaveData["schemas"][overlaySaveData["currentSchema"]]["Name"];
                     sections = overlaySaveData["schemas"][overlaySaveData["currentSchema"]]["Parts"];
                     cached = generateIds(sections);
                     document.querySelector("#overlay").style.display = "none";
@@ -187,17 +190,36 @@ function loadSchemaData(){
 }
 
 function saveSchemaData(){
-    var name = prompt("Name of the schema to save as");
-    var data = stripIds(sections);
-    post("/api/schema", {}, {name: name, data: data}, function(success, data){
-        cached = data;
-        showQrCode();
-        if(!success){
-            alert("Error saving schema data");
-        }else{
-            
+
+    document.querySelector("#overlayClose").style.display = "";
+    document.querySelector("#overlayTitle").innerHTML = "Save Schema As";
+    document.querySelector("#overlayContent").innerHTML = `
+    
+    <div class="flex_center">
+        <input class="input small" value="${currentlySelectedSchema}" id="overlay_saveAs" type="text" placeholder="Schema Name" style="width:60%;display:inline-block"/>
+    </div>
+    `;
+    document.querySelector("#overlay").style.display = "";
+
+    overlaySaveFunction = ()=>{
+        var name = document.querySelector("#overlay_saveAs").value;
+        if(name == ""){
+            alert("Please enter a name");
+            return;
         }
-    });
+        var data = stripIds(sections);
+        post("/api/schema", {}, {name: name, data: data}, function(success, data){
+            cached = data;
+            showQrCode();
+            if(!success){
+                alert("Error saving schema data");
+            }else{
+                
+            }
+        });
+    }
+
+    
 }
 
 var cached = [];
