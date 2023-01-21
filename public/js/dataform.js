@@ -606,15 +606,24 @@ function reshowItems(sectionId){
                 break;
             case "Grid":
                 var rowString = "";
-                i.RowLabels.forEach(o => {
-                    rowString += o + ";";
-                });
-                rowString = rowString.slice(0, -1);
+                try{
+                    i.RowLabels.forEach(o => {
+                        rowString += o + ";";
+                    });
+                    rowString = rowString.slice(0, -1);
+                }catch(e){
 
-                var colString = "";
-                i.ColumnLabels.forEach(o => {
-                    colString += o + ";";
-                });
+                }
+                
+                try{
+                    var colString = "";
+                    i.ColumnLabels.forEach(o => {
+                        colString += o + ";";
+                    });
+                }catch(e){
+
+                }
+                
                 colString = colString.slice(0, -1);
                 contentElement.innerHTML += `
                     <div class="level2bg container flex_apart" style="margin:5px 0px">
