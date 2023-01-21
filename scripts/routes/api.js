@@ -385,6 +385,19 @@ router.post("/schema", async (req, res, next) => {
     res.status(200).json({message: "Schema created!"});
 });
 
+router.delete("/schema", async (req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
+
+    var name = req.body.name;
+    var docs = await db.getDocs("Schema", {Name: name});
+    if(docs.length > 0){
+        await db.deleteDoc("Schema", {Name: name});
+        res.status(200).json({message: "Schema deleted!"});
+        return;
+    }
+    res.status(404).json({message: "Schema not found!"});
+})
+
 router.get("/schemas", async (req, res, next) => {
     var env = await authTools.getEnvironment(environment);
 

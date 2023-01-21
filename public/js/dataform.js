@@ -30,6 +30,21 @@ function post(link, headers, data, callback){
     })
 }
 
+function deleteAPI(link, headers, data, callback){
+    $.ajax({
+        url: link,
+        type: "DELETE",
+        headers: headers,
+        data: data,
+        success: function(data){
+            callback(true, data);
+        },
+        error: function(err){
+            callback(false, err);
+        }
+    })
+}
+
 function stripIds(schema){
     schema.forEach(function(section){
         delete section._id;
@@ -110,10 +125,15 @@ function loadSchemas(){
                     date = new Date(schema["Updated"]).toLocaleString();
                 }
                 document.querySelector("#overlay_schemas").innerHTML += `
+                <div class="flex_apart" style="margin:5px">
                     <div class="container level2bg flex_apart clickable overlay_selectSchema" data-id="${index}" style="margin:5px">
                         <span class="text regular">${schema.Name}</span>
                         <span class="text regular">${date}</span>
                     </div>
+                   
+                </div>
+                    
+
                 `;
                 index++;
             });
@@ -189,7 +209,7 @@ function editItem(element, field, sectionId){
     var index = sections.findIndex(s => s._id == sectionId);
     var itemIndex = sections[index].Components.findIndex(i => i._id == _id);
     var value = element.value;
-    if(field == "Options"){
+    if(field == "Options" || field == "ColumnLabels" || field == "RowLabels"){
         var options = value.split(";");
         sections[index].Components[itemIndex][field] = options;
         return;
@@ -255,7 +275,10 @@ function addItem(element, type){
             break;
         case "Grid":
             item.Width = 1;
-            item.Heigh = 1;
+            item.Height = 1;
+            item.ColumnLabels = [];
+            item.RowLabels = [];
+
             break;
         case "Timer":
             item.Max = 0;
@@ -573,14 +596,20 @@ function reshowItems(sectionId){
                             <div style="width:30%;text-align:left">
                                 <span class="text caption" style="margin: 5px 10px;text-align:left">Width</span>
                                 <input class="input small" value="${i.Width}" style="display: inline-block;width:160px" type="number" placeholder="1" data-id="${i._id}" onchange="editItem(this, 'Width', '${sectionId}')"/>
+
+                                <span class="text caption" style="margin: 5px 10px;text-align:left">Column Labels</span>
+                                <input class="input small" value="${i.ColumnLabels}" style="display: inline-block;width:160px" type="number" placeholder="1" data-id="${i._id}" onchange="editItem(this, 'ColumnLabels', '${sectionId}')"/>
                             </div>
                             <div style="width:30%;text-align:left">
                                 <span class="text caption" style="margin: 5px 10px;text-align:left">Height</span>
                                 <input class="input small" value="${i.Height}" style="display: inline-block;width:160px" type="number" placeholder="1" data-id="${i._id}" onchange="editItem(this, 'Height', '${sectionId}')"/>
+
+                                <span class="text caption" style="margin: 5px 10px;text-align:left">Row Labels</span>
+                                <input class="input small" value="${i.RowLabels}" style="display: inline-block;width:160px" type="number" placeholder="1" data-id="${i._id}" onchange="editItem(this, 'RowLabels', '${sectionId}')"/>
                             </div>
                             <div style="width:30%;text-align:left">
                                 <span class="text caption" style="margin: 5px 10px;text-align:left">Linked Group (optional)</span>
-                                <input class="input small" value="${i.Group}" style="display: inline-block;width:160px" type="number" placeholder="BLUEGRID" data-id="${i._id}" onchange="editItem(this, 'Group', '${sectionId}')"/>
+                                <input class="input small" value="${i.Group}" style="display: inline-block;width:160px" type="text" placeholder="BLUEGRID" data-id="${i._id}" onchange="editItem(this, 'Group', '${sectionId}')"/>
                             </div>
                             
                             
