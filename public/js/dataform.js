@@ -253,6 +253,10 @@ function addItem(element, type){
             item.Trigger = "";
             item.Max = 0;
             break;
+        case "Grid":
+            item.Width = 1;
+            item.Heigh = 1;
+            break;
         case "Timer":
             item.Max = 0;
             break;
@@ -347,6 +351,9 @@ function reshowSections(){
                     </div>
                     <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px" data-id="${s._id}" onclick="addItem(this, 'Timer')">
                         <span class="text caption">+ Timer</span>
+                    </div>
+                    <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px" data-id="${s._id}" onclick="addItem(this, 'Grid')">
+                        <span class="text caption">+ Grid</span>
                     </div>
                     <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px" data-id="${s._id}" onclick="addItem(this, 'Label')">
                         <span class="text caption">+ Text Label</span>
@@ -534,6 +541,42 @@ function reshowItems(sectionId){
                             <div style="width:40%;text-align:left">
                                 <span class="text caption" style="margin: 5px 10px;text-align:left">Max Times</span>
                                 <input class="input small" value="${i.Max}" style="display: inline-block;width:120px" type="number" placeholder="0" data-id="${i._id}" onchange="editItem(this, 'Max', '${sectionId}')"/>
+                            </div>
+                            
+                            
+                        </div>
+    
+                        <div class="flex_apart" style="width:10%;justify-content:right">
+                            <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="moveItem(this, -1, '${sectionId}')">
+                                <span class="text regular material-symbols-rounded">arrow_upward</span>
+                            </div>
+                            <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="moveItem(this, 1, '${sectionId}')">
+                                <span class="text regular material-symbols-rounded">arrow_downward</span>
+                            </div>
+                            <div class="container redbg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="deleteItem(this, '${sectionId}')">
+                                <span class="text regular material-symbols-rounded">close</span>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                break;
+            case "Grid":
+                contentElement.innerHTML += `
+                    <div class="level2bg container flex_apart" style="margin:5px 0px">
+                        
+                        <div style="width:20%">
+                            <span class="text caption" style="margin: 5px 10px;text-align:left">Grid Label</span>
+                            <input class="input small" value="${i.Name}" type="text" placeholder="Areas Placed" data-id="${i._id}" onchange="editItem(this, 'Name', '${sectionId}')"/>
+                        </div>
+
+                        <div style="width:40%" class="flex_apart">
+                            <div style="width:50%;text-align:left">
+                                <span class="text caption" style="margin: 5px 10px;text-align:left">Width</span>
+                                <input class="input small" value="${i.Off}" style="display: inline-block;width:160px" type="number" placeholder="1" data-id="${i._id}" onchange="editItem(this, 'Width', '${sectionId}')"/>
+                            </div>
+                            <div style="width:50%;text-align:left">
+                                <span class="text caption" style="margin: 5px 10px;text-align:left">Height</span>
+                                <input class="input small" value="${i.On}" style="display: inline-block;width:160px" type="number" placeholder="1" data-id="${i._id}" onchange="editItem(this, 'Height', '${sectionId}')"/>
                             </div>
                             
                             
