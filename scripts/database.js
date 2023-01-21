@@ -31,7 +31,8 @@ const models = {
             selectedSchema: String,
             currentSync: String,
             competitionCode: String,
-            competitionYear: Number
+            competitionYear: Number,
+            minBuild: Number
         },
         master: {
             hash: String,
