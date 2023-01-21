@@ -570,13 +570,17 @@ function reshowItems(sectionId){
                         </div>
 
                         <div style="width:40%" class="flex_apart">
-                            <div style="width:50%;text-align:left">
+                            <div style="width:30%;text-align:left">
                                 <span class="text caption" style="margin: 5px 10px;text-align:left">Width</span>
-                                <input class="input small" value="${i.Off}" style="display: inline-block;width:160px" type="number" placeholder="1" data-id="${i._id}" onchange="editItem(this, 'Width', '${sectionId}')"/>
+                                <input class="input small" value="${i.Width}" style="display: inline-block;width:160px" type="number" placeholder="1" data-id="${i._id}" onchange="editItem(this, 'Width', '${sectionId}')"/>
                             </div>
-                            <div style="width:50%;text-align:left">
+                            <div style="width:30%;text-align:left">
                                 <span class="text caption" style="margin: 5px 10px;text-align:left">Height</span>
-                                <input class="input small" value="${i.On}" style="display: inline-block;width:160px" type="number" placeholder="1" data-id="${i._id}" onchange="editItem(this, 'Height', '${sectionId}')"/>
+                                <input class="input small" value="${i.Height}" style="display: inline-block;width:160px" type="number" placeholder="1" data-id="${i._id}" onchange="editItem(this, 'Height', '${sectionId}')"/>
+                            </div>
+                            <div style="width:30%;text-align:left">
+                                <span class="text caption" style="margin: 5px 10px;text-align:left">Linked Group (optional)</span>
+                                <input class="input small" value="${i.Group}" style="display: inline-block;width:160px" type="number" placeholder="BLUEGRID" data-id="${i._id}" onchange="editItem(this, 'Group', '${sectionId}')"/>
                             </div>
                             
                             
