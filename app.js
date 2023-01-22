@@ -18,6 +18,9 @@ var environment = "test";
 app.use(express.static(__dirname + '/public'));
 
 app.use(express.static(__dirname + '/images'));
+app.use(bodyParser.json({limit: '4gb', extended: true}));
+app.use(express.json({limit: '4gb'}));
+app.use(express.urlencoded({limit: '4gb'}));
 app.use(parser.json({limit: '4gb'}));
 app.use(bodyParser.urlencoded({ extended: true, limit: '4gb' }));
 app.use(cookieParser());
