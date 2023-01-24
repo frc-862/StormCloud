@@ -229,7 +229,7 @@ function editItem(element, field, sectionId){
     var index = sections.findIndex(s => s._id == sectionId);
     var itemIndex = sections[index].Components.findIndex(i => i._id == _id);
     var value = element.value;
-    if(field == "Options" || field == "ColumnLabels" || field == "RowLabels"){
+    if(field == "Options" || field == "ColumnLabels" || field == "RowLabels" || field == "ColumnColors"){
         var options = value.split(";");
         sections[index].Components[itemIndex][field] = options;
         return;
@@ -278,19 +278,24 @@ function addItem(element, type){
             item.Max = 0;
             item.Min = 0;
             item.Default = 0;
+            item.Color = "default";
             break;
         case "Label":
             item.Contents = "";
+
             break;
         case "Check":
             item.On = "";
             item.Off = "";
+            item.Color = "default";
             break;
         case "Select":
             item.Options = [];
+            item.Color = "default";
             break;
         case "Event":
             item.Trigger = "";
+            item.Color = "default";
             item.Max = 0;
             break;
         case "Grid":
@@ -299,10 +304,12 @@ function addItem(element, type){
             item.ColumnLabels = [];
             item.RowLabels = [];
             item.Group = "";
+            item.ColumnColors = [];
 
             break;
         case "Timer":
             item.Max = 0;
+            item.Color = "default";
             break;
     }
 
@@ -433,18 +440,20 @@ function reshowItems(sectionId){
                         <input class="input small" type="text" value="${i.Name}" placeholder="Points" data-id="${i._id}" onchange="editItem(this, 'Name', '${sectionId}')"/>
                     </div>
 
-                    <div style="width:40%" class="flex_apart">
+                    <div style="width:50%" class="flex_apart">
                         <div style="width:30%;text-align:left">
                             <span class="text caption" style="margin: 5px 10px;text-align:left">Min</span>
                             <input class="input small" value="${i.Min}" style="display: inline-block;width:80px;text-align:center" type="number" placeholder="0" data-id="${i._id}" onchange="editItem(this, 'Min', '${sectionId}')"/>
+                            <span class="text caption" style="margin: 5px 10px;text-align:left">Max</span>
+                            <input class="input small" value="${i.Max}" style="display: inline-block;width:80px;text-align:center" type="number" placeholder="0" data-id="${i._id}" onchange="editItem(this, 'Max', '${sectionId}')"/>
                         </div>
                         <div style="width:30%;text-align:left">
                             <span class="text caption" style="margin: 5px 10px;text-align:left">Default</span>
                             <input class="input small" value="${i.Default}" style="display: inline-block;width:80px;text-align:center" type="number" placeholder="0" data-id="${i._id}" onchange="editItem(this, 'Default', '${sectionId}')"/>
                         </div>
                         <div style="width:30%;text-align:left">
-                            <span class="text caption" style="margin: 5px 10px;text-align:left">Max</span>
-                            <input class="input small" value="${i.Max}" style="display: inline-block;width:80px;text-align:center" type="number" placeholder="0" data-id="${i._id}" onchange="editItem(this, 'Max', '${sectionId}')"/>
+                            <span class="text caption" style="margin: 5px 10px;text-align:left">Color</span>
+                            <input class="input small" value="${i.Color}" style="display: inline-block;width:120px;text-align:center" type="text" placeholder="red" data-id="${i._id}" onchange="editItem(this, 'Color', '${sectionId}')"/>
                         </div>
                         
                     </div>
@@ -504,14 +513,18 @@ function reshowItems(sectionId){
                             <input class="input small" value="${i.Name}" type="text" placeholder="Jumped?" data-id="${i._id}" onchange="editItem(this, 'Name', '${sectionId}')"/>
                         </div>
 
-                        <div style="width:40%" class="flex_apart">
-                            <div style="width:50%;text-align:left">
+                        <div style="width:50%" class="flex_apart">
+                            <div style="width:30%;text-align:left">
                                 <span class="text caption" style="margin: 5px 10px;text-align:left">Value for OFF</span>
                                 <input class="input small" value="${i.Off}" style="display: inline-block;width:160px" type="text" placeholder="No" data-id="${i._id}" onchange="editItem(this, 'Off', '${sectionId}')"/>
                             </div>
-                            <div style="width:50%;text-align:left">
+                            <div style="width:30%;text-align:left">
                                 <span class="text caption" style="margin: 5px 10px;text-align:left">Value for ON</span>
                                 <input class="input small" value="${i.On}" style="display: inline-block;width:160px" type="text" placeholder="Yes" data-id="${i._id}" onchange="editItem(this, 'On', '${sectionId}')"/>
+                            </div>
+                            <div style="width:30%;text-align:left">
+                                <span class="text caption" style="margin: 5px 10px;text-align:left">Color</span>
+                                <input class="input small" value="${i.Color}" style="display: inline-block;width:120px;text-align:center" type="text" placeholder="red" data-id="${i._id}" onchange="editItem(this, 'Color', '${sectionId}')"/>
                             </div>
                             
                             
@@ -545,10 +558,14 @@ function reshowItems(sectionId){
                             <input class="input small" value="${i.Name}" type="text" placeholder="Level Achieved" data-id="${i._id}" onchange="editItem(this, 'Name', '${sectionId}')"/>
                         </div>
 
-                        <div style="width:40%" class="flex_apart">
-                            <div style="width:100%;text-align:left">
+                        <div style="width:50%" class="flex_apart">
+                            <div style="width:50%;text-align:left">
                                 <span class="text caption" style="margin: 5px 10px;text-align:left">Options (separate by ";")</span>
                                 <input class="input small" value="${optionsString}" style="display: inline-block;width:400px" type="text" placeholder="Yes;No" data-id="${i._id}" onchange="editItem(this, 'Options', '${sectionId}')"/>
+                            </div>
+                            <div style="width:50%;text-align:left">
+                                <span class="text caption" style="margin: 5px 10px;text-align:left">Color</span>
+                                <input class="input small" value="${i.Color}" style="display: inline-block;width:120px;text-align:center" type="text" placeholder="red" data-id="${i._id}" onchange="editItem(this, 'Color', '${sectionId}')"/>
                             </div>
                             
                             
@@ -577,14 +594,18 @@ function reshowItems(sectionId){
                             <input class="input small" value="${i.Name}" type="text" placeholder="Exploded" type="text" placeholder="BOOM!" data-id="${i._id}" onchange="editItem(this, 'Name', '${sectionId}')"/>
                         </div>
 
-                        <div style="width:40%" class="flex_apart">
-                            <div style="width:60%;text-align:left">
+                        <div style="width:50%" class="flex_apart">
+                            <div style="width:35%;text-align:left">
                                 <span class="text caption" style="margin: 5px 10px;text-align:left">Event Button Text</span>
                                 <input class="input small" value="${i.Trigger}" style="display: inline-block;width:200px" type="text" placeholder="BOOM!" data-id="${i._id}" onchange="editItem(this, 'Trigger', '${sectionId}')"/>
                             </div>
-                            <div style="width:40%;text-align:left">
+                            <div style="width:30%;text-align:left">
                                 <span class="text caption" style="margin: 5px 10px;text-align:left">Max Times</span>
                                 <input class="input small" value="${i.Max}" style="display: inline-block;width:120px" type="number" placeholder="0" data-id="${i._id}" onchange="editItem(this, 'Max', '${sectionId}')"/>
+                            </div>
+                            <div style="width:30%;text-align:left">
+                                <span class="text caption" style="margin: 5px 10px;text-align:left">Color</span>
+                                <input class="input small" value="${i.Color}" style="display: inline-block;width:120px;text-align:center" type="text" placeholder="red" data-id="${i._id}" onchange="editItem(this, 'Color', '${sectionId}')"/>
                             </div>
                             
                             
@@ -615,16 +636,29 @@ function reshowItems(sectionId){
 
                 }
                 
+                var colString = "";
                 try{
-                    var colString = "";
+                    
                     i.ColumnLabels.forEach(o => {
                         colString += o + ";";
                     });
+                    colString = colString.slice(0, -1);
+                }catch(e){
+
+                }
+
+                var colorString = "";
+                try{
+                    
+                    i.ColumnColors.forEach(o => {
+                        colorString += o + ";";
+                    });
+                    colorString = colorString.slice(0, -1);
                 }catch(e){
 
                 }
                 
-                colString = colString.slice(0, -1);
+                
                 contentElement.innerHTML += `
                     <div class="level2bg container flex_apart" style="margin:5px 0px">
                         
@@ -651,6 +685,9 @@ function reshowItems(sectionId){
                             <div style="width:30%;text-align:left;margin:0px 5px">
                                 <span class="text caption" style="margin: 5px 10px;text-align:left">Linked Group (optional)</span>
                                 <input class="input small" value="${i.Group}" style="display: inline-block;width:160px" type="text" placeholder="BLUEGRID" data-id="${i._id}" onchange="editItem(this, 'Group', '${sectionId}')"/>
+
+                                <span class="text caption" style="margin: 5px 10px;text-align:left">Column Colors</span>
+                                <input class="input small" value="${colorString}" style="display: inline-block;width:160px" type="text" placeholder="red;blue;red" data-id="${i._id}" onchange="editItem(this, 'ColumnColors', '${sectionId}')"/>
                             </div>
                             
                             
@@ -680,9 +717,13 @@ function reshowItems(sectionId){
                         </div>
 
                         <div style="width:40%" class="flex_apart">
-                            <div style="width:100%;text-align:left">
+                            <div style="width:50%;text-align:left">
                                 <span class="text caption" style="margin: 5px 10px;text-align:left">Max Seconds (0 for infinite)</span>
                                 <input class="input small" value="${i.Max}" style="display: inline-block;width:120px" type="number" placeholder="0" data-id="${i._id}" onchange="editItem(this, 'Max', '${sectionId}')"/>
+                            </div>
+                            <div style="width:50%;text-align:left">
+                                <span class="text caption" style="margin: 5px 10px;text-align:left">Color</span>
+                                <input class="input small" value="${i.Color}" style="display: inline-block;width:120px;text-align:center" type="text" placeholder="red" data-id="${i._id}" onchange="editItem(this, 'Color', '${sectionId}')"/>
                             </div>
                             
                             
