@@ -501,7 +501,7 @@ function handle_filter_documents(docs){
                 `
         }
     });
-    document.querySelector('#filter_view_document').innerHTML = fHTML;
+    document.querySelector('#filter_view_documents').innerHTML = fHTML;
 
 }
 
