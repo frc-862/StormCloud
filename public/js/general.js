@@ -1610,6 +1610,7 @@ document.querySelector("#match_createMatch").addEventListener("click", function(
                     document.querySelector('#match_view_container').style.display = "none";
                     persistantData["matches"] = ms;
                     persistantData["allDocuments"] = allDocs;
+                    handle_filter_documents(allDocs);
                     handle_matches(ms);
                 });
             })
@@ -1642,7 +1643,7 @@ var onScreenEvents = {
             document.querySelector('#match_view_container').style.display = "none";
             persistantData["matches"] = ms;
             persistantData["allDocuments"] = allDocs;
-            
+            handle_filter_documents(allDocs);
             handle_matches(ms);
 
 
