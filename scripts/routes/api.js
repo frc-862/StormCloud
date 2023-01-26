@@ -863,7 +863,7 @@ router.get("/first/results*", async(req, res, next) => {
             existingMatch.results["finished"] = true;
 
             var redAlliance = match["alliances"].find(a => a.alliance == "Red");
-            existingMatch.results["red"] = match["totalPoints"];
+            existingMatch.results["red"] = redAlliance["totalPoints"];
             existingMatch.results["redStats"] = {};
             // get each red scoring metric
             Object.keys(redAlliance).forEach((key) => {
@@ -879,7 +879,7 @@ router.get("/first/results*", async(req, res, next) => {
             });
 
             var blueAlliance = match["alliances"].find(a => a.alliance == "Blue");
-            existingMatch.results["blue"] = match["totalPoints"];
+            existingMatch.results["blue"] = blueAlliance["totalPoints"];
             existingMatch.results["blueStats"] = {};
             // get each blue scoring metric
             Object.keys(blueAlliance).forEach((key) => {
