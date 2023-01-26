@@ -23,7 +23,6 @@ const models = {
     'Environment' : mongoose.model('Environment', new mongoose.Schema({
         name: String,
         friendlyId: String,
-        team: Number,
         compIds: [String],
         settings: {
             teamsPerColor: Number,
@@ -32,7 +31,8 @@ const models = {
             currentSync: String,
             competitionCode: String,
             competitionYear: Number,
-            minBuild: Number
+            minBuild: Number,
+            team: Number
         },
         master: {
             hash: String,
@@ -48,7 +48,17 @@ const models = {
             generatedId: String,
             latestRole: String,
             latestAccess: String
-        }]
+        }],
+        cachedCompetitionData: {
+            ranking: Number,
+            rankingPoints: Number,
+            record: {
+                wins: Number,
+                losses: Number,
+                ties: Number
+            },
+            currentMatch: Number
+        }
     })),
     'Match' : mongoose.model('Match', new mongoose.Schema({
         environment: String,
@@ -64,7 +74,9 @@ const models = {
         results:{
             finished: Boolean,
             red: Number,
-            blue: Number
+            redStats: Object,
+            blue: Number,
+            blueStats: Object,
         }
     })),
     'Team' : mongoose.model('Team', new mongoose.Schema({

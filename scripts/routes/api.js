@@ -823,6 +823,10 @@ router.get("/first/schedule*", async (req, res, next) => {
     
 });
 
+router.get("/first/updateCache", async (req, res, next) => {
+
+});
+
 router.get("/first/results*", async(req, res, next) => {
     var env = await authTools.getEnvironment(environment);
 
@@ -854,9 +858,41 @@ router.get("/first/results*", async(req, res, next) => {
             }
 
             existingMatch = existingMatch[0];
+
+
             existingMatch.results["finished"] = true;
-            existingMatch.results["red"] = match["scoreRedFinal"];
-            existingMatch.results["blue"] = match["scoreBlueFinal"];
+
+            var redAlliance = match["alliances"].find(a => a.alliance == "Red");
+            existingMatch.results["red"] = match["totalPoints"];
+            existingMatch.results["redStats"] = {};
+            // get each red scoring metric
+            Object.keys(redAlliance).forEach((key) => {
+                if(key.includes("Points") || key == "alliance")
+                    return;
+
+                // turn camel case into normal words string
+                var words = key.replace(/([A-Z])/g, ' $1').trim();
+                
+
+                existingMatch.results["redStats"][words] = redAlliance[key];
+                
+            });
+
+            var blueAlliance = match["alliances"].find(a => a.alliance == "Blue");
+            existingMatch.results["blue"] = match["totalPoints"];
+            existingMatch.results["blueStats"] = {};
+            // get each blue scoring metric
+            Object.keys(blueAlliance).forEach((key) => {
+                if(key.includes("Points") || key == "alliance")
+                    return;
+
+                // turn camel case into normal words string
+                var words = key.replace(/([A-Z])/g, ' $1').trim();
+                
+
+                existingMatch.results["blueStats"][words] = blueAlliance[key];
+                
+            });
             
             await db.updateDoc("Match", {_id: existingMatch._id}, {results: existingMatch.results});
         });

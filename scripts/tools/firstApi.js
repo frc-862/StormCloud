@@ -53,7 +53,7 @@ async function getTeams(year, competition){
 
 async function getMatchResults(year, competition, phase){
     try{
-        var res = await axios.get(getBaseApiUrl() +  `/${year}/matches/${competition}?tournamentLevel=${phase}`, {headers: {"Authorization":getAuthToken()}});
+        var res = await axios.get(getBaseApiUrl() +  `/${year}/scores/${competition}/${phase}`, {headers: {"Authorization":getAuthToken()}});
     }catch(e){
         return {error:e};
     }
