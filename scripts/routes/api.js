@@ -850,7 +850,7 @@ router.get("/first/results*", async(req, res, next) => {
         fs.writeFile(path, sendBackFRes, (err) => {
 
         });
-        var matches = fRes["Matches"];
+        var matches = fRes["MatchScores"];
         matches.forEach(async (match) => {
             var existingMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: match["matchNumber"], competition: year+competition});
             if(existingMatch.length == 0){
