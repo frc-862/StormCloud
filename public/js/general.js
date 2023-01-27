@@ -1189,7 +1189,7 @@ function handle_match_click(m){
     }else{
         document.querySelector('#match_view_score').style.display = "";
         document.querySelector('#match_view_score').innerHTML = `${match["results"]["red"] == match["results"]["blue"] ? `Tie (${match["results"]["red"]}-${match["results"]["blue"]})` : (match["results"]["red"] > match["results"]["blue"] ? `Red (${match["results"]["red"]}-${match["results"]["blue"]})` : `Blue (${match["results"]["blue"]}-${match["results"]["red"]})`)}`;
-        document.querySelector('#match_view_score').classList = `${match["results"]["red"] == match["results"]["blue"] ? "highlightedtext caption whitebg textslim" : (match["results"]["red"] > match["results"]["blue"] ? "highlightedtext caption redbg textslim" : "highlightedtext caption bluebg textslim")}`;
+        document.querySelector('#match_view_score').classList = `${match["results"]["red"] == match["results"]["blue"] ? "highlightedtext caption whitebg textslim clickable" : (match["results"]["red"] > match["results"]["blue"] ? "highlightedtext caption redbg textslim clickable" : "highlightedtext caption bluebg textslim clickable")}`;
 
     }
 
@@ -1325,7 +1325,129 @@ function handle_match_click(m){
     
 }
 
+document.querySelector('#match_view_score').addEventListener('click', function(){
+    // show match stats
+    document.querySelector("#overlayDone").style.display = "none";
+    document.querySelector("#overlayTitle").innerHTML = "Match " + currentMatch.matchNumber + " Stats";
+    var fHTML = "";
+    // get keys thru red alliance and then go to blue alliance
+    var keys = Object.keys(currentMatch["results"]["redStats"]);
 
+    for(var i = 0; i < keys.length; i++){
+        var k = keys[i];
+        var blueRes = currentMatch["results"]["blueStats"][k];
+        var redRes = currentMatch["results"]["redStats"][k];
+
+        if(k == "rp"){
+
+            var rpRHTML = "";
+            var rpBHTML = "";
+
+            for (var rp = 0; rp < redRes; rp++) {
+                rpRHTML += `<div style="background-color:white;border-radius:4px;transform:rotate(45deg);width:16px;height:16px;margin:2px 4px"></div>`;
+            }
+            if(redRes == 0){
+                rpRHTML += `<span class="text small" style="opacity:0.5">None</span>`;
+            }
+            for(var rp = 0; rp < blueRes; rp++){
+                rpBHTML += `<div style="background-color:white;border-radius:4px;transform:rotate(45deg);width:16px;height:16px;margin:2px 4px"></div>`;
+            }
+            if(blueRes == 0){
+                rpBHTML += `<span class="text small" style="opacity:0.5">None</span>`;
+            }
+
+            fHTML += `
+                <div class="flex_apart">
+                    <span class="text regular" style="width:50%">${k}</span>
+                    <div class="flex_apart" style="width:45%">
+                        <div class="redbg flex_center" style="padding:10px;width:140px;">
+                            ${rpRHTML}
+                        </div>
+                        <div class="bluebg flex_center" style="padding:10px;width:140px;">
+                            ${rpBHTML}
+                        </div>
+                        
+                        
+                    </div>
+                </div>
+                `;
+
+
+
+            continue;
+        }
+
+        switch(typeof redRes){
+            case "number":
+                fHTML += `
+                <div class="flex_apart">
+                    <span class="text regular" style="width:50%">${k}</span>
+                    <div class="flex_apart" style="width:45%">
+                        <div class="redbg flex_center" style="padding:10px;width:140px;">
+                            <span class="text small">${redRes}</span>
+                        </div>
+                        <div class="bluebg flex_center" style="padding:10px;width:140px;">
+                            <span class="text small">${redRes}</span>
+                        </div>
+                        
+                        
+                    </div>
+                </div>
+                
+                `;
+                break;
+            case "string":
+                fHTML += `
+                <div class="flex_apart">
+                    <span class="text regular" style="width:50%">${k}</span>
+                    <div class="flex_apart" style="width:45%">
+                        <div class="redbg flex_center" style="padding:10px;width:140px;">
+                            <span class="text small">${redRes}</span>
+                        </div>
+                        <div class="bluebg flex_center" style="padding:10px;width:140px;">
+                            <span class="text small">${redRes}</span>
+                        </div>
+                        
+                        
+                    </div>
+                </div>
+                
+                `;
+                break;
+            case "boolean":
+                fHTML += `
+                <div class="flex_apart">
+                    <span class="text regular" style="width:50%">${k}</span>
+                    <div class="flex_apart" style="width:45%">
+                        <div class="redbg flex_center" style="padding:10px;width:140px;">
+                            <span class="text regular material-symbols-rounded">${redRes?"check":"close"}</span>
+                        </div>
+                        <div class="bluebg flex_center" style="padding:10px;width:140px;">
+                            <span class="text regular material-symbols-rounded">${blueRes?"check":"close"}</span>
+                        </div>
+                        
+                        
+                    </div>
+                </div>
+                
+                `;
+                break;
+
+        }
+        
+
+    }
+
+    document.querySelector("#overlayContent").innerHTML = `
+    
+    <div style="max-height:60vh;overflow-y:scroll">
+        ${fHTML}
+    </div>
+
+    `;
+    document.querySelector("#overlay").style.display = "";
+
+});
 
 
 function handle_team_click(t){
