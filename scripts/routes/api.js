@@ -79,6 +79,86 @@ router.get('/matches*', async function(req, res, next) {
     res.json({matches: sendBackMatches, allDocuments: allDocuments});
 });
 
+router.get("/request/match*", async (req, res, next) => {
+    let env = await authTools.getEnvironment(environment);
+
+    var matchNumber = req.query.matchNumber;
+    var competition = env.settings.competitionYear + env.settings.competitionCode;
+
+    var matches = await db.getDocs("Match", {environment: env.friendlyId, competition: competition, matchNumber: matchNumber});
+    if(matches.length == 0){
+        res.status(404).json({message: "Match not found!"});
+        return;
+    }
+    var match = matches[0];
+
+    var sendBackMatch = {
+        environment: match.environment,
+        competition: match.competition,
+        matchNumber: match.matchNumber,
+        teams: match.teams,
+        locked: match.locked,
+        results: match.results,
+        documents: [],
+        _id: match._id
+    }
+
+    var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match", competition: competition});
+    documents.forEach(doc => {
+        if(match.documents.includes(doc._id.toString())){
+            sendBackMatch.documents.push(doc);
+        }
+    });
+
+    res.json({match: sendBackMatch});
+
+})
+
+router.get("/request/team*", async(req, res, next) => {
+    let env = await authTools.getEnvironment(environment);
+
+    var teamNumber = req.query.teamNumber;
+    var competition = env.settings.competitionYear + env.settings.competitionCode;
+
+    var teams = await db.getDocs("Team", {environment: env.friendlyId, teamNumber: teamNumber});
+
+    var documents = [];
+    var teamDocs = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match", competition: competition});
+
+    teamDocs.forEach(doc => {
+        var data = JSON.parse(doc["json"]);
+        if(data["team"] == teamNumber){
+            documents.push(doc);
+        }
+    });
+
+    if(teams.length == 0){
+
+        var sendBackTeam = {
+            environment: env.friendlyId,
+            name: "Unknown Team",
+            teamNumber: teamNumber,
+            documents: documents
+        }
+
+        res.json({team: sendBackTeam});
+    }else{
+        var team = teams[0];
+
+        var sendBackTeam = {
+            environment: team.environment,
+            name: team.name,
+            teamNumber: team.teamNumber,
+            documents: documents
+
+        };
+
+        res.json({team: sendBackTeam});
+
+
+    }
+})
+
 /**
  * @api {post} /api/match/document Add a document to a match
  * @apiName POST Match Document
