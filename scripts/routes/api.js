@@ -133,7 +133,11 @@ router.get("/request/team*", async(req, res, next) => {
     });
 
     if(teams.length == 0){
-
+        if(documents.length == 0){
+            // there is no team
+            res.status(404).json({message: "Team not found!"});
+            return;
+        }
         var sendBackTeam = {
             environment: env.friendlyId,
             name: "Unknown Team",
