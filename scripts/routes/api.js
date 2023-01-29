@@ -147,15 +147,47 @@ router.get("/request/team*", async(req, res, next) => {
             name: "Unknown Team",
             teamNumber: teamNumber,
             documents: documents,
-            matches: []
+            matches: [],
+            record: {
+                wins: 0,
+                losses: 0,
+                ties: 0
+            }
         }
 
         matches.forEach(match => {
             if(match.teams.find(t => t.team == teamNumber) != undefined){
-                sendBackTeam.matches.push({
-                    matchNumber: match.matchNumber,
-                    color: match.teams.find(t => t.team == teamNumber).color
-                });
+                var color = match.teams.find(t => t.team == teamNumber).color;
+                if(match.results != null && match.results.finished){
+                    // add to record
+                    if(match.results[color.toLowerCase()] > match.results[color.toLowerCase() == "red" ? "blue" : "red"]){
+                        // winner
+                        sendBackTeam.record.wins++;
+                    }else if(match.results[color.toLowerCase()] < match.results[color.toLowerCase() == "red" ? "blue" : "red"]){
+                        // loser
+                        sendBackTeam.record.losses++;
+                    }
+                    else{
+                        // tie
+                        sendBackTeam.record.ties++;
+                    }
+
+                    sendBackTeam.matches.push({
+                        matchNumber: match.matchNumber,
+                        color: color,
+                        score: {
+                            red: match.results.red,
+                            blue: match.results.blue
+                        }
+                    });
+                }else{
+                    sendBackTeam.matches.push({
+                        matchNumber: match.matchNumber,
+                        color: color
+                    });
+                }
+
+                
             }
         });
 
