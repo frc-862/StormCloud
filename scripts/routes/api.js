@@ -121,6 +121,9 @@ router.get("/request/team*", async(req, res, next) => {
     var competition = env.settings.competitionYear + env.settings.competitionCode;
 
     var teams = await db.getDocs("Team", {environment: env.friendlyId, teamNumber: teamNumber});
+    
+
+
 
     var documents = [];
     var teamDocs = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match", competition: competition});
@@ -138,12 +141,23 @@ router.get("/request/team*", async(req, res, next) => {
             res.status(404).json({message: "Team not found!"});
             return;
         }
+        var matches = await db.getDocs("Match", {environment: env.friendlyId, competition: competition});
         var sendBackTeam = {
             environment: env.friendlyId,
             name: "Unknown Team",
             teamNumber: teamNumber,
-            documents: documents
+            documents: documents,
+            matches: []
         }
+
+        matches.forEach(match => {
+            if(match.teams.find(t => t.team == teamNumber) != undefined){
+                sendBackTeam.matches.push({
+                    matchNumber: match.matchNumber,
+                    color: match.teams.find(t => t.team == teamNumber).color
+                });
+            }
+        });
 
         res.json({team: sendBackTeam});
     }else{
