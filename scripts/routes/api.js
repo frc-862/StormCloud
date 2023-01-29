@@ -178,12 +178,14 @@ router.get("/request/team*", async(req, res, next) => {
                         score: {
                             red: match.results.red,
                             blue: match.results.blue
-                        }
+                        },
+                        finished: true
                     });
                 }else{
                     sendBackTeam.matches.push({
                         matchNumber: match.matchNumber,
-                        color: color
+                        color: color,
+                        finished: false
                     });
                 }
 
@@ -194,14 +196,58 @@ router.get("/request/team*", async(req, res, next) => {
         res.json({team: sendBackTeam});
     }else{
         var team = teams[0];
-
+        var matches = await db.getDocs("Match", {environment: env.friendlyId, competition: competition});
         var sendBackTeam = {
             environment: team.environment,
             name: team.name,
             teamNumber: team.teamNumber,
-            documents: documents
+            documents: documents,
+            matches: [],
+            record: {
+                wins: 0,
+                losses: 0,
+                ties: 0
+            }
 
         };
+
+        matches.forEach(match => {
+            if(match.teams.find(t => t.team == teamNumber) != undefined){
+                var color = match.teams.find(t => t.team == teamNumber).color;
+                if(match.results != null && match.results.finished){
+                    // add to record
+                    if(match.results[color.toLowerCase()] > match.results[color.toLowerCase() == "red" ? "blue" : "red"]){
+                        // winner
+                        sendBackTeam.record.wins++;
+                    }else if(match.results[color.toLowerCase()] < match.results[color.toLowerCase() == "red" ? "blue" : "red"]){
+                        // loser
+                        sendBackTeam.record.losses++;
+                    }
+                    else{
+                        // tie
+                        sendBackTeam.record.ties++;
+                    }
+
+                    sendBackTeam.matches.push({
+                        matchNumber: match.matchNumber,
+                        color: color,
+                        score: {
+                            red: match.results.red,
+                            blue: match.results.blue
+                        },
+                        finished: true
+                    });
+                }else{
+                    sendBackTeam.matches.push({
+                        matchNumber: match.matchNumber,
+                        color: color,
+                        finished: false
+                    });
+                }
+
+                
+            }
+        });
 
         res.json({team: sendBackTeam});
 
