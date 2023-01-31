@@ -629,6 +629,7 @@ function handle_document_click(id){
             var teamNumber = data["team"];
             var matches = data["matches"] | [];
             document.querySelector("#overlayContent").innerHTML = `
+            <input type="number" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${data["name"] == undefined ? "" : data["name"]}">
             <div class="flex_center">
                 <img src="${data["path"]}.png" style="max-height:40vh;border-radius:8px"/>
             </div>
@@ -639,6 +640,17 @@ function handle_document_click(id){
                 </div>
             
             `;
+            overlaySaveFunction = () => {
+                var name = document.querySelector("#overlayContent_Name").value;
+                put("/api/document", {}, {name: name}, (success, data) => {
+                    if(activeItem["number"] == undefined){
+                        handle_match_click(currentMatch["_id"]);
+                    }else{
+                        handle_team_click(currentTeam["number"]);
+                    }
+                });
+                document.querySelector("#overlay").style.display = "none";
+            }
             document.querySelector("#overlayContent_deleteDocument").addEventListener("click", function(e){
                 if(!overlaySaveData["deleteConfirm"]){
                     overlaySaveData["deleteTime"] = new Date();
@@ -697,6 +709,7 @@ function handle_document_click(id){
                 var teamNumber = data["team"]
                 var matches = data["matches"] | [];
                 document.querySelector("#overlayContent").innerHTML = `
+                <input type="number" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${data["name"] == undefined ? "" : data["name"]}">
                 <div class="flex_center">
                     <img src="${data["path"]}.png" style="max-height:40vh;border-radius:8px"/>
                 </div>
@@ -707,6 +720,19 @@ function handle_document_click(id){
                     </div>
                 
                 `;
+
+                overlaySaveFunction = () => {
+                    var name = document.querySelector("#overlayContent_Name").value;
+                    put("/api/document", {}, {name: name}, (success, data) => {
+                        if(activeItem["number"] == undefined){
+                            handle_match_click(currentMatch["_id"]);
+                        }else{
+                            handle_team_click(currentTeam["number"]);
+                        }
+                    });
+                    document.querySelector("#overlay").style.display = "none";
+                }
+
                 document.querySelector("#overlayContent_deleteDocument").addEventListener("click", function(e){
                     if(!overlaySaveData["deleteConfirm"]){
                         overlaySaveData["deleteTime"] = new Date();
@@ -766,6 +792,7 @@ function handle_document_click(id){
             try{
                 if(schema == undefined){
                     document.querySelector("#overlayContent").innerHTML = `
+                    <input type="number" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${data["name"] == undefined ? "" : data["name"]}">
                     <span class="textslim"><i>Sorry, we couldn't find a schema...</i></span>
                     <div class="flex_center" style="margin:10px">
                         <div class="container level2bg clickable" id="overlayContent_deleteDocument" style="padding:10px">
@@ -861,6 +888,36 @@ function handle_document_click(id){
                                         </div>
                                         `;
                                         break;
+                                    case "Grid":
+
+                                        var rows = formData[n].split("*");
+                                        var gridHTML = "";
+                                        rows.forEach(r => {
+                                            var cols = r.split(",");
+                                            var rowHTML = "";
+                                            cols.forEach(c => {
+                                                rowHTML += `
+                                                
+                                                <div class="container ${parseInt(c) == n ? "primarybg" : "level2bg"}" style="margin:2px;width:12px;height:12px;border-radius:4px">
+
+                                                </div>
+                                                
+                                                `
+                                            });
+                                            gridHTML += `
+                                                <div class="flex_center">
+                                                    ${rowHTML}
+                                                </div>
+                                            `;
+                                        });
+
+                                        f += `
+                                        <div class="flex_apart" style="margin:5px">
+                                            <span class="text small" style="margin:5px;display:inline-block;width:50%">${c.Name}</span>
+                                            ${gridHTML}
+                                        </div>
+                                        `;
+                                        break;
                                 }
                                 n += 1;
                                 
@@ -868,7 +925,9 @@ function handle_document_click(id){
         
                         })
         
-                        document.querySelector("#overlayContent").innerHTML = `<div class="flex_center">
+                        document.querySelector("#overlayContent").innerHTML = `
+                        <input type="number" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${data["name"] == undefined ? "" : data["name"]}">
+                        <div class="flex_center">
                             <div style="width:90%;max-height:50vh;overflow-y:scroll">${f}</div>
                         </div>
         
@@ -889,8 +948,9 @@ function handle_document_click(id){
                         });
     
                         document.querySelector("#overlayContent").innerHTML = `
+                        <input type="number" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${data["name"] == undefined ? "" : data["name"]}">
                         <span class="textslim"><i>Sorry, we found your schema, but something went wrong parsing it with the following data</i></span>
-                        <div class="flex_center" style="margin:5px">
+                        <div class="flex_center" style="margin:5px;flex-wrap:wrap">
                             ${fieldHTML}
                         </div>
                         <div class="flex_center" style="margin:10px">
@@ -908,6 +968,7 @@ function handle_document_click(id){
                 
 
                 document.querySelector("#overlayContent").innerHTML = `
+                <input type="number" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${data["name"] == undefined ? "" : data["name"]}">
                 <span class="textslim"><i>Sorry, we found your schema, but something went wrong parsing it with the following data</i></span>
                 <div class="flex_center" style="margin:5px">
                     <span class="textslim">${data["data"]}</span>
@@ -920,6 +981,17 @@ function handle_document_click(id){
                 `;
             }
             
+            overlaySaveFunction = () => {
+                var name = document.querySelector("#overlayContent_Name").value;
+                put("/api/document", {}, {name: name}, (success, data) => {
+                    if(activeItem["number"] == undefined){
+                        handle_match_click(currentMatch["_id"]);
+                    }else{
+                        handle_team_click(currentTeam["number"]);
+                    }
+                });
+                document.querySelector("#overlay").style.display = "none";
+            }
 
             document.querySelector("#overlayContent_deleteDocument").addEventListener("click", function(e){
                 if(!overlaySaveData["deleteConfirm"]){
@@ -965,6 +1037,10 @@ function handle_document_click(id){
                     
                 }
             });
+
+            document.querySelector("#overlayClose").style.display = "";
+            document.querySelector("#overlayDone").style.display = "";
+
             var matchText = match != undefined ? ` - Match ${match}` : "";
             document.querySelector("#overlayTitle").innerHTML = `Data Document - Team ${teamNumber}${data["author"] == undefined || data["author"] == "" ? "" : " - By " + data["author"]}${data["completed"] == undefined || data["completed"] == false ? " (Incomplete)" : ""}${matchText}`;
             break;
@@ -974,9 +1050,15 @@ function handle_document_click(id){
             var author = data["author"] == undefined ? "Anonymous" : data["author"];
             var match = data["match"];
             var matchText = match != undefined ? ` - Match ${match}` : "";
-            document.querySelector("#overlayTitle").innerHTML = `Extra Note${teamNumber != undefined && teamNumber != "" ? " (" + teamNumber + ")" : ""} - By ${author}${matchText}`;
+            if(data["name"] == "" || data["name"] == undefined){
+                document.querySelector("#overlayTitle").innerHTML = `Extra Note${teamNumber != undefined && teamNumber != "" ? " (" + teamNumber + ")" : ""} - By ${author}${matchText}`;
+            }else{
+                document.querySelector("#overlayTitle").innerHTML = `${data["name"]}${teamNumber != undefined && teamNumber != "" ? " (" + teamNumber + ")" : ""} - By ${author}${matchText}`;
+            }
+            
 
             document.querySelector("#overlayContent").innerHTML = `
+            <input type="number" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${data["name"] == undefined ? "" : data["name"]}">
             <textarea class="input" id="overlayContent_contents" style="width:100%;height:200px;resize:none" disabled>${contents}</textarea>
 
             <div class="flex_center" style="margin:10px">
@@ -988,6 +1070,18 @@ function handle_document_click(id){
                 </div>
             </div>
             `;
+
+            overlaySaveFunction = () => {
+                var name = document.querySelector("#overlayContent_Name").value;
+                put("/api/document", {}, {name: name}, (success, data) => {
+                    if(activeItem["number"] == undefined){
+                        handle_match_click(currentMatch["_id"]);
+                    }else{
+                        handle_team_click(currentTeam["number"]);
+                    }
+                });
+                document.querySelector("#overlay").style.display = "none";
+            }
 
             // Specific Overlay Events
             document.querySelector("#overlayContent_editDocument").addEventListener("click", function(e){
@@ -1077,6 +1171,7 @@ document.querySelector("#match_view_create_document").addEventListener("click", 
     <textarea class="input" style="width:100%;height:200px;resize:none" placeholder="Enter your note here" id="overlayContent_Note"></textarea>
     <input type="text" class="input" placeholder="Author (Optional)" id="overlayContent_Author">
     <input type="number" class="input" placeholder="Team Number" id="overlayContent_Number">
+    <input type="number" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name">
     `;
 
     document.querySelector("#overlayTitle").innerHTML = `Create New Document`;
@@ -1085,6 +1180,7 @@ document.querySelector("#match_view_create_document").addEventListener("click", 
         var note = document.querySelector("#overlayContent_Note").value;
         var author = document.querySelector("#overlayContent_Author").value;
         var team = document.querySelector("#overlayContent_Number").value;
+        var name = document.querySelector("#overlayContent_Name").value;
 
 
         post("/api/document", {}, {
@@ -1095,7 +1191,8 @@ document.querySelector("#match_view_create_document").addEventListener("click", 
                 contents: note,
                 author: author,
                 type: "note"
-            })
+            }),
+            name: name
         }, (success, data) => {
             console.log(data);
             var _id = data["document"]["_id"];

@@ -440,7 +440,8 @@ router.post("/document", async (req, res, next) => {
         json: req.body.json,
         image: req.body.image,
         datetime: new Date(),
-        competition: env.settings.competitionYear + env.settings.competitionCode
+        competition: env.settings.competitionYear + env.settings.competitionCode,
+        name: req.body.name
     }
 
     var doc = await db.createDoc("Document", document);
@@ -509,8 +510,12 @@ router.put("/document", async (req, res, next) => {
     if(json == undefined){
         json = document.json;
     }
+    var name = req.body.name;
+    if(name == undefined){
+        name = document.name;
+    }
 
-    await db.updateDoc("Document", {_id: docId}, {image: image, json: json, datetime: new Date()});
+    await db.updateDoc("Document", {_id: docId}, {image: image, json: json, datetime: new Date(), name: name});
     res.status(200).json({message: "Document updated!"});
 })
 
@@ -698,7 +703,8 @@ router.post("/submit/photo", async (req, res, next) => {
                 dataType: "match",
                 json: JSON.stringify(generatedData),
                 datetime: new Date(),
-                competition: env.settings.competitionYear + env.settings.competitionCode
+                competition: env.settings.competitionYear + env.settings.competitionCode,
+                name: ""
             }
 
             var doc = await db.createDoc("Document", document);
@@ -771,7 +777,8 @@ router.post("/submit/paper", async (req, res, next) => {
                 dataType: "match",
                 json: JSON.stringify(generatedData),
                 datetime: new Date(),
-                competition: env.settings.competitionYear + env.settings.competitionCode
+                competition: env.settings.competitionYear + env.settings.competitionCode,
+                name: ""
             }
 
             var doc = await db.createDoc("Document", document);
@@ -847,7 +854,8 @@ router.post("/submit/data", async (req, res, next) => {
             dataType: "match",
             json: JSON.stringify(generatedData),
             datetime: new Date(dataPiece.Created),
-            competition: env.settings.competitionYear + env.settings.competitionCode
+            competition: env.settings.competitionYear + env.settings.competitionCode,
+            name: ""
         }
 
         var associatedMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: dataPiece.Number});

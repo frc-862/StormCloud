@@ -99,9 +99,15 @@ const models = {
         json: String,
         datetime: Date,
         image: String,
-        competition: String
+        competition: String,
+        name: String
     })),
     'Schema' : mongoose.model('Schema', new mongoose.Schema({
+        Name: String,
+        Updated: Date,
+        Parts: [Object]
+    })),
+    'AnalysisSet' : mongoose.model('SchemaAnalysisSet', new mongoose.Schema({
         Name: String,
         Updated: Date,
         Parts: [Object]
