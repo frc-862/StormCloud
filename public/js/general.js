@@ -812,6 +812,10 @@ function handle_document_click(id){
                                 <span class="text regular" style="margin:5px;display:inline-block">${p.Name}  <span class="caption highlightedtext level2bg" style="width:50px;font-size:16px">${p.Time}s</span></span>
                                 
                             </div>
+                            <div class="flex_apart" style="margin:5px">
+                                <span class="text small" style="margin:5px;display:inline-block;width:50%">Robot Disabled (in seconds)</span>
+                                <input disabled type="number" class="input text small" style="pointer-events: all;width:50%" value="${data["disabled"] == undefined ? "Unknown" : data["disabled"] + "s"}"/>
+                            </div>
                             `;
         
                             p.Components.forEach(c => {

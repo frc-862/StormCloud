@@ -838,7 +838,8 @@ router.post("/submit/data", async (req, res, next) => {
             deviceId: dataPiece.DeviceID,
             identifier: dataPiece.Identifier,
             match: dataPiece.Number,
-            type: "tablet"
+            type: "tablet",
+            disabled: dataPiece.Disabled
         }
 
         var allDocs = await db.getDocs("Document", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
