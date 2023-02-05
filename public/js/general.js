@@ -7,6 +7,85 @@ var showingContent = false;
 var schemas = [];
 
 
+
+
+function generate_document_snip(d, extraclasses="", additionalcontent=""){
+    var data = JSON.parse(d["json"]);
+    var df = "";
+    var datetime = new Date(d["datetime"]).toLocaleString();
+    switch(data["type"]){
+        case "paper":
+
+            
+            df += `
+                <div class="container clickable document ${extraclasses}" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}" onclick="handle_document_click('${d["_id"]}')">
+                    <div class="flex_apart" style="width:100%;pointer-events:none">
+                        <span class="text regular material-symbols-rounded" style="width:20%">edit_document</span>
+                        <div style="width:80%">
+                            <span class="text caption" style="font-weight:600">${d["name"] == undefined || d["name"] == "" ? `Team ${data["team"]}, Match ${data["match"]}` : d["name"]}</span>
+                            <span class="text tiny">${d["name"] == undefined || d["name"] == "" ? datetime : `Team ${data["team"]}, Match ${data["match"]}`}</span>
+                        </div>
+                        ${additionalcontent}
+                    </div>
+                </div>
+            `
+            break;
+        case "photo":
+
+            
+            df += `
+                <div class="container clickable document ${extraclasses}" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}" onclick="handle_document_click('${d["_id"]}')">
+                    <div class="flex_apart" style="width:100%;pointer-events:none">
+                        <span class="text regular material-symbols-rounded" style="width:20%">camera</span>
+                        <div style="width:80%">
+                            <span class="text caption" style="font-weight:600">${d["name"] == undefined || d["name"] == "" ? `Team ${data["team"]}, Match ${data["match"]}` : d["name"]}</span>
+                            <span class="text tiny">${d["name"] == undefined || d["name"] == "" ? datetime : `Team ${data["team"]}, Match ${data["match"]}`}</span>
+                        </div>
+                        ${additionalcontent}
+                    </div>
+                </div>
+            `
+            break;
+        case "tablet":
+            var completed = data["completed"];
+            if(completed == undefined){
+                completed = false;
+            }
+            df += `
+                <div class="container clickable document ${extraclasses}" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}" onclick="handle_document_click('${d["_id"]}')">
+                    <div class="flex_apart" style="width:100%;pointer-events:none">
+                        <span class="text regular material-symbols-rounded" style="width:20%">bar_chart</span>
+                        <div style="width:80%">
+                            <span class="text caption" style="font-weight:600">${d["name"] == undefined || d["name"] == "" ? `Team ${data["team"]}, Match ${data["match"]}` : d["name"]}</span>
+                            <span class="text tiny">${d["name"] == undefined || d["name"] == "" ? `${completed ? `OK at ${datetime}` : "Not Complete"}` : `Team ${data["team"]}, Match ${data["match"]}`}</span>
+                        </div>
+                        ${additionalcontent}
+                    </div>
+                </div>
+            `
+            break;
+        case "note":
+            
+            var teamConcerned = data["team"];
+            var author = data["author"];
+
+            df += `
+                <div class="container clickable document ${extraclasses}" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}" onclick="handle_document_click('${d["_id"]}')">
+                    <div class="flex_apart" style="width:100%;pointer-events:none">
+                        <span class="text regular material-symbols-rounded" style="width:20%">format_quote</span>
+                        <div style="width:80%">
+                            <span class="text caption" style="font-weight:600">${d["name"] == undefined || d["name"] == "" ? `${teamConcerned == undefined || teamConcerned == "" ? "Match Note": "Note on " + teamConcerned}` : d["name"]}</span>
+                            <span class="text tiny">${d["name"] == undefined || d["name"] == "" ? `By ${data["author"] == undefined ? "Anonymous" : data["author"]}` : `${teamConcerned == undefined || teamConcerned == "" ? "Match Note": "Note on " + teamConcerned}`}</span>
+                        </div>
+                        ${additionalcontent}
+                    </div>
+                </div>
+            `
+    }
+    return df;
+}
+
+
 function readFromCookie(name){
     var result = document.cookie.match(new RegExp(name + '=([^;]+)'));
     result && (result = result[1]);
@@ -427,80 +506,137 @@ function handle_assumedteams(ms){
     });
 }
 
+var selected_filter_documents = [];
+function toggle_filter_selection(e){
+    e.stopPropagation();
+    var element = e.srcElement;
+    var id = element.dataset.id;
+    if(selected_filter_documents.includes(id)){
+        selected_filter_documents = selected_filter_documents.filter((i)=>i != id);
+        element.style.backgroundColor = "";
+        document.querySelector(`.filter_document[data-id="${id}"]`).style.border = "";
+        element.style.borderRadius = "4px";
+        if(selected_filter_documents.length == 0){
+            document.querySelector("#filter_bulkActions").style.display = "none";
+        }
+    }
+    else{
+        selected_filter_documents.push(id);
+        element.style.backgroundColor = "#680991";
+        document.querySelector(`.filter_document[data-id="${id}"]`).style.border = "2px solid #680991";
+        element.style.borderRadius = "10px";
+        document.querySelector("#filter_bulkActions").style.display = "";
+    }
+}
+
+function refresh_filter_documents(){
+    // get conditions to filter by
+    var team = document.querySelector("#filter_team").value;
+    var type = document.querySelector("#filter_type").value;
+    var match = document.querySelector("#filter_match").value;
+
+    persistantData["allDocuments"].forEach((d)=>{
+        var data = JSON.parse(d["json"]);
+        var display = true;
+        if(team != "" && data["team"] != team){
+            display = false;
+        }
+        else if(type != "" && data["type"] != type){
+            display = false;
+        }
+        else if(match != ""){
+            // match is a bit different
+            if(data["type"] == "tablet" || data["type"] == "note"){
+                if(data["match"] != match){
+                    display = false;
+                }
+            }
+            else{
+                if(!data["matches"].includes(match)){
+                    display = false;
+                }
+            }
+        }
+
+        document.querySelector(`.filter_document[data-id="${d["_id"]}"]`).style.display = display ? "" : "none";
+
+
+    });
+}
+
+function delete_selected_documents(elem){
+
+
+    if(elem.dataset.confirm == "false"){
+        elem.dataset.time = (new Date()).toString();
+        elem.innerHTML = `<span class="text caption">Are You Sure?</span>`;
+        elem.classList = "container redbg clickable";
+        elem.dataset.confirm = "true";
+    }else{
+        if(elem.dataset.time == undefined){
+            elem.innerHTML = `<span class="text caption">Delete All</span>`;
+            elem.classList = "container level2bg clickable";
+            elem.dataset.confirm = "false";
+        }
+        if(new Date() - new Date(elem.dataset.time) > 1500){
+            elem.innerHTML = `<span class="text caption">Delete All</span>`;
+            elem.classList = "container level2bg clickable";
+            elem.dataset.confirm = "false";
+            return;
+        }
+        elem.innerHTML = `<span class="text caption">Deleting...</span>`;
+        elem.classList = "container redbg clickable";
+        elem.dataset.confirm = "false";
+
+        
+
+
+        var selected = selected_filter_documents;
+        selected.forEach((id)=>{
+            remove("/api/document", {}, {docId: id}, (success, data) => {
+            
+            });
+    
+            persistantData["allDocuments"] = persistantData["allDocuments"].filter((d)=>d["_id"] != id);
+        });
+        selected_filter_documents = [];
+        document.querySelector("#filter_bulkActions").style.display = "none";
+        
+        refresh_filter_documents();
+        handle_filter_documents(persistantData["allDocuments"]);
+
+
+
+        elem.innerHTML = `<span class="text caption">Delete All</span>`;
+        elem.classList = "container level2bg clickable";
+        elem.dataset.confirm = "false";
+
+
+        
+    }
+
+
+
+
+
+
+
+    
+}
+
 function handle_filter_documents(docs){
     var fHTML = "";
     docs.forEach((d)=>{
-        var data = JSON.parse(d["json"]);
-        var datetime = new Date(d["datetime"]);
-        datetime = datetime.toLocaleString();
 
 
-        switch(data["type"]){
-            case "paper":
+        fHTML += generate_document_snip(d, "filter_document level1bg",`
+            <div class="level2bg clickable filter_document_selectionBox" style="border-radius:4px;width:24px;height:20px;pointer-events:all" data-id="${d["_id"]}" onclick="toggle_filter_selection(event)">
 
-                
-            fHTML += `
-                    <div class="container level2bg clickable filter_document" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}">
-                        <div class="flex_apart" style="width:100%;pointer-events:none">
-                            <span class="text regular material-symbols-rounded" style="width:20%">edit_document</span>
-                            <div style="width:80%">
-                                <span class="text caption" style="font-weight:600">Team ${data["team"]}</span>
-                                <span class="text tiny">${datetime}</span>
-                            </div>
-                        </div>
-                    </div>
-                `
-                break;
-            case "photo":
-
-                
-            fHTML += `
-                    <div class="container level2bg clickable filter_document" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}">
-                        <div class="flex_apart" style="width:100%;pointer-events:none">
-                            <span class="text regular material-symbols-rounded" style="width:20%">camera</span>
-                            <div style="width:80%">
-                                <span class="text caption" style="font-weight:600">Team ${data["team"]}</span>
-                                <span class="text tiny">${datetime}</span>
-                            </div>
-                        </div>
-                    </div>
-                `
-                break;
-            case "tablet":
-                var completed = data["completed"];
-                if(completed == undefined){
-                    completed = false;
-                }
-                fHTML += `
-                    <div class="container level2bg clickable filter_document" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}">
-                        <div class="flex_apart" style="width:100%;pointer-events:none">
-                            <span class="text regular material-symbols-rounded" style="width:20%">bar_chart</span>
-                            <div style="width:80%">
-                                <span class="text caption" style="font-weight:600">Team ${data["team"]}</span>
-                                <span class="text tiny">${completed ? `OK at ${datetime}` : "Not Complete"}</span>
-                            </div>
-                        </div>
-                    </div>
-                `
-                break;
-            case "note":
-                
-                var teamConcerned = data["team"];
-                var author = data["author"];
-
-                fHTML += `
-                    <div class="container level2bg clickable filter_document" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}">
-                        <div class="flex_apart" style="width:100%;pointer-events:none">
-                            <span class="text regular material-symbols-rounded" style="width:20%">format_quote</span>
-                            <div style="width:80%">
-                                <span class="text caption" style="font-weight:600">${teamConcerned == undefined || teamConcerned == "" ? "Match Note": "Note on " + teamConcerned}</span>
-                                <span class="text tiny">By ${data["author"] == undefined ? "Anonymous" : data["author"]}</span>
-                            </div>
-                        </div>
-                    </div>
-                `
-        }
+            </div>
+        `);
     });
+
+    
     document.querySelector('#filter_view_documents').innerHTML = fHTML;
 
 }
@@ -616,7 +752,7 @@ function show_hide_documents(){
 
 function handle_document_click(id){
     
-    var d = cachedDocuments.filter((i) => i["_id"] == id)[0];
+    var d = persistantData["allDocuments"].filter((i) => i["_id"] == id)[0];
     overlaySaveData["document"] = id;
     
     var data = JSON.parse(d["json"]);
@@ -629,7 +765,7 @@ function handle_document_click(id){
             var teamNumber = data["team"];
             var matches = data["matches"] | [];
             document.querySelector("#overlayContent").innerHTML = `
-            <input type="number" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${data["name"] == undefined ? "" : data["name"]}">
+            <input type="text" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${d["name"] == undefined ? "" : d["name"]}">
             <div class="flex_center">
                 <img src="${data["path"]}.png" style="max-height:40vh;border-radius:8px"/>
             </div>
@@ -642,7 +778,7 @@ function handle_document_click(id){
             `;
             overlaySaveFunction = () => {
                 var name = document.querySelector("#overlayContent_Name").value;
-                put("/api/document", {}, {name: name}, (success, data) => {
+                put("/api/document", {}, {name: name, docId: d["_id"]}, (success, data) => {
                     if(activeItem["number"] == undefined){
                         handle_match_click(currentMatch["_id"]);
                     }else{
@@ -709,7 +845,7 @@ function handle_document_click(id){
                 var teamNumber = data["team"]
                 var matches = data["matches"] | [];
                 document.querySelector("#overlayContent").innerHTML = `
-                <input type="number" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${data["name"] == undefined ? "" : data["name"]}">
+                <input type="text" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${d["name"] == undefined ? "" : d["name"]}">
                 <div class="flex_center">
                     <img src="${data["path"]}.png" style="max-height:40vh;border-radius:8px"/>
                 </div>
@@ -723,7 +859,7 @@ function handle_document_click(id){
 
                 overlaySaveFunction = () => {
                     var name = document.querySelector("#overlayContent_Name").value;
-                    put("/api/document", {}, {name: name}, (success, data) => {
+                    put("/api/document", {}, {name: name, docId: d["_id"]}, (success, data) => {
                         if(activeItem["number"] == undefined){
                             handle_match_click(currentMatch["_id"]);
                         }else{
@@ -792,7 +928,7 @@ function handle_document_click(id){
             try{
                 if(schema == undefined){
                     document.querySelector("#overlayContent").innerHTML = `
-                    <input type="number" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${data["name"] == undefined ? "" : data["name"]}">
+                    <input type="text" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${d["name"] == undefined ? "" : d["name"]}">
                     <span class="textslim"><i>Sorry, we couldn't find a schema...</i></span>
                     <div class="flex_center" style="margin:10px">
                         <div class="container level2bg clickable" id="overlayContent_deleteDocument" style="padding:10px">
@@ -930,7 +1066,7 @@ function handle_document_click(id){
                         })
         
                         document.querySelector("#overlayContent").innerHTML = `
-                        <input type="number" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${data["name"] == undefined ? "" : data["name"]}">
+                        <input type="text" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${d["name"] == undefined ? "" : d["name"]}">
                         <div class="flex_center">
                             <div style="width:90%;max-height:50vh;overflow-y:scroll">${f}</div>
                         </div>
@@ -952,7 +1088,7 @@ function handle_document_click(id){
                         });
     
                         document.querySelector("#overlayContent").innerHTML = `
-                        <input type="number" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${data["name"] == undefined ? "" : data["name"]}">
+                        <input type="text" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${d["name"] == undefined ? "" : d["name"]}">
                         <span class="textslim"><i>Sorry, we found your schema, but something went wrong parsing it with the following data</i></span>
                         <div class="flex_center" style="margin:5px;flex-wrap:wrap">
                             ${fieldHTML}
@@ -972,7 +1108,7 @@ function handle_document_click(id){
                 
 
                 document.querySelector("#overlayContent").innerHTML = `
-                <input type="number" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${data["name"] == undefined ? "" : data["name"]}">
+                <input type="text" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${d["name"] == undefined ? "" : d["name"]}">
                 <span class="textslim"><i>Sorry, we found your schema, but something went wrong parsing it with the following data</i></span>
                 <div class="flex_center" style="margin:5px">
                     <span class="textslim">${data["data"]}</span>
@@ -987,7 +1123,7 @@ function handle_document_click(id){
             
             overlaySaveFunction = () => {
                 var name = document.querySelector("#overlayContent_Name").value;
-                put("/api/document", {}, {name: name}, (success, data) => {
+                put("/api/document", {}, {name: name, docId: d["_id"]}, (success, data) => {
                     if(activeItem["number"] == undefined){
                         handle_match_click(currentMatch["_id"]);
                     }else{
@@ -1062,7 +1198,7 @@ function handle_document_click(id){
             
 
             document.querySelector("#overlayContent").innerHTML = `
-            <input type="number" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${data["name"] == undefined ? "" : data["name"]}">
+            <input type="text" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${d["name"] == undefined ? "" : d["name"]}">
             <textarea class="input" id="overlayContent_contents" style="width:100%;height:200px;resize:none" disabled>${contents}</textarea>
 
             <div class="flex_center" style="margin:10px">
@@ -1077,7 +1213,7 @@ function handle_document_click(id){
 
             overlaySaveFunction = () => {
                 var name = document.querySelector("#overlayContent_Name").value;
-                put("/api/document", {}, {name: name}, (success, data) => {
+                put("/api/document", {}, {name: name, docId: d["_id"]}, (success, data) => {
                     if(activeItem["number"] == undefined){
                         handle_match_click(currentMatch["_id"]);
                     }else{
@@ -1159,11 +1295,6 @@ function handle_document_click(id){
             break;
     }
 
-    
-
-    overlaySaveFunction = () => {
-        document.querySelector("#overlay").style.display = "none";
-    };
 
 
     document.querySelector("#overlay").style.display = "";
@@ -1175,7 +1306,7 @@ document.querySelector("#match_view_create_document").addEventListener("click", 
     <textarea class="input" style="width:100%;height:200px;resize:none" placeholder="Enter your note here" id="overlayContent_Note"></textarea>
     <input type="text" class="input" placeholder="Author (Optional)" id="overlayContent_Author">
     <input type="number" class="input" placeholder="Team Number" id="overlayContent_Number">
-    <input type="number" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name">
+    <input type="text" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name">
     `;
 
     document.querySelector("#overlayTitle").innerHTML = `Create New Document`;
@@ -1194,7 +1325,8 @@ document.querySelector("#match_view_create_document").addEventListener("click", 
                 team: team,
                 contents: note,
                 author: author,
-                type: "note"
+                type: "note",
+                match: currentMatch["matchNumber"]
             }),
             name: name
         }, (success, data) => {
@@ -1320,76 +1452,10 @@ function handle_match_click(m){
     
     cachedDocuments = match["documents"];
     match["documents"].forEach((d)=>{
-        var data = JSON.parse(d["json"]);
-        var datetime = new Date(d["datetime"]);
-        datetime = datetime.toLocaleString();
+        df += generate_document_snip(d, "level2bg","");
 
 
-        switch(data["type"]){
-            case "paper":
-
-                
-                df += `
-                    <div class="container level2bg clickable document" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}">
-                        <div class="flex_apart" style="width:100%;pointer-events:none">
-                            <span class="text regular material-symbols-rounded" style="width:20%">edit_document</span>
-                            <div style="width:80%">
-                                <span class="text caption" style="font-weight:600">Team ${data["team"]}</span>
-                                <span class="text tiny">${datetime}</span>
-                            </div>
-                        </div>
-                    </div>
-                `
-                break;
-            case "photo":
-
-                
-                df += `
-                    <div class="container level2bg clickable document" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}">
-                        <div class="flex_apart" style="width:100%;pointer-events:none">
-                            <span class="text regular material-symbols-rounded" style="width:20%">camera</span>
-                            <div style="width:80%">
-                                <span class="text caption" style="font-weight:600">Team ${data["team"]}</span>
-                                <span class="text tiny">${datetime}</span>
-                            </div>
-                        </div>
-                    </div>
-                `
-                break;
-            case "tablet":
-                var completed = data["completed"];
-                if(completed == undefined){
-                    completed = false;
-                }
-                df += `
-                    <div class="container level2bg clickable document" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}">
-                        <div class="flex_apart" style="width:100%;pointer-events:none">
-                            <span class="text regular material-symbols-rounded" style="width:20%">bar_chart</span>
-                            <div style="width:80%">
-                                <span class="text caption" style="font-weight:600">Team ${data["team"]}</span>
-                                <span class="text tiny">${completed ? `OK at ${datetime}` : "Not Complete"}</span>
-                            </div>
-                        </div>
-                    </div>
-                `
-                break;
-            case "note":
-                
-                var teamConcerned = data["team"];
-                var author = data["author"];
-
-                df += `
-                    <div class="container level2bg clickable document" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}">
-                        <div class="flex_apart" style="width:100%;pointer-events:none">
-                            <span class="text regular material-symbols-rounded" style="width:20%">format_quote</span>
-                            <div style="width:80%">
-                                <span class="text caption" style="font-weight:600">${teamConcerned == undefined || teamConcerned == "" ? "Match Note": "Note on " + teamConcerned}</span>
-                                <span class="text tiny">By ${data["author"] == undefined ? "Anonymous" : data["author"]}</span>
-                            </div>
-                        </div>
-                    </div>
-                `
-        }
+        
 
         
     });
@@ -1408,11 +1474,7 @@ function handle_match_click(m){
     document.querySelector('#match_view_documents').innerHTML = df;
 
 
-    Array.from(document.querySelectorAll(".document")).forEach((i) => {
-        i.addEventListener("click", (e) => {
-            handle_document_click(e.target.dataset.id);
-        });
-    })
+   
 
     Array.from(document.querySelectorAll('.selectTeamMatch')).forEach((i) => {
         i.addEventListener('click', function(e){
@@ -1546,6 +1608,9 @@ document.querySelector('#match_view_score').addEventListener('click', function()
     </div>
 
     `;
+    document.querySelector("#overlayClose").style.display = "";
+    document.querySelector("#overlayDone").style.display = "none";
+
     document.querySelector("#overlay").style.display = "";
 
 });
@@ -1589,76 +1654,7 @@ function handle_team_click(t){
     
     cachedDocuments = team["documents"];
     team["documents"].forEach((d)=>{
-        var data = JSON.parse(d["json"]);
-        var datetime = new Date(d["datetime"]);
-        datetime = datetime.toLocaleString();
-
-
-        switch(data["type"]){
-            case "paper":
-
-                
-                df += `
-                    <div class="container level2bg clickable document" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}">
-                        <div class="flex_apart" style="width:100%;pointer-events:none">
-                            <span class="text regular material-symbols-rounded" style="width:20%">edit_document</span>
-                            <div style="width:80%">
-                                <span class="text caption" style="font-weight:600">${data["match"] == undefined ? "Unknown Match" : `Match ${data["match"]}`}</span>
-                                <span class="text tiny">${datetime}</span>
-                            </div>
-                        </div>
-                    </div>
-                `
-                break;
-            case "photo":
-
-                
-                df += `
-                    <div class="container level2bg clickable document" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}">
-                        <div class="flex_apart" style="width:100%;pointer-events:none">
-                            <span class="text regular material-symbols-rounded" style="width:20%">camera</span>
-                            <div style="width:80%">
-                                <span class="text caption" style="font-weight:600">${data["match"] == undefined ? "Unknown Match" : `Match ${data["match"]}`}</span>
-                                <span class="text tiny">${datetime}</span>
-                            </div>
-                        </div>
-                    </div>
-                `
-                break;
-            case "tablet":
-                var completed = data["completed"];
-                if(completed == undefined){
-                    completed = false;
-                }
-                df += `
-                    <div class="container level2bg clickable document" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}">
-                        <div class="flex_apart" style="width:100%;pointer-events:none">
-                            <span class="text regular material-symbols-rounded" style="width:20%">bar_chart</span>
-                            <div style="width:80%">
-                                <span class="text caption" style="font-weight:600">${data["match"] == undefined ? "Unknown Match" : `Match ${data["match"]}`}</span>
-                                <span class="text tiny">${completed ? "" : "Not "}Complete</span>
-                            </div>
-                        </div>
-                    </div>
-                `
-                break;
-            case "note":
-                
-                var teamConcerned = data["team"];
-                var author = data["author"];
-
-                df += `
-                    <div class="container level2bg clickable document" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}">
-                        <div class="flex_apart" style="width:100%;pointer-events:none">
-                            <span class="text regular material-symbols-rounded" style="width:20%">format_quote</span>
-                            <div style="width:80%">
-                                <span class="text caption" style="font-weight:600">A Note</span>
-                                <span class="text tiny">By ${data["author"] == undefined ? "Anonymous" : data["author"]}</span>
-                            </div>
-                        </div>
-                    </div>
-                `
-        }
+        df += generate_document_snip(d, "level2bg","");
 
         
     });

@@ -244,12 +244,47 @@
                         </div>
                     </div>
                 </div>
-                <div class="flex_center subscreen" data-subscreen="3">
+                <div class="flex_center subscreen" data-subscreen="3" style="width:100%">
                     <div style="width: 100%;">
-                        <div class="flex_apart" style="width:100%">
-
+                        <div class="flex_center" style="width:100%">
+                            <div class="container level1bg" style="padding:20px">
+                                <div class="flex_center" style="width:100%;margin:10px">
+                                    <div style="margin:10px">
+                                        <span class="text small" style="margin-bottom: 5px;">Team Number</span>
+                                        <input type="number" class="input text regular" style="pointer-events: all;width:200px;padding:10px" id="filter_team" onchange="refresh_filter_documents()">
+                                    </div>
+                                    <div style="margin:10px">
+                                        <span class="text small" style="margin-bottom: 5px;">Match Number</span>
+                                        <input type="number" class="input text regular" style="pointer-events: all;width:160px;padding:10px" id="filter_match" onchange="refresh_filter_documents()">
+                                    </div>
+                                    <div style="margin:10px">
+                                        <span class="text small" style="margin-bottom: 5px;">Document Type</span>
+                                        <select class="input text regular" style="pointer-events: all;width:240px;padding:10px" id="filter_type" onchange="refresh_filter_documents()">
+                                            <option value="tablet">Tablet Data</option>
+                                            <option value="paper">Paper Photos</option>
+                                            <option value="photo">Other Photos</option>
+                                            <option value="note">Notes</option>
+                                        </select>   
+                                    </div>
+                                </div>
+                                <div class="flex_center" style="width:100%;margin:10px;display:none" id="filter_bulkActions">
+                                    <div class="level2bg container clickable" style="padding:10px; margin:7px" data-confirm="false" onclick="delete_selected_documents(this)">
+                                        <span class="text caption">Delete All</span>
+                                    </div>
+                                    <div class="level2bg container clickable" style="padding:10px; margin:7px">
+                                        <span class="text caption">Flag All</span>
+                                    </div>
+                                    <div class="level2bg container clickable" style="padding:10px; margin:7px">
+                                        <span class="text caption">Copy All</span>
+                                    </div>
+                                    
+                                </div>
+                            </div>
                         </div>
-                        <div class="flex_center" style="width:100%;flex-wrap:wrap" id="filter_view_documents">
+                        
+                        
+                        
+                        <div class="flex_center" style="width:100%;flex-wrap:wrap;margin:20px" id="filter_view_documents">
     
                         </div>
                     </div>
