@@ -154,6 +154,7 @@ router.get("/request/team*", async(req, res, next) => {
                 ties: 0
             }
         }
+        matches = matches.sort((a, b) => a.matchNumber - b.matchNumber);
 
         matches.forEach(match => {
             if(match.teams.find(t => t.team == teamNumber) != undefined){
@@ -441,7 +442,8 @@ router.post("/document", async (req, res, next) => {
         image: req.body.image,
         datetime: new Date(),
         competition: env.settings.competitionYear + env.settings.competitionCode,
-        name: req.body.name
+        name: req.body.name,
+        flagged: false
     }
 
     var doc = await db.createDoc("Document", document);
@@ -514,8 +516,12 @@ router.put("/document", async (req, res, next) => {
     if(name == undefined){
         name = document.name;
     }
+    var flagged = req.body.flagged;
+    if(flagged == undefined){
+        flagged = document.flagged;
+    }
 
-    await db.updateDoc("Document", {_id: docId}, {image: image, json: json, datetime: new Date(), name: name});
+    await db.updateDoc("Document", {_id: docId}, {image: image, json: json, datetime: new Date(), name: name, flagged: flagged});
     res.status(200).json({message: "Document updated!"});
 })
 

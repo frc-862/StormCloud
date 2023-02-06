@@ -261,6 +261,7 @@
                                     <div style="margin:10px">
                                         <span class="text small" style="margin-bottom: 5px;">Document Type</span>
                                         <select class="input text regular" style="pointer-events: all;width:240px;padding:10px" id="filter_type" onchange="refresh_filter_documents()">
+                                            <option value="any" selected>Any</option>
                                             <option value="tablet">Tablet Data</option>
                                             <option value="paper">Paper Photos</option>
                                             <option value="photo">Other Photos</option>
@@ -272,7 +273,7 @@
                                     <div class="level2bg container clickable" style="padding:10px; margin:7px" data-confirm="false" onclick="delete_selected_documents(this)">
                                         <span class="text caption">Delete All</span>
                                     </div>
-                                    <div class="level2bg container clickable" style="padding:10px; margin:7px">
+                                    <div class="level2bg container clickable" style="padding:10px; margin:7px" onclick="flag_selected_documents()">
                                         <span class="text caption">Flag All</span>
                                     </div>
                                     <div class="level2bg container clickable" style="padding:10px; margin:7px">
@@ -298,8 +299,8 @@
                                 <div class="flex_center" style="width:100%;margin:10px">
                                     <div style="margin:10px">
                                         <span class="text caption" style="margin-bottom: 5px;">Team Numbers</span>
-                                        <span class="text small" style="margin-bottom: 10px;">6 selected</span>
-                                        <select class="input text small" style="pointer-events: all;width:160px;padding:10px;max-height:200px" id="analysis_teams" multiple>
+                                        <span class="text small" style="margin-bottom: 10px;" id="analysis_teams_count">0 selected</span>
+                                        <select class="input text small" style="pointer-events: all;width:160px;padding:10px;max-height:200px" id="analysis_teams" multiple onchange="analysis_preview_update_numbers()">
                                             <option value="1">Team 1</option>
                                             <option value="2">Team 2</option>
                                             <option value="3">Team 3</option>
@@ -312,8 +313,8 @@
                                     </div>
                                     <div style="margin:10px">
                                         <span class="text caption" style="margin-bottom: 5px;">Match Numbers</span>
-                                        <span class="text small" style="margin-bottom: 10px;">6 selected</span>
-                                        <select class="input text small" style="pointer-events: all;width:160px;padding:10px;max-height:200px" id="analysis_matches" multiple>
+                                        <span class="text small" style="margin-bottom: 10px;" id="analysis_matches_count">0 selected</span>
+                                        <select class="input text small" style="pointer-events: all;width:160px;padding:10px;max-height:200px" id="analysis_matches" multiple onchange="analysis_preview_update_numbers()">
                                             <option value="1">Match 1</option>
                                             <option value="2">Match 2</option>
                                             <option value="3">Match 3</option>
@@ -341,6 +342,9 @@
                                         
                                     </div>
                                     
+                                </div>
+                                <div class="level2bg container clickable" style="padding:10px; margin:7px">
+                                    <span class="text caption">Generate Graph</span>
                                 </div>
                             </div>
                             <div class="flex_center" style="width:56%;margin:10px">

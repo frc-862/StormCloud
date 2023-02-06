@@ -20,10 +20,10 @@ function generate_document_snip(d, extraclasses="", additionalcontent=""){
             df += `
                 <div class="container clickable document ${extraclasses}" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}" onclick="handle_document_click('${d["_id"]}')">
                     <div class="flex_apart" style="width:100%;pointer-events:none">
-                        <span class="text regular material-symbols-rounded" style="width:20%">edit_document</span>
+                        <span class="text regular material-symbols-rounded" style="width:20%;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">edit_document</span>
                         <div style="width:80%">
-                            <span class="text caption" style="font-weight:600">${d["name"] == undefined || d["name"] == "" ? `Team ${data["team"]}, Match ${data["match"]}` : d["name"]}</span>
-                            <span class="text tiny">${d["name"] == undefined || d["name"] == "" ? datetime : `Team ${data["team"]}, Match ${data["match"]}`}</span>
+                            <span class="text caption" style="font-weight:600;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? `Team ${data["team"]}, Match ${data["match"]}` : d["name"]}</span>
+                            <span class="text tiny" style="color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? datetime : `Team ${data["team"]}, Match ${data["match"]}`}</span>
                         </div>
                         ${additionalcontent}
                     </div>
@@ -36,10 +36,10 @@ function generate_document_snip(d, extraclasses="", additionalcontent=""){
             df += `
                 <div class="container clickable document ${extraclasses}" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}" onclick="handle_document_click('${d["_id"]}')">
                     <div class="flex_apart" style="width:100%;pointer-events:none">
-                        <span class="text regular material-symbols-rounded" style="width:20%">camera</span>
+                        <span class="text regular material-symbols-rounded" style="width:20%;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">camera</span>
                         <div style="width:80%">
-                            <span class="text caption" style="font-weight:600">${d["name"] == undefined || d["name"] == "" ? `Team ${data["team"]}, Match ${data["match"]}` : d["name"]}</span>
-                            <span class="text tiny">${d["name"] == undefined || d["name"] == "" ? datetime : `Team ${data["team"]}, Match ${data["match"]}`}</span>
+                            <span class="text caption" style="font-weight:600;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? `Team ${data["team"]}, Match ${data["match"]}` : d["name"]}</span>
+                            <span class="text tiny" style="color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? datetime : `Team ${data["team"]}, Match ${data["match"]}`}</span>
                         </div>
                         ${additionalcontent}
                     </div>
@@ -54,10 +54,10 @@ function generate_document_snip(d, extraclasses="", additionalcontent=""){
             df += `
                 <div class="container clickable document ${extraclasses}" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}" onclick="handle_document_click('${d["_id"]}')">
                     <div class="flex_apart" style="width:100%;pointer-events:none">
-                        <span class="text regular material-symbols-rounded" style="width:20%">bar_chart</span>
+                        <span class="text regular material-symbols-rounded" style="width:20%;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">bar_chart</span>
                         <div style="width:80%">
-                            <span class="text caption" style="font-weight:600">${d["name"] == undefined || d["name"] == "" ? `Team ${data["team"]}, Match ${data["match"]}` : d["name"]}</span>
-                            <span class="text tiny">${d["name"] == undefined || d["name"] == "" ? `${completed ? `OK at ${datetime}` : "Not Complete"}` : `Team ${data["team"]}, Match ${data["match"]}`}</span>
+                            <span class="text caption" style="font-weight:600;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? `Team ${data["team"]}, Match ${data["match"]}` : d["name"]}</span>
+                            <span class="text tiny" style="color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? `${completed ? `OK at ${datetime}` : "Not Complete"}` : `Team ${data["team"]}, Match ${data["match"]}`}</span>
                         </div>
                         ${additionalcontent}
                     </div>
@@ -72,10 +72,10 @@ function generate_document_snip(d, extraclasses="", additionalcontent=""){
             df += `
                 <div class="container clickable document ${extraclasses}" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}" onclick="handle_document_click('${d["_id"]}')">
                     <div class="flex_apart" style="width:100%;pointer-events:none">
-                        <span class="text regular material-symbols-rounded" style="width:20%">format_quote</span>
+                        <span class="text regular material-symbols-rounded" style="width:20%;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">format_quote</span>
                         <div style="width:80%">
-                            <span class="text caption" style="font-weight:600">${d["name"] == undefined || d["name"] == "" ? `${teamConcerned == undefined || teamConcerned == "" ? "Match Note": "Note on " + teamConcerned}` : d["name"]}</span>
-                            <span class="text tiny">${d["name"] == undefined || d["name"] == "" ? `By ${data["author"] == undefined ? "Anonymous" : data["author"]}` : `${teamConcerned == undefined || teamConcerned == "" ? "Match Note": "Note on " + teamConcerned}`}</span>
+                            <span class="text caption" style="font-weight:600;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? `${teamConcerned == undefined || teamConcerned == "" ? "Match Note": "Note on " + teamConcerned}` : d["name"]}</span>
+                            <span class="text tiny" style="color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? `By ${data["author"] == undefined ? "Anonymous" : data["author"]}` : `${teamConcerned == undefined || teamConcerned == "" ? "Match Note": "Note on " + teamConcerned}`}</span>
                         </div>
                         ${additionalcontent}
                     </div>
@@ -154,6 +154,7 @@ function pull_environment(){
             show_settings();
             try_show_content();
             handle_environment(environmentData);
+            analysis_update_schema();
         }
     })
 
@@ -236,7 +237,11 @@ function put(link, headers, data, callback){
 }
 
 function settingChange(element){
+    
     settings[element.dataset.setting] = element.value;
+    if(element.dataset.setting == "selectedSchema"){
+        analysis_update_schema();
+    }
     post("/api/setting", {}, {key: element.dataset.setting, value: element.value}, function(success, data){
 
     });
@@ -396,6 +401,7 @@ function handle_matches(ms){
     ms.sort((a,b)=>{
         return a["matchNumber"] - b["matchNumber"];
     })
+    var analysisMatchDD = "";
     ms.forEach((m)=>{
         
         var tf = "";
@@ -408,9 +414,11 @@ function handle_matches(ms){
             <span class="text small" style="text-align: left">${m["documents"].length} Document${m["documents"].length != 1 ? "s" : ""}</span>
             
         </div>`
+        analysisMatchDD += `<option value="${m["_id"]}">Match ${m["matchNumber"]}</option>`
 
 
     });
+    document.querySelector("#analysis_matches").innerHTML = analysisMatchDD;
     document.querySelector('#match_list').innerHTML = f;
 
 
@@ -450,8 +458,8 @@ function handle_assumedteams(ms){
     persistantData["allDocuments"].forEach((d)=>{
         try{
             let obj = JSON.parse(d["json"]);
-            if(obj["team"] != undefined && !teams.includes(obj["team"])){
-                teams.push(obj["team"]);
+            if(obj["team"] != undefined && !teams.includes(parseInt(obj["team"]))){
+                teams.push(parseInt(obj["team"]));
             }
         }catch(e){
 
@@ -469,6 +477,7 @@ function handle_assumedteams(ms){
     // persistentData["knownTeams"] stores all of the known team identities. Check against this list when interpreting the teams.
     // sort by team number
     teams.sort((a,b)=>a-b);
+    var analysisTeamDD = "";
     teams.forEach((t)=>{
         if(t == undefined){
             return;
@@ -493,10 +502,12 @@ function handle_assumedteams(ms){
                 
             </div>
         `;
+        analysisTeamDD += `<option value="${t}">Team ${t}</option>`
+
         persistantData["teams"].push(teamObj);
     });
 
-
+    document.querySelector("#analysis_teams").innerHTML = analysisTeamDD;
 
     document.querySelector('#team_list').innerHTML = f;
     Array.from(document.querySelectorAll('.selectTeam')).forEach((i) => {
@@ -505,6 +516,8 @@ function handle_assumedteams(ms){
         })
     });
 }
+
+
 
 var selected_filter_documents = [];
 function toggle_filter_selection(e){
@@ -541,7 +554,7 @@ function refresh_filter_documents(){
         if(team != "" && data["team"] != team){
             display = false;
         }
-        else if(type != "" && data["type"] != type){
+        else if(type != "any" && type != "" && data["type"] != type){
             display = false;
         }
         else if(match != ""){
@@ -562,6 +575,26 @@ function refresh_filter_documents(){
 
 
     });
+}
+
+function flag_selected_documents(){
+    selected_filter_documents.forEach((id)=>{
+        if(persistantData["allDocuments"].find((d)=>d["_id"] == id)["flagged"] == undefined){
+            persistantData["allDocuments"].find((d)=>d["_id"] == id)["flagged"] = true;
+        }else{
+            persistantData["allDocuments"].find((d)=>d["_id"] == id)["flagged"] = !persistantData["allDocuments"].find((d)=>d["_id"] == id)["flagged"];
+        }
+
+        put("/api/document", {}, {docId: id, flagged: persistantData["allDocuments"].find((d)=>d["_id"] == id)["flagged"]}, (success, data) => {
+        
+        });
+        
+    });
+    selected_filter_documents = [];
+    document.querySelector("#filter_bulkActions").style.display = "none";
+    handle_filter_documents(persistantData["allDocuments"]);
+    refresh_filter_documents();
+    
 }
 
 function delete_selected_documents(elem){
@@ -769,6 +802,15 @@ function handle_document_click(id){
             <div class="flex_center">
                 <img src="${data["path"]}.png" style="max-height:40vh;border-radius:8px"/>
             </div>
+
+            <div class="flex_center">
+                <div class="flex_center level2bg" style="margin:10px;border-radius:10px;padding:10px">
+                    <input type="checkbox" id="overlayContent_Flagged" ${d["flagged"] == undefined || d["flagged"] == false ? "" : "checked"}>
+                    <span class="text small" style="margin-left:10px">Flagged</span>
+                </div>
+            
+            </div>
+
             <div class="flex_center" style="margin:10px">
                     <div class="container level2bg clickable" id="overlayContent_deleteDocument" style="padding:10px">
                         <span class="text caption">Delete Document</span>
@@ -778,7 +820,8 @@ function handle_document_click(id){
             `;
             overlaySaveFunction = () => {
                 var name = document.querySelector("#overlayContent_Name").value;
-                put("/api/document", {}, {name: name, docId: d["_id"]}, (success, data) => {
+                var flagged = document.querySelector("#overlayContent_Flagged").checked;
+                put("/api/document", {}, {name: name, docId: d["_id"], flagged: flagged}, (success, data) => {
                     if(activeItem["number"] == undefined){
                         handle_match_click(currentMatch["_id"]);
                     }else{
@@ -849,6 +892,15 @@ function handle_document_click(id){
                 <div class="flex_center">
                     <img src="${data["path"]}.png" style="max-height:40vh;border-radius:8px"/>
                 </div>
+
+                <div class="flex_center">
+                <div class="flex_center level2bg" style="margin:10px;border-radius:10px;padding:10px">
+                    <input type="checkbox" id="overlayContent_Flagged" ${d["flagged"] == undefined || d["flagged"] == false ? "" : "checked"}>
+                    <span class="text small" style="margin-left:10px">Flagged</span>
+                </div>
+            
+            </div>
+
                 <div class="flex_center" style="margin:10px">
                         <div class="container level2bg clickable" id="overlayContent_deleteDocument" style="padding:10px">
                             <span class="text caption">Delete Document</span>
@@ -859,7 +911,8 @@ function handle_document_click(id){
 
                 overlaySaveFunction = () => {
                     var name = document.querySelector("#overlayContent_Name").value;
-                    put("/api/document", {}, {name: name, docId: d["_id"]}, (success, data) => {
+                    var flagged = document.querySelector("#overlayContent_Flagged").checked;
+                    put("/api/document", {}, {name: name, docId: d["_id"], flagged: flagged}, (success, data) => {
                         if(activeItem["number"] == undefined){
                             handle_match_click(currentMatch["_id"]);
                         }else{
@@ -930,6 +983,15 @@ function handle_document_click(id){
                     document.querySelector("#overlayContent").innerHTML = `
                     <input type="text" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${d["name"] == undefined ? "" : d["name"]}">
                     <span class="textslim"><i>Sorry, we couldn't find a schema...</i></span>
+
+                    <div class="flex_center">
+                <div class="flex_center level2bg" style="margin:10px;border-radius:10px;padding:10px">
+                    <input type="checkbox" id="overlayContent_Flagged" ${d["flagged"] == undefined || d["flagged"] == false ? "" : "checked"}>
+                    <span class="text small" style="margin-left:10px">Flagged</span>
+                </div>
+            
+            </div>
+
                     <div class="flex_center" style="margin:10px">
                         <div class="container level2bg clickable" id="overlayContent_deleteDocument" style="padding:10px">
                             <span class="text caption">Delete Document</span>
@@ -1072,6 +1134,14 @@ function handle_document_click(id){
                         <div class="flex_center">
                             <div style="width:90%;max-height:50vh;overflow-y:scroll">${f}</div>
                         </div>
+
+                        <div class="flex_center">
+                <div class="flex_center level2bg" style="margin:10px;border-radius:10px;padding:10px">
+                    <input type="checkbox" id="overlayContent_Flagged" ${d["flagged"] == undefined || d["flagged"] == false ? "" : "checked"}>
+                    <span class="text small" style="margin-left:10px">Flagged</span>
+                </div>
+            
+            </div>
         
                         <div class="flex_center" style="margin:10px">
                             <div class="container level2bg clickable" id="overlayContent_deleteDocument" style="padding:10px">
@@ -1095,6 +1165,15 @@ function handle_document_click(id){
                         <div class="flex_center" style="margin:5px;flex-wrap:wrap">
                             ${fieldHTML}
                         </div>
+
+                        <div class="flex_center">
+                <div class="flex_center level2bg" style="margin:10px;border-radius:10px;padding:10px">
+                    <input type="checkbox" id="overlayContent_Flagged" ${d["flagged"] == undefined || d["flagged"] == false ? "" : "checked"}>
+                    <span class="text small" style="margin-left:10px">Flagged</span>
+                </div>
+            
+            </div>
+
                         <div class="flex_center" style="margin:10px">
                             <div class="container level2bg clickable" id="overlayContent_deleteDocument" style="padding:10px">
                                 <span class="text caption">Delete Document</span>
@@ -1104,6 +1183,8 @@ function handle_document_click(id){
                     }
                     
                 }
+
+                
 
             }catch(ex){
                 var fieldHTML = "";
@@ -1115,6 +1196,15 @@ function handle_document_click(id){
                 <div class="flex_center" style="margin:5px">
                     <span class="textslim">${data["data"]}</span>
                 </div>
+
+                <div class="flex_center">
+                <div class="flex_center level2bg" style="margin:10px;border-radius:10px;padding:10px">
+                    <input type="checkbox" id="overlayContent_Flagged" ${d["flagged"] == undefined || d["flagged"] == false ? "" : "checked"}>
+                    <span class="text small" style="margin-left:10px">Flagged</span>
+                </div>
+            
+            </div>
+                
                 <div class="flex_center" style="margin:10px">
                     <div class="container level2bg clickable" id="overlayContent_deleteDocument" style="padding:10px">
                         <span class="text caption">Delete Document</span>
@@ -1125,7 +1215,8 @@ function handle_document_click(id){
             
             overlaySaveFunction = () => {
                 var name = document.querySelector("#overlayContent_Name").value;
-                put("/api/document", {}, {name: name, docId: d["_id"]}, (success, data) => {
+                var flagged = document.querySelector("#overlayContent_Flagged").checked;
+                put("/api/document", {}, {name: name, docId: d["_id"], flagged: flagged}, (success, data) => {
                     if(activeItem["number"] == undefined){
                         handle_match_click(currentMatch["_id"]);
                     }else{
@@ -1202,6 +1293,14 @@ function handle_document_click(id){
             document.querySelector("#overlayContent").innerHTML = `
             <input type="text" class="input" placeholder="Document Name (Optional)" id="overlayContent_Name" value="${d["name"] == undefined ? "" : d["name"]}">
             <textarea class="input" id="overlayContent_contents" style="width:100%;height:200px;resize:none" disabled>${contents}</textarea>
+            <div class="flex_center">
+                <div class="flex_center level2bg" style="margin:10px;border-radius:10px;padding:10px">
+                    <input type="checkbox" id="overlayContent_Flagged" ${d["flagged"] == undefined || d["flagged"] == false ? "" : "checked"}>
+                    <span class="text small" style="margin-left:10px">Flagged</span>
+                </div>
+            
+            </div>
+            
 
             <div class="flex_center" style="margin:10px">
                 <div class="container level2bg clickable" id="overlayContent_editDocument" style="padding:10px;margin-right:10px">
@@ -1215,7 +1314,8 @@ function handle_document_click(id){
 
             overlaySaveFunction = () => {
                 var name = document.querySelector("#overlayContent_Name").value;
-                put("/api/document", {}, {name: name, docId: d["_id"]}, (success, data) => {
+                var flagged = document.querySelector("#overlayContent_Flagged").checked;
+                put("/api/document", {}, {name: name, docId: d["_id"], flagged: flagged}, (success, data) => {
                     if(activeItem["number"] == undefined){
                         handle_match_click(currentMatch["_id"]);
                     }else{
@@ -1938,6 +2038,24 @@ Array.from(document.getElementsByClassName("changeScreen")).forEach((item)=>{
     })
 })
 
+function generate_graph(button){
+    var teamOptions = document.getElementById('analysis_teams').selectedOptions;
+    var teams = Array.from(teamOptions).map(({ value }) => value);
+
+    var matchOptions = document.getElementById('analysis_matches').selectedOptions;
+    var matches = Array.from(matchOptions).map(({ value }) => value);
+
+    var dataPoint = document.getElementById('analysis_dataPoint').value;
+
+    // To have a proper graph, we need to have a data point
+    if(dataPoint == ""){
+        button.backgroundColor = "#910929";
+        setTimeout(function(){
+            button.backgroundColor = "";
+        }, 1000);
+        return;
+    }
+}
 
 function show_analysis_chart_demo(){
     const data = {
@@ -1967,4 +2085,38 @@ function show_analysis_chart_demo(){
 }
 show_analysis_chart_demo();
 
+function analysis_preview_update_numbers(){
+    var teamOptions = document.getElementById('analysis_teams').selectedOptions;
+    var teams = Array.from(teamOptions).map(({ value }) => value);
 
+    var matchOptions = document.getElementById('analysis_matches').selectedOptions;
+    var matches = Array.from(matchOptions).map(({ value }) => value);
+
+    document.getElementById("analysis_teams_count").innerHTML = teams.length + " selected";
+    document.getElementById("analysis_matches_count").innerHTML = matches.length + " selected";
+}
+
+function analysis_update_schema(){
+    var schema = schemas.find(s => s.Name == (settings["selectedSchema"] == undefined ? schemas[0].Name : settings["selectedSchema"]));
+    var options = [];
+
+    var n = 0;
+    schema.Parts.forEach(p => {
+        var prefix = "(" + p.Name + ") ";
+        p.Components.forEach(c => {
+            if(p.Type != "Label"){
+                options.push({num: n, label: prefix + c.Name});
+                n++;
+            }
+        });
+    });
+
+    //var select = document.getElementById("analysis_dataPoint");
+
+
+    var optionHTML = "";
+    options.forEach(o => {
+        optionHTML += '<option value="' + o.num + '">' + o.label + '</option>';
+    });
+    document.getElementById("analysis_dataPoint").innerHTML = optionHTML;
+}

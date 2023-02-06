@@ -100,7 +100,8 @@ const models = {
         datetime: Date,
         image: String,
         competition: String,
-        name: String
+        name: String,
+        flagged: Boolean
     })),
     'Schema' : mongoose.model('Schema', new mongoose.Schema({
         Name: String,
