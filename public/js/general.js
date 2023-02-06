@@ -2104,7 +2104,7 @@ function analysis_update_schema(){
     schema.Parts.forEach(p => {
         var prefix = "(" + p.Name + ") ";
         p.Components.forEach(c => {
-            if(p.Type != "Label"){
+            if(c.Type != "Label"){
                 options.push({num: n, label: prefix + c.Name});
                 n++;
             }
