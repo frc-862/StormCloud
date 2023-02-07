@@ -50,6 +50,12 @@
     right: 14px;
 }
 
+.topcenter{
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+}
 
 .centercontent{
     position: absolute;

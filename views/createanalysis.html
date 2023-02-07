@@ -30,11 +30,27 @@
             </div>
             
         </div> 
+
+        <div class="topcenter">
+            <div class="flex_center">
+                <div class="level1bg container clickable" style="padding: 10px;margin:5px" onclick="addItem('Number')">
+                    <span class="text caption">+ Number</span>
+                </div>
+                <div class="level1bg container clickable" style="padding: 10px;margin:5px" onclick="addItem('Grid')">
+                    <span class="text caption">+ Grid</span>
+                </div>
+                <div class="level1bg container clickable" style="padding: 10px;margin:5px" onclick="addItem('Graph')">
+                    <span class="text caption">+ Graph</span>
+                </div>
+                <div class="level1bg container clickable" style="padding: 10px;margin:5px" onclick="addItem('FIRST')">
+                    <span class="text caption">+ FIRST</span>
+                </div>
+            </div>
+        </div>
+
         <div class="topoptions">
             <div class="flex_center">
-                <div class="level1bg container clickable" style="padding: 10px;margin:5px" onclick="addSection()">
-                    <span class="text caption">+ Item</span>
-                </div>
+                
                 <div class="bluebg container clickable" style="padding: 10px;margin:5px" onclick="loadSchemas()">
                     <span class="text caption">Load Analysis Set</span>
                 </div>
@@ -45,7 +61,7 @@
             
         </div> 
         <div class="centercontent flex_center">
-            <div id="sections" style="width:100%;text-align:center">
+            <div id="items" style="width:100%;text-align:center;margin-top:20px;max-height:80vh;overflow-y:scroll;overflow-x:hidden">
                 
             </div>
             
@@ -74,9 +90,8 @@
             </div>
             
         </div>
-        <script src="qrcode/qrcode.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-        <script src="js/dataform.js"></script>
+        <script src="js/analysis.js"></script>
         
     </body>
 </html>

@@ -82,6 +82,8 @@ router.get('/matches*', async function(req, res, next) {
 router.get("/request/match*", async (req, res, next) => {
     let env = await authTools.getEnvironment(environment);
 
+    var authValid = await authTools.checkPassword(req.query.authKey, env);
+
     var matchNumber = req.query.matchNumber;
     var competition = env.settings.competitionYear + env.settings.competitionCode;
 
@@ -103,19 +105,25 @@ router.get("/request/match*", async (req, res, next) => {
         _id: match._id
     }
 
-    var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match", competition: competition});
-    documents.forEach(doc => {
-        if(match.documents.includes(doc._id.toString())){
-            sendBackMatch.documents.push(doc);
-        }
-    });
+    if(authValid){
+        var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match", competition: competition});
+        documents.forEach(doc => {
+            if(match.documents.includes(doc._id.toString())){
+                sendBackMatch.documents.push(doc);
+            }
+        });
+    }
+    
 
-    res.json({match: sendBackMatch});
+    res.json({match: sendBackMatch, auth: authValid});
 
 })
 
 router.get("/request/team*", async(req, res, next) => {
     let env = await authTools.getEnvironment(environment);
+
+
+    var authValid = await authTools.checkPassword(req.query.authKey, env);
 
     var teamNumber = req.query.teamNumber;
     var competition = env.settings.competitionYear + env.settings.competitionCode;
@@ -126,14 +134,17 @@ router.get("/request/team*", async(req, res, next) => {
 
 
     var documents = [];
-    var teamDocs = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match", competition: competition});
+    if(authValid){
+        var teamDocs = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match", competition: competition});
 
-    teamDocs.forEach(doc => {
-        var data = JSON.parse(doc["json"]);
-        if(data["team"] == teamNumber){
-            documents.push(doc);
-        }
-    });
+        teamDocs.forEach(doc => {
+            var data = JSON.parse(doc["json"]);
+            if(data["team"] == teamNumber){
+                documents.push(doc);
+            }
+        });
+    }
+    
 
     if(teams.length == 0){
         if(documents.length == 0){
@@ -194,7 +205,7 @@ router.get("/request/team*", async(req, res, next) => {
             }
         });
 
-        res.json({team: sendBackTeam});
+        res.json({team: sendBackTeam, auth: authValid});
     }else{
         var team = teams[0];
         var matches = await db.getDocs("Match", {environment: env.friendlyId, competition: competition});
@@ -250,7 +261,7 @@ router.get("/request/team*", async(req, res, next) => {
             }
         });
 
-        res.json({team: sendBackTeam});
+        res.json({team: sendBackTeam, auth: authValid});
 
 
     }

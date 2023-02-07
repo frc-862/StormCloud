@@ -108,7 +108,7 @@ const models = {
         Updated: Date,
         Parts: [Object]
     })),
-    'AnalysisSet' : mongoose.model('SchemaAnalysisSet', new mongoose.Schema({
+    'AnalysisSet' : mongoose.model('AnalysisSet', new mongoose.Schema({
         Name: String,
         Updated: Date,
         Parts: [Object]
