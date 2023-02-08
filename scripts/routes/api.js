@@ -119,6 +119,25 @@ router.get("/request/match*", async (req, res, next) => {
 
 })
 
+router.post("/request/document/flag*", async (req, res, next) => {
+    let env = await authTools.getEnvironment(environment);
+
+
+    var authValid = await authTools.checkPassword(req.query.authKey, env);
+
+    var documentId = req.body.docId;
+
+    var documents = await db.getDocs("Document", {environment: env.friendlyId, _id: documentId});
+    if(documents.length == 0){
+        res.status(404).json({message: "Document not found!"});
+        return;
+    }
+    var document = documents[0];
+    document.flagged = req.body.flagged;
+    await db.updateDoc("Document", {_id: document._id}, {flagged: document.flagged});
+    res.json({message: "Document flagged!"});
+});
+
 router.get("/request/team*", async(req, res, next) => {
     let env = await authTools.getEnvironment(environment);
 
