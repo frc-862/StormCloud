@@ -125,6 +125,10 @@ router.post("/request/document/flag*", async (req, res, next) => {
 
     var authValid = await authTools.checkPassword(req.query.authKey, env);
 
+    if(!authValid){
+        res.status(401).json({message: "Unauthorized"});
+        return;
+    }
     var documentId = req.body.docId;
 
     var documents = await db.getDocs("Document", {environment: env.friendlyId, _id: documentId});
@@ -136,6 +140,25 @@ router.post("/request/document/flag*", async (req, res, next) => {
     document.flagged = req.body.flagged;
     await db.updateDoc("Document", {_id: document._id}, {flagged: document.flagged});
     res.json({message: "Document flagged!"});
+});
+router.post("/request/document/delete*", async (req, res, next) => {
+    let env = await authTools.getEnvironment(environment);
+    var authValid = await authTools.checkPassword(req.query.authKey, env);
+    if(!authValid){
+        res.status(401).json({message: "Unauthorized"});
+        return;
+    }
+
+    var documentId = req.body.docId;
+    var documents = await db.getDocs("Document", {environment: env.friendlyId, _id: documentId});
+    if(documents.length == 0){
+        res.status(404).json({message: "Document not found!"});
+        return;
+    }
+    var document = documents[0];
+    await db.deleteDoc("Document", {_id: document._id});
+    res.json({message: "Document deleted!"});
+
 });
 
 router.get("/request/team*", async(req, res, next) => {
