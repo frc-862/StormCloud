@@ -32,7 +32,7 @@
         </div> 
 
         <div class="topcenter">
-            <div class="flex_center">
+            <div class="flex_center" id="adding_items">
                 <div class="level1bg container clickable" style="padding: 10px;margin:5px" onclick="addItem('Number')">
                     <span class="text caption">+ Number</span>
                 </div>
@@ -67,6 +67,15 @@
             
             
         </div>
+
+        <div class="bottommoreinfo">
+            <div class="flex_center">
+                <input type="text" class="level1bg container input" style="padding: 10px;margin:5px;width:100%" placeholder="Analysis Name" id="analysisName"/>
+                <select class="level1bg container input" style="padding: 10px;margin:5px;width:100%" id="analysisSchema" aria-placeholder="Analysis Schema" onchange="changeSchema()">
+                    
+                </select>
+            </div> 
+        </div>
         <div class="overlay" id="overlay" style="display: none;">
             <div class="flex_center" style="width: 100%;height:100%">
                 <div class="container level1bg" style="width:50%">
@@ -90,6 +99,7 @@
             </div>
             
         </div>
+        
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script src="js/analysis.js"></script>
         

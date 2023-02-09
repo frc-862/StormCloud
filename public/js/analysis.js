@@ -2,6 +2,8 @@ var overlaySaveData = {};
 var overlaySaveFunction = ()=>{};
 
 var environmentData = {};
+var settings = {};
+var schemas = [];
 
 function generateUUID(){
     var dt = new Date().getTime();
@@ -11,6 +13,19 @@ function generateUUID(){
         return (c=='x' ? r :(r&0x3|0x8)).toString(16);
     });
     return uuid;
+}
+
+function readFromCookie(name){
+    var result = document.cookie.match(new RegExp(name + '=([^;]+)'));
+    result && (result = result[1]);
+    return result;
+}
+
+function writeToCookie(name, value){
+    
+
+    document.cookie = name + "=" + value;
+
 }
 
 function get(link, headers, callback){
@@ -60,19 +75,97 @@ function deleteAPI(link, headers, data, callback){
 var currentAnalysisSet = {
     Name: "",
     Updated: "",
-    Parts: []
+    Parts: [],
+    Schema: ""
 };
 
+function refreshEnvironment(){
+    get("/api/environment", {}, (success, data) => {
+        environmentData = data["environment"];
 
+        var needToSetup = data["needsSetup"];
+            
+        if(needToSetup){
+            window.location = "/setup";
+            return;
+        }
+
+        var account = readFromCookie("token");
+        if(account == undefined || account == ""){
+            window.location = "/login";
+            return;
+        }
+        settings = data["environment"]["settings"];
+        schemas = data["schemas"];
+
+
+        var selectorHTML = ""
+        schemas.forEach((schema) => {
+            selectorHTML += `<option value="${schema._id}">${schema.Name}</option>`
+        });
+        document.querySelector("#analysisSchema").innerHTML = selectorHTML;
+
+
+    });
+}
+refreshEnvironment();
+
+function changeSchema(){
+    var val = document.querySelector("#analysisSchema").value;
+    cuurrentAnalysisSet.Schema = {
+        _id: val,
+        Name: schemas.find((schema) => {return schema._id == val}).Name
+    };
+
+    var schema = schemas.find((schema) => {return schema._id == val});
+    var n = 0;
+    schemaItems = [];
+    schema.Parts.forEach((part) => {
+        part.Components.forEach((component) => {
+            if(component.Type == "Label"){
+                return;
+            }
+            schemaItems.push({
+                part: Part.Name,
+                component: component.Name,
+                componentType: component.Type
+            });
+        });
+    });
+    refreshAnalysisSet();
+}
+
+var schemaItems = [];
 
 function refreshAnalysisSet(){
     document.querySelector("#items").innerHTML = "";
     var fHTML = "";
+
+    
+    var selectHTML = "";
+    var gridSelectHTML ="";
+
+    schemaItems.forEach((item) => {
+        selectHTML += `<option value="${item.part}---${item.component}">${item.part} - ${item.component} (${item.componentType})</option>`
+        if(item.componentType == "Grid"){
+            gridSelectHTML += `<option value="${item.part}---${item.component}">${item.part} - ${item.component}</option>`
+        }
+    });
+
     currentAnalysisSet.Parts.forEach((part) => {
         var partHTML = "";
 
         switch(part.Type){
             case "Number":
+
+                var firstFieldData = "";
+                if(part.Data["FIRSTFields"] != undefined){
+                    part.Data["FIRSTFields"].forEach((field) => {
+                        firstFieldData += `${field}\n`;
+                    });
+                    
+                }
+
                 partHTML = `
                 <div class="flex_center" style="width:100%">
                     <span class="text small" style="margin: 5px 10px;text-align:left">Interpret Final Number</span>
@@ -93,9 +186,12 @@ function refreshAnalysisSet(){
                 </div>
                 <div class="flex_center" style="width:100%">
                     
-                    <select class="input text important setting" style="margin:10px;width:80%;pointer-events:all" multiple>
-                        
+                    <select class="input text important setting" style="margin:10px;width:40%;pointer-events:all" multiple data-data="multi" onchange="setData('${part._id}', 'SchemaFields', this)">
+                        ${selectHTML}
                     </select>
+
+                    <textarea class="input text important setting" style="margin:10px;width:40%;pointer-events:all" placeholder="Enter FIRST Data Points" onchange="setData('${part._id}', 'FIRSTFields', this)" data-data="innerHTML">${firstFieldData}</textarea>
+
                 </div>
                 
                 `
@@ -103,7 +199,28 @@ function refreshAnalysisSet(){
                 break;
             case "Grid":
                 partHTML = `
-               
+                <div class="flex_center" style="width:100%">
+                    <span class="text small" style="margin: 5px 10px;text-align:left">Show Separate Colors</span>
+                    <input type="checkbox" data-data="check" onchange="setData('${part._id}', 'SeparateColors', this)" ${part.Data["SeparateColors"] ? "checked" : ""}>
+                </div>
+                <div class="flex_center" style="width:100%">
+                    <span class="text small" style="margin: 5px 10px;text-align:left">Display Style</span>
+                    <select value="${part.Data["Display"]}" class="input text important setting" style="margin:10px;width:50%;pointer-events:all" onchange="setData('${part._id}', 'Display', this)">
+                        <option value="heatmap" ${part.Data["Display"] == "heatmap" ? "selected": ""}>Heatmap</option>
+                        <option value="number" ${part.Data["Display"] == "number" ? "selected": ""}>Number</option>
+                    </select>
+                </div>
+
+                <div class="flex_center" style="width:100%">
+                    
+                    <select class="input text important setting" style="margin:10px;width:80%;pointer-events:all" multiple data-data="multi" onchange="setData('${part._id}', 'SchemaFields', this)">
+                        ${gridSelectHTML}
+                    </select>
+
+                    
+
+                </div>
+
                 
                 `;
             case "Graph":
@@ -161,7 +278,20 @@ function setName(item, elem){
 
 function setData(item, dataPoint, elem){
     var index = currentAnalysisSet.Parts.indexOf(currentAnalysisSet.Parts.find(i => i._id == item));
-    currentAnalysisSet.Parts[index].Data[dataPoint] = elem.value;
+
+    if(elem.dataset.data == "innerHTML"){
+        currentAnalysisSet.Parts[index].Data[dataPoint] = elem.innerHTML.split("\n");
+    }else if(elem.dataset.data == "multi"){
+        var selectedOptions = elem.selectedOptions;
+        currentAnalysisSet.Parts[index].Data[dataPoint] = Array.from(selectedOptions).map(({ value }) => value);;
+    }else if(elem.dataset.data == "check"){
+        currentAnalysisSet.Parts[index].Data[dataPoint] = elem.checked;
+    }
+    else{
+        currentAnalysisSet.Parts[index].Data[dataPoint] = elem.value;
+    }
+
+    
     refreshAnalysisSet();
 }
 
@@ -197,4 +327,5 @@ function addItem(itemType){
     currentAnalysisSet.Parts.push(item);
     refreshAnalysisSet();
 }
+
 
