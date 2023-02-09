@@ -112,7 +112,7 @@ refreshEnvironment();
 
 function changeSchema(){
     var val = document.querySelector("#analysisSchema").value;
-    cuurrentAnalysisSet.Schema = {
+    currentAnalysisSet.Schema = {
         _id: val,
         Name: schemas.find((schema) => {return schema._id == val}).Name
     };
