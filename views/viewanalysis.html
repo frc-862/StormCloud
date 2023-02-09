@@ -1,0 +1,64 @@
+<html>
+    <head>
+
+    </head>
+    <body>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script>
+
+            function get(link, headers, callback){
+                $.ajax({
+                    url: link,
+                    type: "GET",
+                    headers: headers,
+                    success: function(data){
+                        callback(true, data);
+                    },
+                    error: function(err){
+                        callback(false, err);
+                    }
+                })
+            }
+            
+            function post(link, headers, data, callback){
+                $.ajax({
+                    url: link,
+                    type: "POST",
+                    headers: headers,
+                    data: data,
+                    success: function(data){
+                        callback(true, data);
+                    },
+                    error: function(err){
+                        callback(false, err);
+                    }
+                })
+            }
+
+            var query = window.location.search;
+            if(query.length > 0){
+                // there is something to split up
+                query = query.substring(1);
+                var querySplit = query.split("&");
+                var queryDict = {};
+                for(var i = 0; i < querySplit.length; i++){
+                    var keyVal = querySplit[i].split("=");
+                    queryDict[keyVal[0]] = keyVal[1];
+                }
+
+                var analysisID = queryDict["analysisId"];
+                var teams = queryDict["teams"].split(",").map(x => parseInt(x));
+
+                post("/api/analysis/generate", {}, {analysisId: analysisID, teams: teams}, function(success, data){
+                    if(success){
+                        console.log(data);
+                    } else {
+                        console.log("Error: " + data);
+                    }
+                });
+            }
+        </script>
+    </body>
+    
+</html>

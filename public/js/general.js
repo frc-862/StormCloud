@@ -1116,7 +1116,10 @@ function handle_document_click(id){
                                         f += `
                                         <div class="flex_apart" style="margin:5px">
                                             <span class="text small" style="margin:5px;display:inline-block;width:50%">${c.Name}</span>
-                                            ${gridHTML}
+                                            <div>
+                                                ${gridHTML}
+                                            </div>
+                                            
                                         </div>
                                         `;
                                         break;

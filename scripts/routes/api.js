@@ -791,6 +791,28 @@ router.post("/submit/photo", async (req, res, next) => {
     });
 });
 
+router.post("/analysis/generate", async (req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
+
+    var analysisId = req.body.analysisId;
+    var teams = req.body.teams;
+
+    var analysis = (await db.getDocs("AnalysisSet", {_id: analysisId}))[0];
+    var schema = (await db.getDocs("Schema", {_id: analysis.Schema.id}))[0];
+
+});
+
+router.post("/analysis", async (req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
+
+    var name = req.body.Name;
+    var parts = req.body.Parts;
+    var schema = req.body.Schema;
+    var updated = new Date();
+
+    var doc = await db.createDoc("AnalysisSet", {Name: name, Parts: parts, Schema: schema, Updated: updated, environment: env.friendlyId});
+});
+
 router.post("/submit/paper", async (req, res, next) => {
     var env = await authTools.getEnvironment(environment);
 

@@ -76,7 +76,10 @@ var currentAnalysisSet = {
     Name: "",
     Updated: "",
     Parts: [],
-    Schema: ""
+    Schema: {
+        id: "",
+        Name: ""
+    }
 };
 
 function refreshEnvironment(){
@@ -104,7 +107,7 @@ function refreshEnvironment(){
             selectorHTML += `<option value="${schema._id}">${schema.Name}</option>`
         });
         document.querySelector("#analysisSchema").innerHTML = selectorHTML;
-
+        changeSchema();
 
     });
 }
@@ -113,7 +116,7 @@ refreshEnvironment();
 function changeSchema(){
     var val = document.querySelector("#analysisSchema").value;
     currentAnalysisSet.Schema = {
-        _id: val,
+        id: val,
         Name: schemas.find((schema) => {return schema._id == val}).Name
     };
 
@@ -126,7 +129,7 @@ function changeSchema(){
                 return;
             }
             schemaItems.push({
-                part: Part.Name,
+                part: part.Name,
                 component: component.Name,
                 componentType: component.Type
             });
@@ -142,15 +145,7 @@ function refreshAnalysisSet(){
     var fHTML = "";
 
     
-    var selectHTML = "";
-    var gridSelectHTML ="";
-
-    schemaItems.forEach((item) => {
-        selectHTML += `<option value="${item.part}---${item.component}">${item.part} - ${item.component} (${item.componentType})</option>`
-        if(item.componentType == "Grid"){
-            gridSelectHTML += `<option value="${item.part}---${item.component}">${item.part} - ${item.component}</option>`
-        }
-    });
+    
 
     currentAnalysisSet.Parts.forEach((part) => {
         var partHTML = "";
@@ -158,6 +153,15 @@ function refreshAnalysisSet(){
         switch(part.Type){
             case "Number":
 
+
+                var selectHTML = "";
+                
+            
+                schemaItems.forEach((item) => {
+                    selectHTML += `<option value="${item.part}---${item.component}" ${part.Data["SchemaFields"] != undefined && part.Data["SchemaFields"].includes(item.part + "---" + item.component) ? "selected" : ""}>${item.part} - ${item.component} (${item.componentType})</option>`
+                    
+                });
+                
                 var firstFieldData = "";
                 if(part.Data["FIRSTFields"] != undefined){
                     part.Data["FIRSTFields"].forEach((field) => {
@@ -198,6 +202,16 @@ function refreshAnalysisSet(){
 
                 break;
             case "Grid":
+
+                
+                var gridSelectHTML ="";
+
+                schemaItems.forEach((item) => {
+                    
+                    if(item.componentType == "Grid"){
+                        gridSelectHTML += `<option value="${item.part}---${item.component}" ${part.Data["SchemaFields"] != undefined && part.Data["SchemaFields"].includes(item.part + "---" + item.component) ? "selected" : ""}>${item.part} - ${item.component}</option>`
+                    }
+                });
                 partHTML = `
                 <div class="flex_center" style="width:100%">
                     <span class="text small" style="margin: 5px 10px;text-align:left">Show Separate Colors</span>
@@ -223,16 +237,26 @@ function refreshAnalysisSet(){
 
                 
                 `;
+                break;
             case "Graph":
                 partHTML = `
                 
                 
                 `;
+                break;
             case "FIRST":
                 partHTML = `
-                
+                <div class="flex_center" style="width:100%">
+                    <span class="text small" style="margin: 5px 10px;text-align:left">Data Point</span>
+                    <select value="${part.Data["DataPoint"]}" class="input text important setting" style="margin:10px;width:50%;pointer-events:all" onchange="setData('${part._id}', 'DataPoint', this)">
+                        <option value="score" ${part.Data["DataPoint"] == "score" ? "selected": ""}>Score</option>
+                        <option value="penalties" ${part.Data["DataPoint"] == "penalties" ? "selected": ""}>Penalty Points</option>
+                        <option value="rp" ${part.Data["DataPoint"] == "rp" ? "selected": ""}>Ranking Points</option>
+                    </select>
+                </div>
                 
                 `;
+                break;
         }
 
         fHTML += `
@@ -280,7 +304,7 @@ function setData(item, dataPoint, elem){
     var index = currentAnalysisSet.Parts.indexOf(currentAnalysisSet.Parts.find(i => i._id == item));
 
     if(elem.dataset.data == "innerHTML"){
-        currentAnalysisSet.Parts[index].Data[dataPoint] = elem.innerHTML.split("\n");
+        currentAnalysisSet.Parts[index].Data[dataPoint] = elem.value.split("\n");
     }else if(elem.dataset.data == "multi"){
         var selectedOptions = elem.selectedOptions;
         currentAnalysisSet.Parts[index].Data[dataPoint] = Array.from(selectedOptions).map(({ value }) => value);;
@@ -308,6 +332,16 @@ function moveItem(item, dir){
     }catch(e){
         console.log(e);
     }
+}
+
+function saveAnalysis(){
+    post("/api/analysis", {}, currentAnalysisSet, function(success,data){
+        if(success){
+            alert("Success");
+        }else{
+            console.log(data);
+        }
+    });
 }
 
 function deleteItem(item){

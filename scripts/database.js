@@ -111,7 +111,12 @@ const models = {
     'AnalysisSet' : mongoose.model('AnalysisSet', new mongoose.Schema({
         Name: String,
         Updated: Date,
-        Parts: [Object]
+        Parts: [Object],
+        Schema: {
+            id: String,
+            Name: String
+        },
+        environment: String
     }))
 }
 
