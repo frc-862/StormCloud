@@ -40,6 +40,10 @@ app.get("/setup", function(req, res) {
     res.sendFile(__dirname + "/views/setup.html"); 
 });
 
+app.get("/analysis", function(req, res) {
+    res.sendFile(__dirname + "/views/createanalysis.html"); 
+});
+
 // direct all API requests to the API router
 
 
