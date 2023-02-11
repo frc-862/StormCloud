@@ -490,7 +490,7 @@ function selectAnalysis(){
                     <div class="text caption" style="color:#190024;margin-bottom:10px;font-weight:bold">${analysis.Name}</div>
                     <div class="text caption" style="color:#190024;margin-bottom:20px">Generated at ${now.toLocaleString()}</div>
                     <div class="flex_center">
-                        ${teamHTML}
+                        ${teamString}
                     </div>
                 </div>
                 
