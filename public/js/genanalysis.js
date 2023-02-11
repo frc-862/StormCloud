@@ -154,7 +154,7 @@ function selectAnalysis(){
                     if(!(data.type == "tablet")){
                         return;
                     }
-                    if(!(data.schema == analysis.Schema._id)){
+                    if(!(data.schema == analysis.Schema.Name)){
                         return;
                     }
 
@@ -478,7 +478,7 @@ function selectAnalysis(){
                     if(!(data.type == "tablet")){
                         return;
                     }
-                    if(!(data.schema == analysis.Schema._id)){
+                    if(!(data.schema == analysis.Schema.Name)){
                         return;
                     }
 
