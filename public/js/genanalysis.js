@@ -796,7 +796,9 @@ function selectAnalysis(){
                             teams.forEach((team) => {
                                 tlHTML += `<div class='text regular' style="color:#190024;font-weight:600;margin: 0px; 10px">${team}</div>`;
                                 var record = finalData[team].find(p => p.name == part.name);
-
+                                if(record.value == undefined){
+                                    return;
+                                }
                                 var gridHTML = "";
 
                                 record.value.forEach((row) => {
