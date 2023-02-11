@@ -411,13 +411,18 @@ function selectAnalysis(){
                                         }
                                     }
                                 }
-                                for(var r = 0; r < final[0].length; r++){
-                                    for(var c = 0; c < final[0][r].length; c++){
-                                        if(final[0][r][c] > max){
-                                            max = final[0][r][c];
+                                try{
+                                    for(var r = 0; r < final[0].length; r++){
+                                        for(var c = 0; c < final[0][r].length; c++){
+                                            if(final[0][r][c] > max){
+                                                max = final[0][r][c];
+                                            }
                                         }
                                     }
+                                }catch(e){
+
                                 }
+                                
                             
                                 finalData[team].push({
                                     name: part.Name,
