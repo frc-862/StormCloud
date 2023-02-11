@@ -391,10 +391,22 @@ function selectAnalysis(){
                                     }
                                     
                                 });
+
+
+                                for(var i = 1; i < final.length; i++){
+                                    for(var r = 0; r < final[i].length; r++){
+                                        for(var c = 0; c < final[i][r].length; c++){
+                                            if(final[i][r][c] != -1){
+                                                final[0][r][c] += final[i][r][c];
+                                            }
+                                        }
+                                    }
+                                }
+                            
                                 finalData[team].push({
                                     name: part.Name,
                                     type: part.Type,
-                                    value: final
+                                    value: final[0]
                                 });
                                 break;
                         }
@@ -713,10 +725,21 @@ function selectAnalysis(){
                                 }
                                 
                             });
+
+                            for(var i = 1; i < final.length; i++){
+                                for(var r = 0; r < final[i].length; r++){
+                                    for(var c = 0; c < final[i][r].length; c++){
+                                        if(final[i][r][c] != -1){
+                                            final[0][r][c] += final[i][r][c];
+                                        }
+                                    }
+                                }
+                            }
+
                             finalData.push({
                                 name: part.Name,
                                 type: part.Type,
-                                value: final
+                                value: final[0]
                             });
                             break;
                     }
