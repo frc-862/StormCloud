@@ -804,14 +804,17 @@ router.post("/analysis/documents", async (req, res, next) => {
     var analysisId = req.body.analysisId;
     var schemaId = req.body.schemaId;
 
+    console.log("POINT A");
     var analysis = (await db.getDocs("AnalysisSet", {_id: analysisId, environment: env.friendlyId}))[0];
+    console.log("POINT B");
     var schema = (await db.getDocs("Schema", {_id: schemaId}))[0];
+    console.log("POINT C");
 
 
-
-    var allDocs = (await db.getDocs("Document", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode})).filter((doc) => JSON.parse(doc.json)["type"] == "tablet" && JSON.parse(doc.json)["completed"] == true && JSON.parse(doc.json)["schema"] == schema.Name);
+    var allDocs = (await db.getDocs("Document", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode}));
+    console.log("POINT D");
     var allMatches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
-
+    console.log("POINT E");
 
     res.send({analysis: analysis, schema: schema, allDocs: allDocs, allMatches: allMatches});
 
@@ -838,6 +841,7 @@ router.post("/analysis", async (req, res, next) => {
     }
 
     var doc = await db.createDoc("AnalysisSet", {Name: name, Parts: parts, Schema: schema, Updated: updated, environment: env.friendlyId});
+    res.status(200).json({message: "Analysis created!"});
 });
 
 router.post("/submit/paper", async (req, res, next) => {
