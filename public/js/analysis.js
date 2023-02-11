@@ -179,7 +179,7 @@ function refreshAnalysisSet(){
                     </select>
                 </div>
                 <div class="flex_center" style="width:100%">
-                    <span class="text small" style="margin: 5px 10px;text-align:left">Combine Data Points</span>
+                    <span class="text small" style="margin: 5px 10px;text-align:left">Combine Individual Data Points</span>
                     <select value="${part.Data["Stat_Between"]}" class="input text important setting" style="margin:10px;width:50%;pointer-events:all" onchange="setData('${part._id}', 'Stat_Between', this)">
                         <option value="sum" ${part.Data["Stat_Between"] == "sum" ? "selected": ""}>Sum Of...</option>
                         <option value="avg" ${part.Data["Stat_Between"] == "avg" ? "selected": ""}>Average Of...</option>
@@ -335,11 +335,84 @@ function moveItem(item, dir){
 }
 
 function saveAnalysis(){
+    var name = document.querySelector("#analysisName").value;
+    currentAnalysisSet.Name = name;
     post("/api/analysis", {}, currentAnalysisSet, function(success,data){
+        document.querySelector("#overlayContent").innerHTML = `
+        <span class="text regular">Analysis Set Saved as ${name}</span>
+        `
+        document.querySelector("#overlay").style.display = "";
+        document.querySelector("#overlayTitle").style.display = "Completed";
+        document.querySelector("#overlayClose").style.display = "";
+        document.querySelector("#overlayDone").style.display = "done";
+    });
+}
+document.querySelector("#overlayClose").addEventListener("click", function(e){
+    document.querySelector("#overlay").style.display = "none";
+    document.querySelector("#overlayContent").innerHTML = "";
+    document.querySelector("#overlayClose").style.display = "";
+    document.querySelector("#overlayDone").style.display = "";
+    overlaySaveData = {};
+});
+
+document.querySelector("#overlayDone").addEventListener("click", function(e){
+    overlaySaveFunction();
+    overlaySaveData = {};
+});
+
+function loadAnalysises(){
+    get("/api/analysis/all", {}, function(success, data){
+        console.log(success);
         if(success){
-            alert("Success");
-        }else{
-            console.log(data);
+            document.querySelector("#overlayClose").style.display = "";
+            document.querySelector("#overlayContent").innerHTML = `<div id="overlay_analysis" style="max-height:50vh"></div>`;
+
+            var index = 0;
+            data["analysis"].forEach(function(analysis){
+                
+                document.querySelector("#overlay_analysis").innerHTML += `
+                <div class="container level2bg flex_apart clickable overlay_selectAnalysis" data-id="${analysis._id}" style="margin:5px">
+                    <span class="text regular">${analysis.Name}</span>
+                    <span class="text caption">${analysis.Schema.Name}</span>
+                </div>
+                    
+
+                `;
+                index++;
+            });
+
+            overlaySaveData["analysises"] = data["analysis"];
+            overlaySaveData["currentAnalysis"] = undefined;
+
+            overlaySaveFunction = ()=>{
+                if(overlaySaveData["currentAnalysis"] != undefined){
+                    var selectedAnalysis = overlaySaveData["analysises"].find(a => a._id == overlaySaveData["currentAnalysis"]);
+                    currentAnalysisSet = selectedAnalysis;
+
+                    document.querySelector("#analysisName").value = selectedAnalysis.Name;
+                    var selectedSchema = schemas.find(s => s.Name == selectedAnalysis.Schema.Name);
+                    document.querySelector("#analysisSchema").value = selectedSchema._id;
+                    refreshAnalysisSet();
+                    document.querySelector("#overlay").style.display = "none";
+                }
+            }
+
+            Array.from(document.querySelectorAll(".overlay_selectAnalysis")).forEach(function(element){
+                element.addEventListener("click", function(e){
+                    var id = element.dataset.id;
+
+                    if(overlaySaveData["currentAnalysis"] != undefined){
+                        var oldElement = document.querySelector(`.overlay_selectAnalysis[data-id="${overlaySaveData["currentAnalysis"]}"]`);
+                        oldElement.style.backgroundColor = "";
+                    }
+
+                    element.style.backgroundColor = "#680991";
+                    overlaySaveData["currentAnalysis"] = id;
+                });
+            });
+
+            document.querySelector("#overlayTitle").innerHTML = "Select Analysis Set";
+            document.querySelector("#overlay").style.display = "";
         }
     });
 }

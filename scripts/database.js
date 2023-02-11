@@ -113,8 +113,8 @@ const models = {
         Updated: Date,
         Parts: [Object],
         Schema: {
-            id: String,
-            Name: String
+            Name: String,
+            Type: String
         },
         environment: String
     }))

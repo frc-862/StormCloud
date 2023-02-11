@@ -791,14 +791,34 @@ router.post("/submit/photo", async (req, res, next) => {
     });
 });
 
-router.post("/analysis/generate", async (req, res, next) => {
+router.get("/analysis/all", async (req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
+
+    var docs = await db.getDocs("AnalysisSet", {environment: env.friendlyId});
+    res.json({analysis: docs});
+});
+
+router.post("/analysis/documents", async (req, res, next) => {
     var env = await authTools.getEnvironment(environment);
 
     var analysisId = req.body.analysisId;
-    var teams = req.body.teams;
+    var schemaId = req.body.schemaId;
 
-    var analysis = (await db.getDocs("AnalysisSet", {_id: analysisId}))[0];
-    var schema = (await db.getDocs("Schema", {_id: analysis.Schema.id}))[0];
+    var analysis = (await db.getDocs("AnalysisSet", {_id: analysisId, environment: env.friendlyId}))[0];
+    var schema = (await db.getDocs("Schema", {_id: schemaId}))[0];
+
+
+
+    var allDocs = (await db.getDocs("Document", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode})).filter((doc) => JSON.parse(doc.json)["type"] == "tablet" && JSON.parse(doc.json)["completed"] == true && JSON.parse(doc.json)["schema"] == schema.Name);
+    var allMatches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
+
+
+    res.send({analysis: analysis, schema: schema, allDocs: allDocs, allMatches: allMatches});
+
+    
+
+    
+
 
 });
 
@@ -809,6 +829,13 @@ router.post("/analysis", async (req, res, next) => {
     var parts = req.body.Parts;
     var schema = req.body.Schema;
     var updated = new Date();
+
+    var prevDoc = (await db.getDocs("AnalysisSet", {Name: name, environment: env.friendlyId}))[0];
+    if(prevDoc != undefined){
+        await db.updateDoc("AnalysisSet", {_id: prevDoc._id}, {Parts: parts, Schema: schema, Updated: updated});
+        res.status(200).json({message: "Analysis updated!"});
+        return;
+    }
 
     var doc = await db.createDoc("AnalysisSet", {Name: name, Parts: parts, Schema: schema, Updated: updated, environment: env.friendlyId});
 });
