@@ -802,12 +802,10 @@ router.post("/analysis/documents", async (req, res, next) => {
     var env = await authTools.getEnvironment(environment);
 
     var analysisId = req.body.analysisId;
-    var schemaId = req.body.schemaId;
-
     //console.log("POINT A");
     var analysis = (await db.getDocs("AnalysisSet", {_id: analysisId, environment: env.friendlyId}))[0];
    // console.log("POINT B");
-    var schema = (await db.getDocs("Schema", {_id: schemaId}))[0];
+    var schema = (await db.getDocs("Schema", {Name: analysis.Schema.Name}))[0];
     //console.log("POINT C");
 
 

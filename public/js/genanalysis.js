@@ -56,7 +56,7 @@ function selectAnalysis(){
     var analysis = document.getElementById("analysis_sets").value;
 
     var analysisObject = analysises.find(a => a._id == analysis);
-    post("/api/analysis/documents", {},{analysisId: analysis, schemaId: analysisObject.Schema.id}, function(success, data){
+    post("/api/analysis/documents", {},{analysisId: analysis, schemaId: analysisObject.Schema._id}, function(success, data){
         if(success){
             console.log(data);
 
@@ -66,6 +66,21 @@ function selectAnalysis(){
 
             var partSets = {};
             var requestedDataPoints = {};
+
+            var schemaFields = [];
+            data["schema"].Parts.forEach((part) => {
+                part.Components.forEach((component) => {
+                    if(component.Type == "Label"){
+                        return;
+                    }
+                    schemaFields.push({
+                        part: part.Name,
+                        component: component.Name,
+                        componentType: component.Type
+                    })
+                });
+            });
+
 
             var finalData = undefined;
             if(separate){
@@ -126,58 +141,143 @@ function selectAnalysis(){
     
                 allDocs.forEach((doc) => {
                     var data = JSON.parse(doc.json);
+                    var foundTeam = teams.find(t => t == parseInt(data.team));
                     if(!teams.includes(parseInt(data.team))){
                         // not a doc we are looking for
                         return;
                     }
+
+                    if(!data.completed){
+                        return;
+                    }
+
+                    if(!data.type == "tablet" || !data.schema == analysis.Schema.Name){
+                        return;
+                    }
+
+                    schemaFields.forEach((field) => {
+                        var key = field.part + "---" + field.component;
+                        var indexOfField = schemaFields.indexOf(field);
+                        if(requestedDataPoints[key] == undefined){
+                            return;
+                        }
+
+                        requestedDataPoints[key].forEach((partId) => {
+                            var analysisPart = analysis.Parts.find(p => p._id == partId);
+                            if(field.componentType == "Step" || field.componentType == "Timer"){
+                                // most likely just requesting number only
+                                if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == key)){
+                                    // then add to obj
+                                    partSets[partId][foundTeam.team][key].push(data.data[indexOfField])
+                                }else{
+                                    // then create obj
+                                    partSets[partId][foundTeam.team][key] = [data.data[indexOfField]]
+                                }
+                            }else if(field.componentType == "Grid"){
+                                // data point depends on the analysisPart type
+                                var putData = 0;
+                                switch(analysisPart.Type){
+                                    case "Number":
+                                        // then we are just requesting a number
+                                        var gridData = [];
+                                        var rowData = data.data[indexOfField].split("*");
+                                        rowData.forEach((row) => {
+                                            var rowArr = row.split(",");
+                                            gridData.extend(rowArr);
+                                        });
+
+                                        var count = 0;
+                                        gridData.forEach((num) => {
+                                            if(parseInt(num) != -1){
+                                                count += 1;
+                                            }
+                                        });
+
+                                        putData = count;
+
+                                        
+
+                                        break;
+                                    case "Grid":
+                                        // we need the GRID ITSELF
+                                        var gridData = [];
+                                        var rowData = data.data[indexOfField].split("*");
+                                        rowData.forEach((row) => {
+                                            var cols = row.split(",");
+                                            gridData.push(cols);
+                                        });
+
+                                        putData = gridData;
+                                        break;
+
+                                }
+                                if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == key)){
+                                    // then add to obj
+                                    partSets[partId][foundTeam.team][key].push(putData)
+                                }else{
+                                    // then create obj
+                                    partSets[partId][foundTeam.team][key] = [putData]
+                                }
+                            }
+
+                            // handle EACH PART ID AND ADDING DATA
+                            
+                        });
+
+                        
+                    });
     
                 });
     
                 allMatches.forEach((match) => {
-                    var foundTeam = match.teams.find(t => teams.includes(t.team));
-                    if(foundTeam == undefined){
+                    var foundTeams = match.teams.filter(t => teams.includes(t.team));
+                    if(foundTeams.length == 0 || foundTeams == undefined){
                         return;
                     }
-    
-                    if(!match.results.finished){
-                        return;
-                    }
-    
-                    if(foundTeam.color == "Red"){
-                        var stats = match.results.redStats;
-                        Object.keys(stats).forEach((key) => {
-                            if(requestedDataPoints[key] == undefined){
-                                return;
-                            }
-                            requestedDataPoints[key].forEach((partId) => {
-                                // handle EACH PART ID AND ADDING DATA
-                                if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == key)){
-                                    // then add to obj
-                                    partSets[partId][foundTeam.team][key].push(stats[key])
-                                }else{
-                                    // then create obj
-                                    partSets[partId][foundTeam.team][key] = [stats[key]]
+
+                    foundTeams.forEach((foundTeam) => {
+                        if(!match.results.finished){
+                            return;
+                        }
+        
+                        if(foundTeam.color == "Red"){
+                            var stats = match.results.redStats;
+                            Object.keys(stats).forEach((key) => {
+                                if(requestedDataPoints[key] == undefined){
+                                    return;
                                 }
+                                requestedDataPoints[key].forEach((partId) => {
+                                    // handle EACH PART ID AND ADDING DATA
+                                    if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == key)){
+                                        // then add to obj
+                                        partSets[partId][foundTeam.team][key].push(stats[key])
+                                    }else{
+                                        // then create obj
+                                        partSets[partId][foundTeam.team][key] = [stats[key]]
+                                    }
+                                });
                             });
-                        });
-                    }else{
-                        var stats = match.results.blueStats;
-                        Object.keys(stats).forEach((key) => {
-                            if(requestedDataPoints[key] == undefined){
-                                return;
-                            }
-                            requestedDataPoints[key].forEach((partId) => {
-                                // handle EACH PART ID AND ADDING DATA
-                                if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == key)){
-                                    // then add to obj
-                                    partSets[partId][foundTeam.team][key].push(stats[key])
-                                }else{
-                                    // then create obj
-                                    partSets[partId][foundTeam.team][key] = [stats[key]]
+                        }else{
+                            var stats = match.results.blueStats;
+                            Object.keys(stats).forEach((key) => {
+                                if(requestedDataPoints[key] == undefined){
+                                    return;
                                 }
+                                requestedDataPoints[key].forEach((partId) => {
+                                    // handle EACH PART ID AND ADDING DATA
+                                    if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == key)){
+                                        // then add to obj
+                                        partSets[partId][foundTeam.team][key].push(stats[key])
+                                    }else{
+                                        // then create obj
+                                        partSets[partId][foundTeam.team][key] = [stats[key]]
+                                    }
+                                });
                             });
-                        });
-                    }
+                        }
+                    });
+    
+                    
     
     
                 });
@@ -246,6 +346,52 @@ function selectAnalysis(){
         
         
                                 break;
+                            case "Grid":
+                                // get one grid for each team!
+                                var final = [];
+
+                                Object.keys(partData).forEach((key) => {
+                                    try{
+                                        if(partData[key].length == 0){
+                                            return;
+                                        }
+                                        var localFinalForTeam = [];
+                                        
+                                        var height = partData[key][0].length;
+                                        var width = partData[key][0][0].length;
+    
+                                        for(var i = 0; i < height; i++){
+                                            var row = [];
+                                            for(var j = 0; j < width; j++){
+                                                row.push(0);
+                                            }
+                                            localFinalForTeam.push(row);
+                                        }
+    
+                                        partData[key].forEach((grid) => {
+                                            grid.forEach((row, i) => {
+                                                row.forEach((col, j) => {
+                                                    var toAdd = 0;
+                                                    if(parseInt(localFinalForTeam[i][j]) != -1){
+                                                        toAdd = 1;
+                                                    }
+                                                    localFinalForTeam[i][j] += toAdd;
+                                                });
+                                            });
+                                        });
+    
+                                        final.push(localFinalForTeam);
+                                    }catch(e){
+                                        // if it reaches here, then it is of a different size
+                                    }
+                                    
+                                });
+                                finalData[team].push({
+                                    name: part.Name,
+                                    type: part.Type,
+                                    value: final
+                                });
+                                break;
                         }
                     });
 
@@ -302,6 +448,15 @@ function selectAnalysis(){
                             }
                             break;
                         case "FIRST":
+                            try{
+                                if(requestedDataPoints[part.Data["DataPoint"]] == undefined){
+                                    requestedDataPoints[part.Data["DataPoint"]] = [part._id];
+                                }else{
+                                    requestedDataPoints[part.Data["DataPoint"]].push(part._id);
+                                }
+                            }catch(e){
+
+                            }
                             // just request finalscore
                     }
                 });
@@ -312,54 +467,141 @@ function selectAnalysis(){
                         // not a doc we are looking for
                         return;
                     }
+
+                    if(!data.completed){
+                        return;
+                    }
+
+                    if(!data.type == "tablet" || !data.schema == analysis.Schema.Name){
+                        return;
+                    }
+
+                    schemaFields.forEach((field) => {
+                        var key = field.part + "---" + field.component;
+                        var indexOfField = schemaFields.indexOf(field);
+                        if(requestedDataPoints[key] == undefined){
+                            return;
+                        }
+
+                        requestedDataPoints[key].forEach((partId) => {
+                            var analysisPart = analysis.Parts.find(p => p._id == partId);
+                            if(field.componentType == "Step" || field.componentType == "Timer"){
+                                // most likely just requesting number only
+                                if(Object.keys(partSets[partId]).find(k => k == key)){
+                                    // then add to obj
+                                    partSets[partId][key].push(data.data[indexOfField])
+                                }else{
+                                    // then create obj
+                                    partSets[partId][key] = [data.data[indexOfField]]
+                                }
+                            }else if(field.componentType == "Grid"){
+                                // data point depends on the analysisPart type
+                                var putData = 0;
+                                switch(analysisPart.Type){
+                                    case "Number":
+                                        // then we are just requesting a number
+                                        var gridData = [];
+                                        var rowData = data.data[indexOfField].split("*");
+                                        rowData.forEach((row) => {
+                                            var rowArr = row.split(",");
+                                            gridData.extend(rowArr);
+                                        });
+
+                                        var count = 0;
+                                        gridData.forEach((num) => {
+                                            if(parseInt(num) != -1){
+                                                count += 1;
+                                            }
+                                        });
+
+                                        putData = count;
+
+                                        
+
+                                        break;
+                                    case "Grid":
+                                        // we need the GRID ITSELF
+                                        var gridData = [];
+                                        var rowData = data.data[indexOfField].split("*");
+                                        rowData.forEach((row) => {
+                                            var cols = row.split(",");
+                                            gridData.push(cols);
+                                        });
+
+                                        putData = gridData;
+                                        break;
+
+                                }
+                                if(Object.keys(partSets[partId]).find(k => k == key)){
+                                    // then add to obj
+                                    partSets[partId][key].push(putData)
+                                }else{
+                                    // then create obj
+                                    partSets[partId][key] = [putData]
+                                }
+                            }
+
+                            // handle EACH PART ID AND ADDING DATA
+                            
+                        });
+
+                        
+                    });
+
     
                 });
     
                 allMatches.forEach((match) => {
-                    var foundTeam = match.teams.find(t => teams.includes(t.team));
-                    if(foundTeam == undefined){
+                    var foundTeams = match.teams.filter(t => teams.includes(t.team));
+                    if(foundTeams == undefined || foundTeams.length == 0){
                         return;
                     }
-    
-                    if(!match.results.finished){
-                        return;
-                    }
-    
-                    if(foundTeam.color == "Red"){
-                        var stats = match.results.redStats;
-                        Object.keys(stats).forEach((key) => {
-                            if(requestedDataPoints[key] == undefined){
-                                return;
-                            }
-                            requestedDataPoints[key].forEach((partId) => {
-                                // handle EACH PART ID AND ADDING DATA
-                                if(Object.keys(partSets[partId]).find(k => k == key)){
-                                    // then add to obj
-                                    partSets[partId][key].push(stats[key])
-                                }else{
-                                    // then create obj
-                                    partSets[partId][key] = [stats[key]]
+
+                    foundTeams.forEach((foundTeam) => {
+                        if(!match.results.finished){
+                            return;
+                        }
+        
+                        if(foundTeam.color == "Red"){
+                            var stats = match.results.redStats;
+                            Object.keys(stats).forEach((key) => {
+                                if(requestedDataPoints[key] == undefined){
+                                    return;
                                 }
+                                requestedDataPoints[key].forEach((partId) => {
+                                    // handle EACH PART ID AND ADDING DATA
+                                    if(Object.keys(partSets[partId]).find(k => k == key)){
+                                        // then add to obj
+                                        partSets[partId][key].push(stats[key])
+                                    }else{
+                                        // then create obj
+                                        partSets[partId][key] = [stats[key]]
+                                    }
+                                });
                             });
-                        });
-                    }else{
-                        var stats = match.results.blueStats;
-                        Object.keys(stats).forEach((key) => {
-                            if(requestedDataPoints[key] == undefined){
-                                return;
-                            }
-                            requestedDataPoints[key].forEach((partId) => {
-                                // handle EACH PART ID AND ADDING DATA
-                                if(Object.keys(partSets[partId]).find(k => k == key)){
-                                    // then add to obj
-                                    partSets[partId][key].push(stats[key])
-                                }else{
-                                    // then create obj
-                                    partSets[partId][key] = [stats[key]]
+    
+                            
+                        }else{
+                            var stats = match.results.blueStats;
+                            Object.keys(stats).forEach((key) => {
+                                if(requestedDataPoints[key] == undefined){
+                                    return;
                                 }
+                                requestedDataPoints[key].forEach((partId) => {
+                                    // handle EACH PART ID AND ADDING DATA
+                                    if(Object.keys(partSets[partId]).find(k => k == key)){
+                                        // then add to obj
+                                        partSets[partId][key].push(stats[key])
+                                    }else{
+                                        // then create obj
+                                        partSets[partId][key] = [stats[key]]
+                                    }
+                                });
                             });
-                        });
-                    }
+                        }
+                    });
+    
+                    
     
     
                 });
@@ -421,6 +663,52 @@ function selectAnalysis(){
     
     
                             break;
+                        case "Grid":
+                            // get one grid for each team!
+                            var final = [];
+
+                            Object.keys(partData).forEach((key) => {
+                                try{
+                                    if(partData[key].length == 0){
+                                        return;
+                                    }
+                                    var localFinalForAll = [];
+                                    
+                                    var height = partData[key][0].length;
+                                    var width = partData[key][0][0].length;
+
+                                    for(var i = 0; i < height; i++){
+                                        var row = [];
+                                        for(var j = 0; j < width; j++){
+                                            row.push(0);
+                                        }
+                                        localFinalForAll.push(row);
+                                    }
+
+                                    partData[key].forEach((grid) => {
+                                        grid.forEach((row, i) => {
+                                            row.forEach((col, j) => {
+                                                var toAdd = 0;
+                                                if(parseInt(localFinalForAll[i][j]) != -1){
+                                                    toAdd = 1;
+                                                }
+                                                localFinalForAll[i][j] += toAdd;
+                                            });
+                                        });
+                                    });
+
+                                    final.push(localFinalForAll);
+                                }catch(e){
+                                    // if it reaches here, then it is of a different size
+                                }
+                                
+                            });
+                            finalData.push({
+                                name: part.Name,
+                                type: part.Type,
+                                value: final
+                            });
+                            break;
                     }
                 });
     
@@ -469,6 +757,29 @@ function selectAnalysis(){
                                 <div class='flex_apart' style-"width:50%;padding:10px 0px;">${tlHTML}</div>
                             </div>
                              <hr style="margin-top:20px;margin-bottom:10px"/>
+                            `;
+                            break;
+                        case "Grid":
+                            teams.forEach((team) => {
+                                tlHTML += `<div class='text regular' style="color:#190024;font-weight:600;margin: 0px; 10px">${team}</div>`;
+                                var record = finalData[team].find(p => p.name == part.name);
+
+                                var gridHTML = "";
+
+                                record.value.forEach((row) => {
+                                    var rowHTML = "";
+                                    row.forEach((col) => {
+                                        rowHTML += `<div class="text regular" style="border:2px solid #190024;font-weight:600;margin: 0px; 2px;padding:10px;">${col}</div>`;
+                                    });
+                                    gridHTML += `<div class="flex_center" style="margin-bottom:5px">${rowHTML}</div>`;
+                                });
+                                tlHTML += `<div style="margin-bottom:20px">${gridHTML}</div>`;
+                            });
+                            fHTML += `
+                            <div class="flex_center">
+                            <div>${tlHTML}</div>
+                            </div>
+                            <hr style="margin-top:20px;margin-bottom:10px"/>
                             `;
                             break;
                     }

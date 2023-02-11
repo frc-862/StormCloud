@@ -190,7 +190,7 @@ function refreshAnalysisSet(){
                 </div>
                 <div class="flex_center" style="width:100%">
                     
-                    <select class="input text important setting" style="margin:10px;width:40%;pointer-events:all" multiple data-data="multi" onchange="setData('${part._id}', 'SchemaFields', this)">
+                    <select class="input text regular setting" style="margin:10px;width:50%;pointer-events:all" multiple data-data="multi" onchange="setData('${part._id}', 'SchemaFields', this)">
                         ${selectHTML}
                     </select>
 
@@ -227,7 +227,7 @@ function refreshAnalysisSet(){
 
                 <div class="flex_center" style="width:100%">
                     
-                    <select class="input text important setting" style="margin:10px;width:80%;pointer-events:all" multiple data-data="multi" onchange="setData('${part._id}', 'SchemaFields', this)">
+                    <select class="input text regular setting" style="margin:10px;width:80%;pointer-events:all" multiple data-data="multi" onchange="setData('${part._id}', 'SchemaFields', this)">
                         ${gridSelectHTML}
                     </select>
 
@@ -246,6 +246,16 @@ function refreshAnalysisSet(){
                 break;
             case "FIRST":
                 partHTML = `
+                <div class="flex_center" style="width:100%">
+                    <span class="text small" style="margin: 5px 10px;text-align:left">Combine Individual Data Points</span>
+                    <select value="${part.Data["Stat"]}" class="input text important setting" style="margin:10px;width:50%;pointer-events:all" onchange="setData('${part._id}', 'Stat', this)">
+                        <option value="sum" ${part.Data["Stat"] == "sum" ? "selected": ""}>Sum Of...</option>
+                        <option value="avg" ${part.Data["Stat"] == "avg" ? "selected": ""}>Average Of...</option>
+                        <option value="max" ${part.Data["Stat"] == "max" ? "selected": ""}>Maximum Of...</option>
+                        <option value="min" ${part.Data["Stat"] == "min" ? "selected": ""}>Minimum Of...</option>
+                        <option value="range" ${part.Data["Stat"] == "range" ? "selected": ""}>Range Of...</option>
+                    </select>
+                </div>
                 <div class="flex_center" style="width:100%">
                     <span class="text small" style="margin: 5px 10px;text-align:left">Data Point</span>
                     <select value="${part.Data["DataPoint"]}" class="input text important setting" style="margin:10px;width:50%;pointer-events:all" onchange="setData('${part._id}', 'DataPoint', this)">
