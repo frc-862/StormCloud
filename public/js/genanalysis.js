@@ -780,12 +780,13 @@ function selectAnalysis(){
                 });
 
                 fHTML += `
-                <div style="border: 2px solid #190024; padding:12px 0px; border-radius:8px;width:100%;margin-bottom:40px">
-                    <div class="flex_apart" style="margin-bottom:10px;padding:0px 14px">
-                        <div class="text regular" style="color:#190024;font-weight:bold">${analysis.Name}</div>
-                        <div class="text regular" style="color:#190024">${now.toLocaleString()}</div>
+                <div class="flex_apart" style="margin-bottom:20px;padding:0px 14px;width:100%">
+                        <span class="text regular" style="color:#190024;font-weight:bold">${analysis.Name}</span>
+                        <span class="text regular" style="color:#190024">${now.toLocaleString()}</span>
                     </div>
+                <div style="border: 2px solid #190024; padding:12px 0px; border-radius:8px;width:100%;margin-bottom:40px">
                     
+                    <span class="text regular" style="color:#190024">Teams</span>
                     
                     <div class="flex_apart">
                         ${teamHTML}
