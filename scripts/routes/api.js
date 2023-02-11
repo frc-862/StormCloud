@@ -804,17 +804,17 @@ router.post("/analysis/documents", async (req, res, next) => {
     var analysisId = req.body.analysisId;
     var schemaId = req.body.schemaId;
 
-    console.log("POINT A");
+    //console.log("POINT A");
     var analysis = (await db.getDocs("AnalysisSet", {_id: analysisId, environment: env.friendlyId}))[0];
-    console.log("POINT B");
+   // console.log("POINT B");
     var schema = (await db.getDocs("Schema", {_id: schemaId}))[0];
-    console.log("POINT C");
+    //console.log("POINT C");
 
 
     var allDocs = (await db.getDocs("Document", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode}));
-    console.log("POINT D");
+    //console.log("POINT D");
     var allMatches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
-    console.log("POINT E");
+    //console.log("POINT E");
 
     res.send({analysis: analysis, schema: schema, allDocs: allDocs, allMatches: allMatches});
 

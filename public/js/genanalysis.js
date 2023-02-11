@@ -461,7 +461,7 @@ function selectAnalysis(){
                         case "Number":
                             teams.forEach((team) => {
                                 var record = finalData[team].find(p => p.name == part.name);
-                                tlHTML += `<div class='text important' style="color:#190024;font-weight:600;margin: 0px; 10px">${Math.round(record.value,2)}</div>`;
+                                tlHTML += `<div class='text important' style="color:#190024;font-weight:600;margin: 0px; 10px">${record.value.toFixed(2)}</div>`;
                             });
                             fHTML += `
                             <div style="border: 1px solid #190024; padding:8px 0px; border-radius:8px;width:100%">
@@ -476,13 +476,22 @@ function selectAnalysis(){
                 });
                 document.getElementById("report").innerHTML = fHTML;
             }else{
+                fHTML += `
+                <div style="border: 2px solid #190024; padding:12px 0px; border-radius:8px;width:100%;margin-bottom:40px">
+                    <div class="text caption" style="color:#190024;margin-bottom:10px;font-weight:bold">${analysis.Name}</div>
+                    <div class="text caption" style="color:#190024;margin-bottom:20px">Generated at ${now.toLocaleString()}</div>
+                    
+                </div>
+                
+               
+                `
                 finalData.forEach((part) => {
                     switch(part.type){
                         case "Number":
                             fHTML += `
-                                <div class="flex_apart" style="width:50%"> 
-                                    <div class='text regular' style="color:#190024;margin-right:10px">${part.name}</div>
-                                    <div class='text regular' style="color:#190024;font-weight:600">${Math.round(part.value,2)}</div>
+                                <div class="flex_apart" style="width:100%;margin-bottom:10px"> 
+                                    <div class='text important' style="color:#190024;margin-right:10px">${part.name}</div>
+                                    <div class='text regular' style="color:#190024;font-weight:600">${part.value.toFixed(2)}</div>
                                 </div>
                             `
                             break;
