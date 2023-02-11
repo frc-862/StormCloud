@@ -377,7 +377,7 @@ function selectAnalysis(){
                                             grid.forEach((row, i) => {
                                                 row.forEach((col, j) => {
                                                     var toAdd = 0;
-                                                    if(parseInt(localFinalForTeam[i][j]) != -1){
+                                                    if(parseInt(grid[i][j]) != -1){
                                                         toAdd = 1;
                                                     }
                                                     localFinalForTeam[i][j] += toAdd;
@@ -711,7 +711,7 @@ function selectAnalysis(){
                                         grid.forEach((row, i) => {
                                             row.forEach((col, j) => {
                                                 var toAdd = 0;
-                                                if(parseInt(localFinalForAll[i][j]) != -1){
+                                                if(parseInt(grid[i][j]) != -1){
                                                     toAdd = 1;
                                                 }
                                                 localFinalForAll[i][j] += toAdd;
@@ -804,9 +804,9 @@ function selectAnalysis(){
                                 record.value.forEach((row) => {
                                     var rowHTML = "";
                                     row.forEach((col) => {
-                                        rowHTML += `<div class="text regular" style="border:2px solid #190024;border-radius:4px;font-weight:600;margin: 0px; 2px;padding:10px;color:#190024">${col}</div>`;
+                                        rowHTML += `<div class="text regular" style="border:2px solid #190024;border-radius:8px;font-weight:600;margin:4px;padding:10px;color:#190024">${col}</div>`;
                                     });
-                                    gridHTML += `<div class="flex_center" style="margin-bottom:5px">${rowHTML}</div>`;
+                                    gridHTML += `<div class="flex_center">${rowHTML}</div>`;
                                 });
                                 tlHTML += `<div style="margin-bottom:20px">${gridHTML}</div>`;
                             });
