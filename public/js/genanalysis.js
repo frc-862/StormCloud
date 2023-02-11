@@ -193,7 +193,7 @@ function selectAnalysis(){
 
                                         var count = 0;
                                         gridData.forEach((num) => {
-                                            if(parseInt(num) != -1){
+                                            if(parseInt(num) == indexOfField){
                                                 count += 1;
                                             }
                                         });
@@ -209,7 +209,16 @@ function selectAnalysis(){
                                         var rowData = useData.split("*");
                                         rowData.forEach((row) => {
                                             var cols = row.split(",");
-                                            gridData.push(cols);
+                                            var colsInt = [];
+                                            cols.forEach((col) => {
+                                                if(parseInt(col) == indexOfField){
+                                                    colsInt.push(1);
+                                                }else{
+                                                    colsInt.push(-1);
+                                                }
+                                            });
+
+                                            gridData.push(colsInt);
                                         });
 
                                         putData = gridData;
@@ -531,7 +540,7 @@ function selectAnalysis(){
 
                                         var count = 0;
                                         gridData.forEach((num) => {
-                                            if(parseInt(num) != -1){
+                                            if(parseInt(num) == indexOfField){
                                                 count += 1;
                                             }
                                         });
@@ -546,8 +555,17 @@ function selectAnalysis(){
                                         var gridData = [];
                                         var rowData = useData.split("*");
                                         rowData.forEach((row) => {
-                                            var cols = row.split(",");
-                                            gridData.push(cols);
+                                            var cols = row.split(",");  
+                                            var colsInt = [];
+                                            cols.forEach((col) => {
+                                                if(parseInt(col) == indexOfField){
+                                                    colsInt.push(1);
+                                                }else{
+                                                    colsInt.push(-1);
+                                                }
+                                            });
+
+                                            gridData.push(colsInt);
                                         });
 
                                         putData = gridData;
