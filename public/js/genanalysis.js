@@ -477,11 +477,21 @@ function selectAnalysis(){
                 });
                 document.getElementById("report").innerHTML = fHTML;
             }else{
+
+                var teamString = "";
+                
+                teams.forEach((team) => {
+                    teamString += `<div class='text regular' style="color:#190024;font-weight:600;margin: 0px; 10px">${team}</div>&`;
+                });
+                teamString = teamString.substring(0, teamString.length - 1);
+
                 fHTML += `
                 <div style="border: 2px solid #190024; padding:12px 0px; border-radius:8px;width:100%;margin-bottom:40px">
                     <div class="text caption" style="color:#190024;margin-bottom:10px;font-weight:bold">${analysis.Name}</div>
                     <div class="text caption" style="color:#190024;margin-bottom:20px">Generated at ${now.toLocaleString()}</div>
-                    
+                    <div class="flex_center">
+                        ${teamHTML}
+                    </div>
                 </div>
                 
                
