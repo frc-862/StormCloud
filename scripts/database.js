@@ -50,13 +50,17 @@ const models = {
             latestAccess: String
         }],
         cachedCompetitionData: {
-            ranking: Number,
-            rankingPoints: Number,
-            record: {
-                wins: Number,
-                losses: Number,
-                ties: Number
-            },
+            rankings: [{
+                team: Number,
+                rank: Number,
+                rankingPoints: Number,
+                matchesPlayed: Number,
+                record: {
+                    wins: Number,
+                    losses: Number,
+                    ties: Number
+                }
+            }],
             currentMatch: Number
         }
     })),

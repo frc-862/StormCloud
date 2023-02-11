@@ -401,7 +401,7 @@ function selectAnalysis(){
                                     
                                 });
 
-
+                                var max = 0;
                                 for(var i = 1; i < final.length; i++){
                                     for(var r = 0; r < final[i].length; r++){
                                         for(var c = 0; c < final[i][r].length; c++){
@@ -411,11 +411,19 @@ function selectAnalysis(){
                                         }
                                     }
                                 }
+                                for(var r = 0; r < final[0].length; r++){
+                                    for(var c = 0; c < final[0][r].length; c++){
+                                        if(final[0][r][c] > max){
+                                            max = final[0][r][c];
+                                        }
+                                    }
+                                }
                             
                                 finalData[team].push({
                                     name: part.Name,
                                     type: part.Type,
-                                    value: final[0]
+                                    value: final[0],
+                                    max: max
                                 });
                                 break;
                         }
@@ -744,12 +752,22 @@ function selectAnalysis(){
                                 
                             });
 
+                            var max = 0;
+
                             for(var i = 1; i < final.length; i++){
                                 for(var r = 0; r < final[i].length; r++){
                                     for(var c = 0; c < final[i][r].length; c++){
                                         if(final[i][r][c] != -1){
                                             final[0][r][c] += final[i][r][c];
+                                            
                                         }
+                                    }
+                                }
+                            }
+                            for(var r = 0; r < final[0].length; r++){
+                                for(var c = 0; c < final[0][r].length; c++){
+                                    if(final[0][r][c] > max){
+                                        max = final[0][r][c];
                                     }
                                 }
                             }
@@ -757,7 +775,8 @@ function selectAnalysis(){
                             finalData.push({
                                 name: part.Name,
                                 type: part.Type,
-                                value: final[0]
+                                value: final[0],
+                                max: max
                             });
                             break;
                     }
@@ -819,15 +838,20 @@ function selectAnalysis(){
                             teams.forEach((team) => {
                                 tlHTML += `<div class='text important' style="color:#190024;font-weight:600;margin: 5px; 10px">${team}</div>`;
                                 var record = finalData[team].find(p => p.name == part.name);
+                                
                                 if(record.value == undefined){
                                     return;
+                                }
+                                var max = record.max;
+                                if(max == 0){
+                                    max = 1;
                                 }
                                 var gridHTML = "";
 
                                 record.value.forEach((row) => {
                                     var rowHTML = "";
                                     row.forEach((col) => {
-                                        rowHTML += `<div class="text regular" style="border:2px solid #190024;border-radius:8px;font-weight:600;margin:4px;padding:10px 15px;color:#190024">${col}</div>`;
+                                        rowHTML += `<div class="text regular" style="border:2px solid #190024;border-radius:8px;font-weight:600;margin:4px;padding:10px 15px;color:${col/max > 0.5 ? "#ffffff" : "#190024"};background-color:rgba(25,0,26,${(col/max).toFixed(3)})">${col}</div>`;
                                     });
                                     gridHTML += `<div class="flex_center">${rowHTML}</div>`;
                                 });
@@ -874,6 +898,25 @@ function selectAnalysis(){
                                     <div class='text regular' style="color:#190024;font-weight:600">${part.value.toFixed(2)}</div>
                                 </div>
                             `
+                            break;
+                        case "Grid":
+                            var max = part.max;
+                            if(part.value == undefined){
+                                return;
+                            }
+                            if(max == 0){
+                                max = 1;
+                            }
+                            var gridHTML = "";
+
+                            part.value.forEach((row) => {
+                                var rowHTML = "";
+                                row.forEach((col) => {
+                                    rowHTML += `<div class="text regular" style="border:2px solid #190024;border-radius:8px;font-weight:600;margin:4px;padding:10px 15px;color:${col/max > 0.5 ? "#ffffff" : "#190024"};background-color:rgba(25,0,26,${(col/max).toFixed(3)})">${col}</div>`;
+                                });
+                                gridHTML += `<div class="flex_center">${rowHTML}</div>`;
+                            });
+                            fHTML += `<div style="margin-bottom:20px">${gridHTML}</div>`;
                             break;
                     }
                     

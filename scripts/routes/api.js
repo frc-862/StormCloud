@@ -1119,7 +1119,37 @@ router.get("/first/schedule*", async (req, res, next) => {
 });
 
 router.get("/first/updateCache", async (req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
 
+    var year = env.settings.competitionYear;
+    var competition = env.settings.competitionCode;
+
+    if(year == undefined || competition == undefined){
+        res.status(500).json({message: "No competition set!"});
+        return;
+    }
+
+    var fRes1 = await firstApiTools.getRankings(year, competition);
+
+    var finalRankings = [];
+    var rankings = fRes1["Rankings"];
+    rankings.forEach((ranking) => {
+        finalRankings.push({
+            team: ranking["teamNumber"],
+            rank: ranking["rank"],
+            record: {
+                wins: ranking["wins"],
+                losses: ranking["losses"],
+                ties: ranking["ties"]
+            },
+            rankingPoints: ranking["sortOrder1"],
+            matchesPlayed: ranking["matchesPlayed"]
+        });
+    });
+
+
+
+    
 });
 
 router.get("/first/results*", async(req, res, next) => {

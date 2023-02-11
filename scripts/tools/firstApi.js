@@ -62,9 +62,23 @@ async function getMatchResults(year, competition, phase){
     return res.data;
 }
 
+async function getRankings(year, competition){
+    try{
+        var res = await axios.get(getBaseApiUrl() + `/${year}/rankings/${competition}`);
+
+
+    }catch(e){
+        return {error:e};
+    }
+    res.data["status"] = res.status;
+    return res.data;
+}
+
+
 module.exports = {
     testConnectivity: testConnectivity,
     getSchedule: getSchedule,
     getTeams: getTeams,
-    getMatchResults: getMatchResults
+    getMatchResults: getMatchResults,
+    getRankings: getRankings
 }
