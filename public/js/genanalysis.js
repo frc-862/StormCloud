@@ -164,6 +164,7 @@ function selectAnalysis(){
                         if(requestedDataPoints[key] == undefined){
                             return;
                         }
+                        var useData = JSON.parse(data.data)[indexOfField];
 
                         requestedDataPoints[key].forEach((partId) => {
                             var analysisPart = analysis.Parts.find(p => p._id == partId);
@@ -171,19 +172,20 @@ function selectAnalysis(){
                                 // most likely just requesting number only
                                 if(Object.keys(partSets[partId][foundTeam]).find(k => k == key)){
                                     // then add to obj
-                                    partSets[partId][foundTeam][key].push(data.data[indexOfField])
+                                    partSets[partId][foundTeam][key].push(useData)
                                 }else{
                                     // then create obj
-                                    partSets[partId][foundTeam][key] = [data.data[indexOfField]]
+                                    partSets[partId][foundTeam][key] = [useData]
                                 }
                             }else if(field.componentType == "Grid"){
                                 // data point depends on the analysisPart type
                                 var putData = 0;
+                                
                                 switch(analysisPart.Type){
                                     case "Number":
                                         // then we are just requesting a number
                                         var gridData = [];
-                                        var rowData = data.data[indexOfField].split("*");
+                                        var rowData = useData.split("*");
                                         rowData.forEach((row) => {
                                             var rowArr = row.split(",");
                                             gridData.extend(rowArr);
@@ -204,7 +206,7 @@ function selectAnalysis(){
                                     case "Grid":
                                         // we need the GRID ITSELF
                                         var gridData = [];
-                                        var rowData = data.data[indexOfField].split("*");
+                                        var rowData = useData.split("*");
                                         rowData.forEach((row) => {
                                             var cols = row.split(",");
                                             gridData.push(cols);
@@ -489,16 +491,18 @@ function selectAnalysis(){
                             return;
                         }
 
+                        var useData = JSON.parse(data.data)[indexOfField];
+
                         requestedDataPoints[key].forEach((partId) => {
                             var analysisPart = analysis.Parts.find(p => p._id == partId);
                             if(field.componentType == "Step" || field.componentType == "Timer"){
                                 // most likely just requesting number only
                                 if(Object.keys(partSets[partId]).find(k => k == key)){
                                     // then add to obj
-                                    partSets[partId][key].push(data.data[indexOfField])
+                                    partSets[partId][key].push(useData)
                                 }else{
                                     // then create obj
-                                    partSets[partId][key] = [data.data[indexOfField]]
+                                    partSets[partId][key] = [useData]
                                 }
                             }else if(field.componentType == "Grid"){
                                 // data point depends on the analysisPart type
@@ -507,7 +511,7 @@ function selectAnalysis(){
                                     case "Number":
                                         // then we are just requesting a number
                                         var gridData = [];
-                                        var rowData = data.data[indexOfField].split("*");
+                                        var rowData = useData.split("*");
                                         rowData.forEach((row) => {
                                             var rowArr = row.split(",");
                                             gridData.extend(rowArr);
@@ -528,7 +532,7 @@ function selectAnalysis(){
                                     case "Grid":
                                         // we need the GRID ITSELF
                                         var gridData = [];
-                                        var rowData = data.data[indexOfField].split("*");
+                                        var rowData = useData.split("*");
                                         rowData.forEach((row) => {
                                             var cols = row.split(",");
                                             gridData.push(cols);
@@ -775,7 +779,7 @@ function selectAnalysis(){
                                 record.value.forEach((row) => {
                                     var rowHTML = "";
                                     row.forEach((col) => {
-                                        rowHTML += `<div class="text regular" style="border:2px solid #190024;font-weight:600;margin: 0px; 2px;padding:10px;">${col}</div>`;
+                                        rowHTML += `<div class="text regular" style="border:2px solid #190024;border-radius:4px;font-weight:600;margin: 0px; 2px;padding:10px;color:#190024">${col}</div>`;
                                     });
                                     gridHTML += `<div class="flex_center" style="margin-bottom:5px">${rowHTML}</div>`;
                                 });
