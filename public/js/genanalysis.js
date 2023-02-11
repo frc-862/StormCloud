@@ -166,12 +166,12 @@ function selectAnalysis(){
                             var analysisPart = analysis.Parts.find(p => p._id == partId);
                             if(field.componentType == "Step" || field.componentType == "Timer"){
                                 // most likely just requesting number only
-                                if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == key)){
+                                if(Object.keys(partSets[partId][foundTeam]).find(k => k == key)){
                                     // then add to obj
-                                    partSets[partId][foundTeam.team][key].push(data.data[indexOfField])
+                                    partSets[partId][foundTeam][key].push(data.data[indexOfField])
                                 }else{
                                     // then create obj
-                                    partSets[partId][foundTeam.team][key] = [data.data[indexOfField]]
+                                    partSets[partId][foundTeam][key] = [data.data[indexOfField]]
                                 }
                             }else if(field.componentType == "Grid"){
                                 // data point depends on the analysisPart type
@@ -211,12 +211,12 @@ function selectAnalysis(){
                                         break;
 
                                 }
-                                if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == key)){
+                                if(Object.keys(partSets[partId][foundTeam]).find(k => k == key)){
                                     // then add to obj
-                                    partSets[partId][foundTeam.team][key].push(putData)
+                                    partSets[partId][foundTeam][key].push(putData)
                                 }else{
                                     // then create obj
-                                    partSets[partId][foundTeam.team][key] = [putData]
+                                    partSets[partId][foundTeam][key] = [putData]
                                 }
                             }
 
