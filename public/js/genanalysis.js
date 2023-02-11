@@ -776,13 +776,17 @@ function selectAnalysis(){
                 var teamHTML = "";
                 
                 teams.forEach((team) => {
-                    teamHTML += `<div class='text regular' style="color:#190024;font-weight:600;margin: 0px; 10px">${team}</div>`;
+                    teamHTML += `<div class='text important' style="color:#190024;font-weight:600;margin: 0px; 10px">${team}</div>`;
                 });
 
                 fHTML += `
                 <div style="border: 2px solid #190024; padding:12px 0px; border-radius:8px;width:100%;margin-bottom:40px">
-                    <div class="text caption" style="color:#190024;margin-bottom:10px;font-weight:bold">${analysis.Name}</div>
-                    <div class="text caption" style="color:#190024;margin-bottom:20px">Generated at ${now.toLocaleString()}</div>
+                    <div class="flex_apart" style="margin-bottom:10px;padding:0px 14px">
+                        <div class="text regular" style="color:#190024;font-weight:bold">${analysis.Name}</div>
+                        <div class="text regular" style="color:#190024">${now.toLocaleString()}</div>
+                    </div>
+                    
+                    
                     <div class="flex_apart">
                         ${teamHTML}
                     </div>
@@ -812,7 +816,7 @@ function selectAnalysis(){
                             break;
                         case "Grid":
                             teams.forEach((team) => {
-                                tlHTML += `<div class='text regular' style="color:#190024;font-weight:600;margin: 0px; 10px">${team}</div>`;
+                                tlHTML += `<div class='text important' style="color:#190024;font-weight:600;margin: 5px; 10px">${team}</div>`;
                                 var record = finalData[team].find(p => p.name == part.name);
                                 if(record.value == undefined){
                                     return;
@@ -822,7 +826,7 @@ function selectAnalysis(){
                                 record.value.forEach((row) => {
                                     var rowHTML = "";
                                     row.forEach((col) => {
-                                        rowHTML += `<div class="text regular" style="border:2px solid #190024;border-radius:8px;font-weight:600;margin:4px;padding:10px;color:#190024">${col}</div>`;
+                                        rowHTML += `<div class="text regular" style="border:2px solid #190024;border-radius:8px;font-weight:600;margin:4px;padding:10px 15px;color:#190024">${col}</div>`;
                                     });
                                     gridHTML += `<div class="flex_center">${rowHTML}</div>`;
                                 });
