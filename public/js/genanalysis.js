@@ -431,10 +431,11 @@ function selectAnalysis(){
 
             // now show onto the report screen
             var fHTML = "";
+            var now = new Date();
             if(separate){
 
                 var teamHTML = "";
-                var now = new Date();
+                
                 teams.forEach((team) => {
                     teamHTML += `<div class='text regular' style="color:#190024;font-weight:600;margin: 0px; 10px">${team}</div>`;
                 });
