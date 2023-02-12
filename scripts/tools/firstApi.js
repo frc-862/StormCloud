@@ -51,6 +51,16 @@ async function getTeams(year, competition){
     return res.data;
 }
 
+async function getSimpleMatchResults(year, competition, phase){
+    try{
+        var res = await axios.get(getBaseApiUrl() +  `/${year}/matches/${competition}?tournamentLevel=${phase}`, {headers: {"Authorization":getAuthToken()}});
+    }catch(e){
+        return {error:e};
+    }
+    res.data["status"] = res.status;
+    return res.data;
+}
+
 async function getMatchResults(year, competition, phase){
     try{
         var res = await axios.get(getBaseApiUrl() +  `/${year}/scores/${competition}/${phase}`, {headers: {"Authorization":getAuthToken()}});
@@ -80,5 +90,6 @@ module.exports = {
     getSchedule: getSchedule,
     getTeams: getTeams,
     getMatchResults: getMatchResults,
-    getRankings: getRankings
+    getRankings: getRankings,
+    getSimpleMatchResults: getSimpleMatchResults
 }

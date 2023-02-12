@@ -1123,6 +1123,7 @@ router.get("/first/updateCache", async (req, res, next) => {
 
     var year = env.settings.competitionYear;
     var competition = env.settings.competitionCode;
+    var matchType = env.settings.matchType;
 
     if(year == undefined || competition == undefined){
         res.status(500).json({message: "No competition set!"});
@@ -1146,6 +1147,27 @@ router.get("/first/updateCache", async (req, res, next) => {
             matchesPlayed: ranking["matchesPlayed"]
         });
     });
+
+    var fRes2 = await firstApiTools.getSimpleMatchResults(year, competition, matchType);
+    
+
+    var latestMatch = 0;
+    var matchResults = fRes2["Matches"];
+    matchResults.forEach((match) => {
+        if(match["matchNumber"] > latestMatch){
+            latestMatch = match["matchNumber"];
+        }
+    })
+    var currentMatch = latestMatch + 1;
+
+    var cache = {
+        rankings: finalRankings,
+        currentMatch: currentMatch
+    }
+
+    await db.updateDoc("Environment", {_id: env._id}, {cachedCompetitionData: cache});
+
+    res.status(200).json({message: "Cache updated!", cache: cache});
 
 
 

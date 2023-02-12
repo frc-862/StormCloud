@@ -482,6 +482,19 @@
                             
                         </div>
                         <div class="flex_apart" style="margin:10px">
+                            <span class="textslim" style="width:40%">Current Match Type</span>
+                            <div class="flex_apart" style="width:60%">
+                                <select style="pointer-events: all" class="input text important setting" data-type="select" data-setting="matchType" onkeyup="settingChange(this)">
+                                    <option value="Qualification">Qualification Matches</option>
+                                    <option value="Practice">Practice Matches</option>
+                                    <option value="Playoff">Playoff Matches</option>
+                                    
+                                </select>
+                                <input type="text" class="input text important setting" style="pointer-events: all;width:60%" value="MI2022" placeholder="Competition Code" data-type="input" data-setting="competitionCode" onkeyup="settingChange(this)"/>
+                            </div>
+                            
+                        </div>
+                        <div class="flex_apart" style="margin:10px">
                             <span class="textslim" style="width:40%">Competition Year</span>
                             <input type="number" class="input text important setting" style="pointer-events: all;width:60%" value="" placeholder="1999" data-type="input" data-setting="competitionYear" onkeyup="settingChange(this)"/>
                             
