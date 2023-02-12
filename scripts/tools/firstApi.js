@@ -74,7 +74,7 @@ async function getMatchResults(year, competition, phase){
 
 async function getRankings(year, competition){
     try{
-        var res = await axios.get(getBaseApiUrl() + `/${year}/rankings/${competition}`);
+        var res = await axios.get(getBaseApiUrl() + `/${year}/rankings/${competition}`, {headers: {"Authorization":getAuthToken()}});
 
 
     }catch(e){

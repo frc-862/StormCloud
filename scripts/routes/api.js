@@ -1118,18 +1118,8 @@ router.get("/first/schedule*", async (req, res, next) => {
     
 });
 
-router.get("/first/updateCache", async (req, res, next) => {
+async function updateCache(year, competition, matchType){
     var env = await authTools.getEnvironment(environment);
-
-    var year = env.settings.competitionYear;
-    var competition = env.settings.competitionCode;
-    var matchType = env.settings.matchType;
-
-    if(year == undefined || competition == undefined){
-        res.status(500).json({message: "No competition set!"});
-        return;
-    }
-
     var fRes1 = await firstApiTools.getRankings(year, competition);
 
     var finalRankings = [];
@@ -1162,16 +1152,103 @@ router.get("/first/updateCache", async (req, res, next) => {
 
     var cache = {
         rankings: finalRankings,
-        currentMatch: currentMatch
+        currentMatch: currentMatch,
+        updated: new Date()
     }
 
     await db.updateDoc("Environment", {_id: env._id}, {cachedCompetitionData: cache});
+
+    return cache;
+}
+
+router.get("/first/cache", async (req, res, next) => {
+    // if data is older than 5 minutes, update it
+    var env = await authTools.getEnvironment(environment);
+
+    var cache = env.cachedCompetitionData;
+    if(cache.updated == undefined || cache.updated.getTime() + 1000 * 60 * 5 < new Date().getTime()){
+        var year = env.settings.competitionYear;
+        var competition = env.settings.competitionCode;
+        var matchType = env.settings.matchType;
+
+        if(year == undefined || competition == undefined){
+            res.status(500).json({message: "No competition set!"});
+            return;
+        }
+
+        cache = await updateCache(year, competition, matchType);
+    }
+
+    res.status(200).json({message: "Cache possibly updated as a result of your request!", cache: cache});
+});
+
+
+router.get("/first/updateCache", async (req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
+
+    var year = env.settings.competitionYear;
+    var competition = env.settings.competitionCode;
+    var matchType = env.settings.matchType;
+
+    if(year == undefined || competition == undefined){
+        res.status(500).json({message: "No competition set!"});
+        return;
+    }
+
+    var cache = await updateCache(year, competition, matchType);
+    
 
     res.status(200).json({message: "Cache updated!", cache: cache});
 
 
 
     
+});
+
+router.get("/quick/state", async (req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
+
+    var currentMatch = env.cachedCompetitionData.currentMatch;
+    var currentlyRunning = true;
+    var allMatches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
+    var largerMatches = allMatches.filter((match) => {return match.matchNumber >= currentMatch});
+    currentlyRunning = largerMatches.length > 0;
+
+    res.status(200).json({currentMatch: currentMatch, currentlyRunning: currentlyRunning});
+    
+});
+
+router.get("/quick/team*", async (req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
+
+    var teamNumber = req.query.teamNumber;
+
+    var rankingObject = env.cachedCompetitionData.rankings.find((ranking) => ranking.team == parseInt(teamNumber));
+    var teamObject = await db.getDocs("Team", {environment: env.friendlyId, teamNumber: teamNumber});
+
+
+    res.status(200).json({ranking: rankingObject, team: teamObject});
+
+});
+
+router.get("/quick/matches*", async (req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
+
+    var teamNumber = req.query.teamNumber;
+
+    var allMatches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
+    var sendBackMatches = allMatches.filter((m) => m.teams.find((t) => t.team == teamNumber) != undefined);
+    // remove all specific scoring data
+    for(var i = 0; i < sendBackMatches.length; i++){
+        sendBackMatches[i].documents = [];
+        sendBackMatches[i].results = {
+            finished: sendBackMatches[i].results.finished,
+            red: sendBackMatches[i].results.red,
+            blue: sendBackMatches[i].results.blue
+        }
+    }
+
+    res.status(200).json({matches: sendBackMatches});
 });
 
 router.get("/first/results*", async(req, res, next) => {

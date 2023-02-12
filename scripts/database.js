@@ -62,7 +62,8 @@ const models = {
                     ties: Number
                 }
             }],
-            currentMatch: Number
+            currentMatch: Number,
+            updated: Date
         }
     })),
     'Match' : mongoose.model('Match', new mongoose.Schema({
