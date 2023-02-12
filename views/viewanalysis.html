@@ -15,6 +15,15 @@
                 color: black;
             }
 
+            @page {
+                size: auto;  /* auto is the initial value */
+                margin: 0mm; /* this affects the margin in the printer settings */
+              }
+              html {
+                background-color: #FFFFFF;
+                margin: 0px; /* this affects the margin on the HTML before sending to printer */
+              }
+              
             *{
                 font-family: 'Roboto', sans-serif;
             }
@@ -44,6 +53,10 @@
                     <select class="input text important level1bg" id="analysis_sets" style="width:60%;pointer-events: all">
 
                     </select>
+                </div>
+                <div class="flex_apart" style="margin:10px;text-align:center">
+                    <span class="textslim" style="width:40%;color:#190024">Print on Finish</span>
+                    <input type="checkbox" class="input text important" id="analysis_print" style="pointer-events: all;width:60%;display:inline-block" value=""/>
                 </div>
                 <div class="level1bg container clickable" style="padding:10px; margin:25px 20px;display:none" id="analysis_submit" onclick="selectAnalysis()">
                     <span class="text caption">Show</span>

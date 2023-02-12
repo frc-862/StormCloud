@@ -950,9 +950,13 @@ function selectAnalysis(){
     
                 
     
-    
+                if(document.getElementById("analysis_print").checked){
+                    window.print();
+                }
             }
+
         });
+
     });
     
 }
