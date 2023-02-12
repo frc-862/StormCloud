@@ -1119,6 +1119,10 @@ router.get("/first/schedule*", async (req, res, next) => {
 });
 
 async function updateCache(year, competition, matchType){
+
+    if(matchType != "Qualification" && matchType != "Playoff" && matchType != "Practice" && matchType != "None"){
+        matchType = "Qualification";
+    }
     var env = await authTools.getEnvironment(environment);
     var fRes1 = await firstApiTools.getRankings(year, competition);
 
