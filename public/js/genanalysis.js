@@ -192,7 +192,7 @@ function selectAnalysis(){
                                             var rowData = useData.split("*");
                                             rowData.forEach((row) => {
                                                 var rowArr = row.split(",");
-                                                gridData.extend(rowArr);
+                                                gridData.concat(rowArr);
                                             });
     
                                             var count = 0;
@@ -552,7 +552,7 @@ function selectAnalysis(){
                                             var rowData = useData.split("*");
                                             rowData.forEach((row) => {
                                                 var rowArr = row.split(",");
-                                                gridData.extend(rowArr);
+                                                gridData.concat(rowArr);
                                             });
     
                                             var count = 0;
