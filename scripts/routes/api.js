@@ -79,6 +79,26 @@ router.get('/matches*', async function(req, res, next) {
     res.json({matches: sendBackMatches, allDocuments: allDocuments});
 });
 
+router.get("/request/scouter*", async(req, res, next) => {
+    let env = await authTools.getEnvironment(environment);
+
+    var authValid = await authTools.checkPassword(req.query.authKey, env);
+
+    var scouter = req.query.scouter;
+    var competition = env.settings.competitionYear + env.settings.competitionCode;
+    var sendBackDocuments = [];
+    if(authValid){
+        var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match", competition: competition});
+        sendBackDocuments = documents.filter(doc => {
+            var data = JSON.parse(doc.data);
+            return data.scouter == scouter || data.author == scouter;
+        })
+    }
+    
+    
+    res.json({documents: sendBackDocuments, auth: authValid});
+});
+
 router.get("/request/match*", async (req, res, next) => {
     let env = await authTools.getEnvironment(environment);
 
