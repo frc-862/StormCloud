@@ -173,6 +173,16 @@ function prepareAnalysis(analysis, schema, documents, matches, team){
             if(component.Type == "Label"){
                 return;
             }
+            if(component.Type == "Check"){
+                schemaFields.push({
+                    part: part.Name,
+                    component: component.Name,
+                    componentType: component.Type,
+                    on: component.On,
+                    off: component.Off
+                })
+                return;
+            }
             schemaFields.push({
                 part: part.Name,
                 component: component.Name,
@@ -278,6 +288,15 @@ function prepareAnalysis(analysis, schema, documents, matches, team){
                     }else{
                         // then create obj
                         partSets[partId][key] = [useData]
+                    }
+                }else if(field.componentType == "Check"){
+                    // most likely just requesting number only
+                    if(Object.keys(partSets[partId]).find(k => k == key)){
+                        // then add to obj
+                        partSets[partId][key].push(field.on == useData ? 1 : 0)
+                    }else{
+                        // then create obj
+                        partSets[partId][key] = [field.on == useData ? 1 : 0]
                     }
                 }else if(field.componentType == "Grid"){
                     // data point depends on the analysisPart type

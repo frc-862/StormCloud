@@ -77,10 +77,20 @@ function selectAnalysis(){
                         if(component.Type == "Label"){
                             return;
                         }
+                        if(component.Type == "Check"){
+                            schemaFields.push({
+                                part: part.Name,
+                                component: component.Name,
+                                componentType: component.Type,
+                                on: component.On,
+                                off: component.Off
+                            })
+                            return;
+                        }
                         schemaFields.push({
                             part: part.Name,
                             component: component.Name,
-                            componentType: component.Type
+                            componentType: component.Type,
                         })
                     });
                 });
@@ -180,6 +190,15 @@ function selectAnalysis(){
                                     }else{
                                         // then create obj
                                         partSets[partId][foundTeam][key] = [useData]
+                                    }
+                                }else if(field.componentType == "Check"){
+                                    // most likely just requesting number only
+                                    if(Object.keys(partSets[partId][foundTeam]).find(k => k == key)){
+                                        // then add to obj
+                                        partSets[partId][foundTeam][key].push(field.on == useData ? 1 : 0)
+                                    }else{
+                                        // then create obj
+                                        partSets[partId][foundTeam][key] = [field.on == useData ? 1 : 0]
                                     }
                                 }else if(field.componentType == "Grid"){
                                     // data point depends on the analysisPart type
@@ -542,7 +561,17 @@ function selectAnalysis(){
                                         // then create obj
                                         partSets[partId][key] = [useData]
                                     }
-                                }else if(field.componentType == "Grid"){
+                                }else if(field.componentType == "Check"){
+                                    // most likely just requesting number only
+                                    if(Object.keys(partSets[partId]).find(k => k == key)){
+                                        // then add to obj
+                                        partSets[partId][key].push(field.on == useData ? 1 : 0)
+                                    }else{
+                                        // then create obj
+                                        partSets[partId][key] = [field.on == useData ? 1 : 0]
+                                    }
+                                }
+                                else if(field.componentType == "Grid"){
                                     // data point depends on the analysisPart type
                                     var putData = 0;
                                     switch(analysisPart.Type){
