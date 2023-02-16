@@ -348,6 +348,9 @@ function prepareAnalysis(analysis, schema, documents, matches, team){
     matches.forEach((match) => {
         var foundTeam = match.teams.find(t => t.team == team);
 
+        if(foundTeam == undefined){
+            return;
+        }
         if(!match.results.finished){
             return;
         }

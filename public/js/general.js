@@ -120,7 +120,7 @@ function show_settings(){
     analysises.forEach((i) => {
        document.querySelector(".setting[data-setting='defaultAnalysis']").innerHTML += `<option value="${i["Name"]}">${i["Name"]}</option>` 
     });
-    
+
 
     Object.keys(settings).forEach((name) => {
         var value = settings[name];
@@ -158,7 +158,7 @@ function pull_environment(){
             settings = data["environment"]["settings"];
             schemas = data["schemas"];
             
-            get("/analysis/all", {} , function(success, data){
+            get("/api/analysis/all", {} , function(success, data){
                 analysises = data["analysis"];
                 show_settings();
             });
