@@ -161,6 +161,380 @@ router.post("/request/document/delete*", async (req, res, next) => {
 
 });
 
+
+function prepareAnalysis(analysis, schema, documents, matches, team){
+    // replication of the HTML version
+    
+    var partSets = {};
+    var requestedDataPoints = {};
+    var schemaFields = [];
+    schema.Parts.forEach((part) => {
+        part.Components.forEach((component) => {
+            if(component.Type == "Label"){
+                return;
+            }
+            schemaFields.push({
+                part: part.Name,
+                component: component.Name,
+                componentType: component.Type
+            })
+        });
+    });
+
+    var finalData = undefined;
+
+
+    analysis.Parts.forEach((part) => {
+        partSets[part._id] = {};
+        
+        switch(part.Type){
+            case "Number":
+                //request SchemaFields and FIRSTFields
+                try{
+                    part.Data["SchemaFields"].forEach((field) => {
+                        if(requestedDataPoints[field] == undefined){
+                            requestedDataPoints[field] = [part._id];
+                        }else{
+                            requestedDataPoints[field].push(part._id);
+                        }
+                    });
+                }catch(e){
+                    console.log(e);
+                }
+
+                try{
+                    part.Data["FIRSTFields"].forEach((field) => {
+                        if(requestedDataPoints[field] == undefined){
+                            requestedDataPoints[field] = [part._id];
+                        }else{
+                            requestedDataPoints[field].push(part._id);
+                        }
+                    });
+                }catch(e){
+                    console.log(e);
+                }
+                
+                break;
+            case "Grid":
+                // just request schemafields
+                try{
+                    part.Data["SchemaFields"].forEach((field) => {
+                        if(requestedDataPoints[field] == undefined){
+                            requestedDataPoints[field] = [part._id];
+                        }else{
+                            requestedDataPoints[field].push(part._id);
+                        }
+                    });
+                }
+                catch(e){
+                    console.log(e);
+                }
+                break;
+            case "FIRST":
+                try{
+                    if(requestedDataPoints[part.Data["DataPoint"]] == undefined){
+                        requestedDataPoints[part.Data["DataPoint"]] = [part._id];
+                    }else{
+                        requestedDataPoints[part.Data["DataPoint"]].push(part._id);
+                    }
+                }catch(e){
+
+                }
+                // just request finalscore
+        }
+    });
+
+    documents.forEach((doc) => {
+        var data = JSON.parse(doc.json);
+        // assume that we've already sorted the document
+
+        if(!data.completed){
+            return;
+        }
+
+        if(!(data.type == "tablet")){
+            return;
+        }
+        if(!(data.schema == analysis.Schema.Name)){
+            return;
+        }
+
+        schemaFields.forEach((field) => {
+            var key = field.part + "---" + field.component;
+            var indexOfField = schemaFields.indexOf(field);
+            if(requestedDataPoints[key] == undefined){
+                return;
+            }
+
+            var useData = JSON.parse(data.data)[indexOfField];
+
+            requestedDataPoints[key].forEach((partId) => {
+                var analysisPart = analysis.Parts.find(p => p._id == partId);
+                if(field.componentType == "Step" || field.componentType == "Timer"){
+                    // most likely just requesting number only
+                    if(Object.keys(partSets[partId]).find(k => k == key)){
+                        // then add to obj
+                        partSets[partId][key].push(useData)
+                    }else{
+                        // then create obj
+                        partSets[partId][key] = [useData]
+                    }
+                }else if(field.componentType == "Grid"){
+                    // data point depends on the analysisPart type
+                    var putData = 0;
+                    switch(analysisPart.Type){
+                        case "Number":
+                            // then we are just requesting a number
+                            var gridData = [];
+                            var rowData = useData.split("*");
+                            rowData.forEach((row) => {
+                                var rowArr = row.split(",");
+                                gridData = gridData.concat(rowArr);
+                            });
+
+                            var count = 0;
+                            gridData.forEach((num) => {
+                                if(parseInt(num) == indexOfField){
+                                    count += 1;
+                                }
+                            });
+
+                            putData = count;
+
+                            
+
+                            break;
+                        case "Grid":
+                            // we need the GRID ITSELF
+                            var gridData = [];
+                            var rowData = useData.split("*");
+                            rowData.forEach((row) => {
+                                var cols = row.split(",");  
+                                var colsInt = [];
+                                cols.forEach((col) => {
+                                    if(parseInt(col) == indexOfField){
+                                        colsInt.push(1);
+                                    }else{
+                                        colsInt.push(-1);
+                                    }
+                                });
+
+                                gridData.push(colsInt);
+                            });
+
+                            putData = gridData;
+                            break;
+
+                    }
+                    if(Object.keys(partSets[partId]).find(k => k == key)){
+                        // then add to obj
+                        partSets[partId][key].push(putData)
+                    }else{
+                        // then create obj
+                        partSets[partId][key] = [putData]
+                    }
+                }
+
+                // handle EACH PART ID AND ADDING DATA
+                
+            });
+
+            
+        });
+
+
+    });
+
+    matches.forEach((match) => {
+        var foundTeam = match.teams.find(t => t.team == team);
+
+        if(!match.results.finished){
+            return;
+        }
+
+        if(foundTeam.color == "Red"){
+            var stats = match.results.redStats;
+            Object.keys(stats).forEach((key) => {
+                if(requestedDataPoints[key] == undefined){
+                    return;
+                }
+                requestedDataPoints[key].forEach((partId) => {
+                    // handle EACH PART ID AND ADDING DATA
+                    if(Object.keys(partSets[partId]).find(k => k == key)){
+                        // then add to obj
+                        partSets[partId][key].push(stats[key])
+                    }else{
+                        // then create obj
+                        partSets[partId][key] = [stats[key]]
+                    }
+                });
+            });
+
+            
+        }else{
+            var stats = match.results.blueStats;
+            Object.keys(stats).forEach((key) => {
+                if(requestedDataPoints[key] == undefined){
+                    return;
+                }
+                requestedDataPoints[key].forEach((partId) => {
+                    // handle EACH PART ID AND ADDING DATA
+                    if(Object.keys(partSets[partId]).find(k => k == key)){
+                        // then add to obj
+                        partSets[partId][key].push(stats[key])
+                    }else{
+                        // then create obj
+                        partSets[partId][key] = [stats[key]]
+                    }
+                });
+            });
+        }
+
+        
+
+
+    });
+
+    finalData = [];
+
+    Object.keys(partSets).forEach((partId) => {
+        // now we condense
+
+        var part = analysis.Parts.find(p => p._id == partId);
+        var partData = partSets[partId];
+
+        switch(part.Type){
+            case "Number":
+                var final = 0;
+                var n = 0;
+
+                var method = part.Data["Stat_Between"];
+                var finalMethod = part.Data["Stat_Final"];
+
+                // first, handle the statistical analysis of the individual parts
+                Object.keys(partData).forEach((key) => {
+                    try{
+                        var localFinal = 0;
+
+                        switch(method){
+                            case "sum":
+                                localFinal = partData[key].reduce((a, b) => a + b, 0);
+                                break;
+                            case "avg":
+                                localFinal = partData[key].reduce((a, b) => a + b, 0) / partData[key].length;
+                                break;
+                            case "max":
+                                localFinal = Math.max(...partData[key]);
+                                break;
+                            case "min":
+                                localFinal = Math.min(...partData[key]);
+                                break;
+                            case "range":
+                                localFinal = Math.max(...partData[key]) - Math.min(...partData[key]);
+                                break;
+                        }
+                        n += 1;
+                        final += localFinal;
+                    }catch(e){
+                        console.log(e);
+                    }
+                    
+                });
+                if(finalMethod == "avg"){
+                    final = final / n;
+                }
+                finalData.push({
+                    name: part.Name,
+                    type: part.Type,
+                    value: final
+                });
+
+
+                break;
+            case "Grid":
+                // get one grid for each team!
+                var final = [];
+
+                Object.keys(partData).forEach((key) => {
+                    try{
+                        if(partData[key].length == 0){
+                            return;
+                        }
+                        var localFinalForAll = [];
+                        
+                        var height = partData[key][0].length;
+                        var width = partData[key][0][0].length;
+
+                        for(var i = 0; i < height; i++){
+                            var row = [];
+                            for(var j = 0; j < width; j++){
+                                row.push(0);
+                            }
+                            localFinalForAll.push(row);
+                        }
+
+                        partData[key].forEach((grid) => {
+                            grid.forEach((row, i) => {
+                                row.forEach((col, j) => {
+                                    var toAdd = 0;
+                                    if(parseInt(grid[i][j]) != -1){
+                                        toAdd = 1;
+                                    }
+                                    localFinalForAll[i][j] += toAdd;
+                                });
+                            });
+                        });
+
+                        final.push(localFinalForAll);
+                    }catch(e){
+                        // if it reaches here, then it is of a different size
+                    }
+                    
+                });
+
+                var max = 0;
+
+                for(var i = 1; i < final.length; i++){
+                    for(var r = 0; r < final[i].length; r++){
+                        for(var c = 0; c < final[i][r].length; c++){
+                            if(final[i][r][c] != -1){
+                                final[0][r][c] += final[i][r][c];
+                                
+                            }
+                        }
+                    }
+                }
+                try{
+                    for(var r = 0; r < final[0].length; r++){
+                        for(var c = 0; c < final[0][r].length; c++){
+                            if(final[0][r][c] > max){
+                                max = final[0][r][c];
+                            }
+                        }
+                    }
+                }catch(e){
+
+                }
+
+                finalData.push({
+                    name: part.Name,
+                    type: part.Type,
+                    value: final[0],
+                    max: max
+                });
+                break;
+        }
+    });
+
+    return finalData;
+
+
+
+
+
+}
+
+
 router.get("/request/team*", async(req, res, next) => {
     let env = await authTools.getEnvironment(environment);
 
@@ -187,6 +561,14 @@ router.get("/request/team*", async(req, res, next) => {
         });
     }
     
+    var analysis = await db.getDocs("Analysis", {environment: env.friendlyId});
+    var defaultAnalysis = analysis.find(a => a.Name == env.settings.defaultAnalysis);
+
+    var schema = undefined;
+    if(defaultAnalysis != undefined){
+        var schemas = await db.getDocs("Schema", {environment: env.friendlyId});
+        schema = schemas.find(s => s.Name == defaultAnalysis.Schema.Name);
+    }
 
     if(teams.length == 0){
         if(documents.length == 0){
@@ -208,6 +590,11 @@ router.get("/request/team*", async(req, res, next) => {
             }
         }
         matches = matches.sort((a, b) => a.matchNumber - b.matchNumber);
+
+        if(defaultAnalysis != undefined){
+            var getPreparedAnalysis = prepareAnalysis(defaultAnalysis, schema, documents, matches, parseInt(teamNumber));
+            sendBackTeam.analysis = getPreparedAnalysis;
+        }
 
         matches.forEach(match => {
             if(match.teams.find(t => t.team == teamNumber) != undefined){
@@ -264,6 +651,11 @@ router.get("/request/team*", async(req, res, next) => {
             }
 
         };
+
+        if(defaultAnalysis != undefined){
+            var getPreparedAnalysis = prepareAnalysis(defaultAnalysis, schema, documents, matches, parseInt(teamNumber));
+            sendBackTeam.analysis = getPreparedAnalysis;
+        }
 
         matches.forEach(match => {
             if(match.teams.find(t => t.team == teamNumber) != undefined){
@@ -1239,6 +1631,21 @@ router.get("/quick/matches*", async (req, res, next) => {
     var env = await authTools.getEnvironment(environment);
 
     var teamNumber = req.query.teamNumber;
+    if(teamNumber == undefined){
+        var allMatches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
+        var sendBackMatches = allMatches;
+        // remove all specific scoring data
+        for(var i = 0; i < sendBackMatches.length; i++){
+            sendBackMatches[i].documents = [];
+            sendBackMatches[i].results = {
+                finished: sendBackMatches[i].results.finished,
+                red: sendBackMatches[i].results.red,
+                blue: sendBackMatches[i].results.blue
+            }
+        }
+        res.status(200).json({matches: sendBackMatches});
+        return;
+    }
 
     var allMatches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
     var sendBackMatches = allMatches.filter((m) => m.teams.find((t) => t.team == teamNumber) != undefined);

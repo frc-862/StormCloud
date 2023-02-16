@@ -5,6 +5,7 @@ var overlaySaveFunction = ()=>{};
 var settings = {};
 var showingContent = false;
 var schemas = [];
+var analysises = [];
 
 
 
@@ -115,6 +116,12 @@ function show_settings(){
         document.querySelector(".setting[data-setting='selectedSchema']").innerHTML += `<option value="${i["Name"]}">${i["Name"]}</option>`
     });
 
+    document.querySelector(".setting[data-setting='defaultAnalysis']").innerHTML = "";
+    analysises.forEach((i) => {
+       document.querySelector(".setting[data-setting='defaultAnalysis']").innerHTML += `<option value="${i["Name"]}">${i["Name"]}</option>` 
+    });
+    
+
     Object.keys(settings).forEach((name) => {
         var value = settings[name];
         var element = document.querySelector(`.setting[data-setting="${name}"]`);
@@ -151,6 +158,11 @@ function pull_environment(){
             settings = data["environment"]["settings"];
             schemas = data["schemas"];
             
+            get("/analysis/all", {} , function(success, data){
+                analysises = data["analysis"];
+                show_settings();
+            });
+
             show_settings();
             try_show_content();
             handle_environment(environmentData);

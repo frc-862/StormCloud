@@ -33,7 +33,8 @@ const models = {
             competitionYear: Number,
             minBuild: Number,
             team: Number,
-            matchType: String
+            matchType: String,
+            defaultAnalysis: String
         },
         master: {
             hash: String,
