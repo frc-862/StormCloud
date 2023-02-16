@@ -561,7 +561,7 @@ router.get("/request/team*", async(req, res, next) => {
         });
     }
     
-    var analysis = await db.getDocs("Analysis", {environment: env.friendlyId});
+    var analysis = await db.getDocs("AnalysisSet", {environment: env.friendlyId});
     var defaultAnalysis = analysis.find(a => a.Name == env.settings.defaultAnalysis);
 
     var schema = undefined;
