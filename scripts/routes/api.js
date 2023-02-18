@@ -1804,6 +1804,7 @@ router.get("/first/results*", async(req, res, next) => {
 
             });
             for(var i = 0; i < matches.length; i++){
+                var match = matches[i];
                 var existingMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: match["matchNumber"], competition: year+competition});
                 if(existingMatch.length == 0){
                     return;
