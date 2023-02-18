@@ -1403,7 +1403,7 @@ router.post("/submit/data", async (req, res, next) => {
             name: ""
         }
 
-        var associatedMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: dataPiece.Number});
+        var associatedMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: dataPiece.Number, competition: env.settings.competitionYear + env.settings.competitionCode});
 
         
 
