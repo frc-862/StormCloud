@@ -1716,6 +1716,7 @@ router.get("/first/results*", async(req, res, next) => {
 
     var doNotPush = req.query.doNotPush == "true";
 
+
     var fRes = await firstApiTools.getMatchResults(year, competition, matchType);
 
     var path = process.env.HOME_FOLDER + "/cache/" + "results.json";
@@ -1727,52 +1728,76 @@ router.get("/first/results*", async(req, res, next) => {
         fs.writeFile(path, sendBackFRes, (err) => {
 
         });
-        var matches = fRes["MatchScores"];
-        matches.forEach(async (match) => {
-            var existingMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: match["matchNumber"], competition: year+competition});
-            if(existingMatch.length == 0){
-                return;
-            }
-
-            existingMatch = existingMatch[0];
-
-
-            existingMatch.results["finished"] = true;
-
-            var redAlliance = match["alliances"].find(a => a.alliance == "Red");
-            existingMatch.results["red"] = redAlliance["totalPoints"];
-            existingMatch.results["redStats"] = {};
-            // get each red scoring metric
-            Object.keys(redAlliance).forEach((key) => {
-                if(key.includes("Points") || key == "alliance")
+        try{
+            var matches = fRes["MatchScores"];
+            matches.forEach(async (match) => {
+                
+                var existingMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: match["matchNumber"], competition: year+competition});
+                if(existingMatch.length == 0){
                     return;
+                }
 
-                // turn camel case into normal words string
-                var words = key.replace(/([A-Z])/g, ' $1').trim();
+                existingMatch = existingMatch[0];
+
+
+                existingMatch.results["finished"] = true;
+
                 
 
-                existingMatch.results["redStats"][words] = redAlliance[key];
+                var redAlliance = match["alliances"].find(a => a.alliance == "Red");
+                existingMatch.results["red"] = redAlliance["totalPoints"];
+                existingMatch.results["redStats"] = {};
+                // get each red scoring metric
+                Object.keys(redAlliance).forEach((key) => {
+                    if(key.includes("Points") || key == "alliance")
+                        return;
+
+                    // turn camel case into normal words string
+                    var words = key.replace(/([A-Z])/g, ' $1').trim();
+                    
+
+                    existingMatch.results["redStats"][words] = redAlliance[key];
+                    
+                });
+
+                var blueAlliance = match["alliances"].find(a => a.alliance == "Blue");
+                existingMatch.results["blue"] = blueAlliance["totalPoints"];
+                existingMatch.results["blueStats"] = {};
+                // get each blue scoring metric
+                Object.keys(blueAlliance).forEach((key) => {
+                    if(key.includes("Points") || key == "alliance")
+                        return;
+
+                    // turn camel case into normal words string
+                    var words = key.replace(/([A-Z])/g, ' $1').trim();
+                    
+
+                    existingMatch.results["blueStats"][words] = blueAlliance[key];
+                    
+                });
                 
+                await db.updateDoc("Match", {_id: existingMatch._id}, {results: existingMatch.results});
             });
-
-            var blueAlliance = match["alliances"].find(a => a.alliance == "Blue");
-            existingMatch.results["blue"] = blueAlliance["totalPoints"];
-            existingMatch.results["blueStats"] = {};
-            // get each blue scoring metric
-            Object.keys(blueAlliance).forEach((key) => {
-                if(key.includes("Points") || key == "alliance")
+        }catch(e){
+            fRes = firstApiTools.getSimpleMatchResults(year, competition, matchType);
+            var matches = fRes["Matches"];
+            matches.forEach(async (match) => {
+                var existingMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: match["matchNumber"], competition: year+competition});
+                if(existingMatch.length == 0){
                     return;
+                }
+                existingMatch = existingMatch[0];
+                existingMatch.results["finished"] = true;
 
-                // turn camel case into normal words string
-                var words = key.replace(/([A-Z])/g, ' $1').trim();
-                
+                existingMatch.results["red"] = match["scoreRedFinal"];
+                existingMatch.results["blue"] = match["scoreBlueFinal"];
+                existingMatch.results["redStats"] = {};
+                existingMatch.results["blueStats"] = {};
 
-                existingMatch.results["blueStats"][words] = blueAlliance[key];
-                
+                await db.updateDoc("Match", {_id: existingMatch._id}, {results: existingMatch.results});
             });
-            
-            await db.updateDoc("Match", {_id: existingMatch._id}, {results: existingMatch.results});
-        });
+        }
+        
     }
 
 });
