@@ -1582,9 +1582,12 @@ async function updateCache(year, competition, matchType){
     var latestMatch = 0;
     var matchResults = fRes2["Matches"];
     matchResults.forEach((match) => {
-        if(match["matchNumber"] > latestMatch){
-            latestMatch = match["matchNumber"];
+        if(match["actualStartTime"] != null && match["actualStartTime"] != undefined){
+            if(match["matchNumber"] > latestMatch){
+                latestMatch = match["matchNumber"];
+            }
         }
+        
     })
     var currentMatch = latestMatch + 1;
 
@@ -1720,18 +1723,18 @@ router.get("/first/results*", async(req, res, next) => {
     var fRes = await firstApiTools.getMatchResults(year, competition, matchType);
 
     var path = process.env.HOME_FOLDER + "/cache/" + "results.json";
-    var sendBackFRes = JSON.stringify(fRes);
+    
 
-    res.status(fRes.error == undefined ? 200 : 500).json({data: sendBackFRes});
+    
 
     if(fRes.error == undefined && !doNotPush){
-        fs.writeFile(path, sendBackFRes, (err) => {
-
-        });
+        
         try{
+
+            var sendBackFRes = JSON.stringify(fRes);
             var matches = fRes["MatchScores"];
-            matches.forEach(async (match) => {
-                
+            for(var i = 0; i < matches.length; i++){
+                var match = matches[i];
                 var existingMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: match["matchNumber"], competition: year+competition});
                 if(existingMatch.length == 0){
                     return;
@@ -1745,6 +1748,9 @@ router.get("/first/results*", async(req, res, next) => {
                 
 
                 var redAlliance = match["alliances"].find(a => a.alliance == "Red");
+                if(redAlliance == undefined){
+                    throw "Red alliance not found!";
+                }
                 existingMatch.results["red"] = redAlliance["totalPoints"];
                 existingMatch.results["redStats"] = {};
                 // get each red scoring metric
@@ -1761,6 +1767,9 @@ router.get("/first/results*", async(req, res, next) => {
                 });
 
                 var blueAlliance = match["alliances"].find(a => a.alliance == "Blue");
+                if(blueAlliance == undefined){
+                    throw "Blue alliance not found!";
+                }
                 existingMatch.results["blue"] = blueAlliance["totalPoints"];
                 existingMatch.results["blueStats"] = {};
                 // get each blue scoring metric
@@ -1777,11 +1786,24 @@ router.get("/first/results*", async(req, res, next) => {
                 });
                 
                 await db.updateDoc("Match", {_id: existingMatch._id}, {results: existingMatch.results});
+            }
+            res.status(fRes.error == undefined ? 200 : 500).json({data: sendBackFRes});
+            fs.writeFile(path, sendBackFRes, (err) => {
+
             });
         }catch(e){
-            fRes = firstApiTools.getSimpleMatchResults(year, competition, matchType);
+            fRes = await firstApiTools.getSimpleMatchResults(year, competition, matchType);
+            var sendBackFRes = JSON.stringify(fRes);
             var matches = fRes["Matches"];
-            matches.forEach(async (match) => {
+            if(matches == undefined){
+                res.status(500).json({error: "No matches found"});
+                return;
+            }
+            res.status(fRes.error == undefined ? 200 : 500).json({data: sendBackFRes});
+            fs.writeFile(path, sendBackFRes, (err) => {
+
+            });
+            for(var i = 0; i < matches.length; i++){
                 var existingMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: match["matchNumber"], competition: year+competition});
                 if(existingMatch.length == 0){
                     return;
@@ -1795,9 +1817,11 @@ router.get("/first/results*", async(req, res, next) => {
                 existingMatch.results["blueStats"] = {};
 
                 await db.updateDoc("Match", {_id: existingMatch._id}, {results: existingMatch.results});
-            });
+            }
         }
         
+    }else{
+        res.status(fRes.error == undefined ? 200 : 500).json({data: sendBackFRes});
     }
 
 });
