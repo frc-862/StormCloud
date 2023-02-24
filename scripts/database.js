@@ -71,6 +71,8 @@ const models = {
         environment: String,
         competition: String,
         matchNumber: Number,
+        description: String,
+        matchType: String,
         teams: [{
             team: Number,
             color: String

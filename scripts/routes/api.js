@@ -1531,6 +1531,8 @@ router.get("/first/schedule*", async (req, res, next) => {
                 environment: env.friendlyId,
                 competition: year + competition,
                 matchNumber: matchNumber,
+                description: match["description"],
+                matchType: match["tournamentLevel"],
                 teams: teams,
                 locked: false,
                 results: {
