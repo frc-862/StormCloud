@@ -1782,7 +1782,7 @@ router.get("/first/results*", async(req, res, next) => {
                 existingMatch.results["blueStats"] = {};
                 // get each blue scoring metric
                 Object.keys(blueAlliance).forEach((key) => {
-                    if(key.includes("Points") || key == "alliance")
+                    if(key == "alliance")
                         return;
 
                     // turn camel case into normal words string

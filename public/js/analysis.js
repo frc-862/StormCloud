@@ -174,19 +174,19 @@ function refreshAnalysisSet(){
                 <div class="flex_center" style="width:100%">
                     <span class="text small" style="margin: 5px 10px;text-align:left">Interpret Final Number</span>
                     <select value="${part.Data["Stat_Final"]}" class="input text important setting" style="margin:10px;width:50%;pointer-events:all" onchange="setData('${part._id}', 'Stat_Final', this)">
-                        <option value="sum" ${part.Data["Stat_Between"] == "sum" ? "selected": ""}>Sum Of...</option>
-                        <option value="avg" ${part.Data["Stat_Between"] == "avg" ? "selected": ""}>Average Of...</option>
-                        <option value="max" ${part.Data["Stat_Between"] == "max" ? "selected": ""}>Maximum Of...</option>
-                        <option value="min" ${part.Data["Stat_Between"] == "min" ? "selected": ""}>Minimum Of...</option>
-                        <option value="range" ${part.Data["Stat_Between"] == "range" ? "selected": ""}>Range Of...</option>    
+                        <option value="sum" ${part.Data["Stat_Final"] == "sum" ? "selected": ""}>Sum Of...</option>
+                        <option value="avg" ${part.Data["Stat_Final"] == "avg" ? "selected": ""}>Average Of...</option>
+                        <option value="max" ${part.Data["Stat_Final"] == "max" ? "selected": ""}>Maximum Of...</option>
+                        <option value="min" ${part.Data["Stat_Final"] == "min" ? "selected": ""}>Minimum Of...</option>
+                        <option value="range" ${part.Data["Stat_Final"] == "range" ? "selected": ""}>Range Of...</option>    
                     
                     </select>
                 </div>
                 <div class="flex_center" style="width:100%">
                     <span class="text small" style="margin: 5px 10px;text-align:left">Combine Individual Data Points</span>
                     <select value="${part.Data["Stat_Between"]}" class="input text important setting" style="margin:10px;width:50%;pointer-events:all" onchange="setData('${part._id}', 'Stat_Between', this)">
-                        <option value="sum" ${part.Data["Stat_Final"] == "sum" ? "selected": ""}>Total Sum</option>
-                        <option value="avg" ${part.Data["Stat_Final"] == "avg" ? "selected": ""}>Total Average</option>
+                        <option value="sum" ${part.Data["Stat_Between"] == "sum" ? "selected": ""}>Total Sum</option>
+                        <option value="avg" ${part.Data["Stat_Between"] == "avg" ? "selected": ""}>Total Average</option>
                     </select>
                 </div>
                 <div class="flex_center" style="width:100%">
@@ -257,7 +257,18 @@ function refreshAnalysisSet(){
                 }
                 partHTML = `
                 <div class="flex_center" style="width:100%">
-                    <span class="text small" style="margin: 5px 10px;text-align:left">Show Document Date</span>
+                    <span class="text small" style="margin: 5px 10px;text-align:left">Interpret Data Points</span>
+                    <select value="${part.Data["Stat_Between"]}" class="input text important setting" style="margin:10px;width:50%;pointer-events:all" onchange="setData('${part._id}', 'Stat_Between', this)">
+                        <option value="sum" ${part.Data["Stat_Between"] == "sum" ? "selected": ""}>Sum Of...</option>
+                        <option value="avg" ${part.Data["Stat_Between"] == "avg" ? "selected": ""}>Average Of...</option>
+                        <option value="max" ${part.Data["Stat_Between"] == "max" ? "selected": ""}>Maximum Of...</option>
+                        <option value="min" ${part.Data["Stat_Between"] == "min" ? "selected": ""}>Minimum Of...</option>
+                        <option value="range" ${part.Data["Stat_Between"] == "range" ? "selected": ""}>Range Of...</option>    
+                    
+                    </select>
+                </div>
+                <div class="flex_center" style="width:100%">
+                    <span class="text small" style="margin: 5px 10px;text-align:left">Show Document Data</span>
                     <input type="checkbox" data-data="check" onchange="setData('${part._id}', 'DocumentData', this)" ${part.Data["DocumentData"] ? "checked" : ""}>
                 </div>
                 
