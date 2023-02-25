@@ -186,10 +186,10 @@ function selectAnalysis(){
                                     // most likely just requesting number only
                                     if(Object.keys(partSets[partId][foundTeam]).find(k => k == key)){
                                         // then add to obj
-                                        partSets[partId][foundTeam][key].push(useData)
+                                        partSets[partId][foundTeam][key].push(parseInt(useData))
                                     }else{
                                         // then create obj
-                                        partSets[partId][foundTeam][key] = [useData]
+                                        partSets[partId][foundTeam][key] = [parseInt(useData)]
                                     }
                                 }else if(field.componentType == "Check"){
                                     // most likely just requesting number only
@@ -556,10 +556,10 @@ function selectAnalysis(){
                                     // most likely just requesting number only
                                     if(Object.keys(partSets[partId]).find(k => k == key)){
                                         // then add to obj
-                                        partSets[partId][key].push(useData)
+                                        partSets[partId][key].push(parseInt(useData))
                                     }else{
                                         // then create obj
-                                        partSets[partId][key] = [useData]
+                                        partSets[partId][key] = [parseInt(useData)]
                                     }
                                 }else if(field.componentType == "Check"){
                                     // most likely just requesting number only

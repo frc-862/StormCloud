@@ -1759,7 +1759,7 @@ router.get("/first/results*", async(req, res, next) => {
                 existingMatch.results["redStats"] = {};
                 // get each red scoring metric
                 Object.keys(redAlliance).forEach((key) => {
-                    if(key.includes("Points") || key == "alliance")
+                    if(key == "alliance")
                         return;
 
                     // turn camel case into normal words string
