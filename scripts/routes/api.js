@@ -282,6 +282,10 @@ function prepareAnalysis(analysis, schema, documents, matches, team){
             return;
         }
 
+        if(doc.flagged){
+            return;
+        }
+
         if(!(data.type == "tablet")){
             return;
         }
@@ -304,10 +308,10 @@ function prepareAnalysis(analysis, schema, documents, matches, team){
                     // most likely just requesting number only
                     if(Object.keys(partSets[partId]).find(k => k == key)){
                         // then add to obj
-                        partSets[partId][key].push(useData)
+                        partSets[partId][key].push(parseInt(useData))
                     }else{
                         // then create obj
-                        partSets[partId][key] = [useData]
+                        partSets[partId][key] = [parseInt(useData)]
                     }
                 }else if(field.componentType == "Check"){
                     // most likely just requesting number only

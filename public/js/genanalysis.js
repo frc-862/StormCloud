@@ -160,6 +160,10 @@ function selectAnalysis(){
                             // not a doc we are looking for
                             return;
                         }
+
+                        if(doc.flagged){
+                            return;
+                        }
     
                         if(!data.completed){
                             return;
@@ -527,6 +531,10 @@ function selectAnalysis(){
                         var data = JSON.parse(doc.json);
                         if(!teams.includes(parseInt(data.team))){
                             // not a doc we are looking for
+                            return;
+                        }
+
+                        if(doc.flagged){
                             return;
                         }
     
