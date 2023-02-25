@@ -174,18 +174,19 @@ function refreshAnalysisSet(){
                 <div class="flex_center" style="width:100%">
                     <span class="text small" style="margin: 5px 10px;text-align:left">Interpret Final Number</span>
                     <select value="${part.Data["Stat_Final"]}" class="input text important setting" style="margin:10px;width:50%;pointer-events:all" onchange="setData('${part._id}', 'Stat_Final', this)">
-                        <option value="sum" ${part.Data["Stat_Final"] == "sum" ? "selected": ""}>Total Sum</option>
-                        <option value="avg" ${part.Data["Stat_Final"] == "avg" ? "selected": ""}>Total Average</option>
+                        <option value="sum" ${part.Data["Stat_Between"] == "sum" ? "selected": ""}>Sum Of...</option>
+                        <option value="avg" ${part.Data["Stat_Between"] == "avg" ? "selected": ""}>Average Of...</option>
+                        <option value="max" ${part.Data["Stat_Between"] == "max" ? "selected": ""}>Maximum Of...</option>
+                        <option value="min" ${part.Data["Stat_Between"] == "min" ? "selected": ""}>Minimum Of...</option>
+                        <option value="range" ${part.Data["Stat_Between"] == "range" ? "selected": ""}>Range Of...</option>    
+                    
                     </select>
                 </div>
                 <div class="flex_center" style="width:100%">
                     <span class="text small" style="margin: 5px 10px;text-align:left">Combine Individual Data Points</span>
                     <select value="${part.Data["Stat_Between"]}" class="input text important setting" style="margin:10px;width:50%;pointer-events:all" onchange="setData('${part._id}', 'Stat_Between', this)">
-                        <option value="sum" ${part.Data["Stat_Between"] == "sum" ? "selected": ""}>Sum Of...</option>
-                        <option value="avg" ${part.Data["Stat_Between"] == "avg" ? "selected": ""}>Average Of...</option>
-                        <option value="max" ${part.Data["Stat_Between"] == "max" ? "selected": ""}>Maximum Of...</option>
-                        <option value="min" ${part.Data["Stat_Between"] == "min" ? "selected": ""}>Minimum Of...</option>
-                        <option value="range" ${part.Data["Stat_Between"] == "range" ? "selected": ""}>Range Of...</option>
+                        <option value="sum" ${part.Data["Stat_Final"] == "sum" ? "selected": ""}>Total Sum</option>
+                        <option value="avg" ${part.Data["Stat_Final"] == "avg" ? "selected": ""}>Total Average</option>
                     </select>
                 </div>
                 <div class="flex_center" style="width:100%">
@@ -239,8 +240,36 @@ function refreshAnalysisSet(){
                 `;
                 break;
             case "Graph":
-                partHTML = `
+                var selectHTML = "";
                 
+            
+                schemaItems.forEach((item) => {
+                    selectHTML += `<option value="${item.part}---${item.component}" ${part.Data["SchemaFields"] != undefined && part.Data["SchemaFields"].includes(item.part + "---" + item.component) ? "selected" : ""}>${item.part} - ${item.component} (${item.componentType})</option>`
+                    
+                });
+                
+                var firstFieldData = "";
+                if(part.Data["FIRSTFields"] != undefined){
+                    part.Data["FIRSTFields"].forEach((field) => {
+                        firstFieldData += `${field}\n`;
+                    });
+                    
+                }
+                partHTML = `
+                <div class="flex_center" style="width:100%">
+                    <span class="text small" style="margin: 5px 10px;text-align:left">Show Document Date</span>
+                    <input type="checkbox" data-data="check" onchange="setData('${part._id}', 'DocumentData', this)" ${part.Data["DocumentData"] ? "checked" : ""}>
+                </div>
+                
+                <div class="flex_center" style="width:100%">
+                    
+                    <select class="input text regular setting" style="margin:10px;width:50%;pointer-events:all" multiple data-data="multi" onchange="setData('${part._id}', 'SchemaFields', this)">
+                        ${selectHTML}
+                    </select>
+
+                    <textarea class="input text important setting" style="margin:10px;width:40%;pointer-events:all" placeholder="Enter FIRST Data Points" onchange="setData('${part._id}', 'FIRSTFields', this)" data-data="innerHTML">${firstFieldData}</textarea>
+
+                </div>
                 
                 `;
                 break;

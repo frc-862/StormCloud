@@ -150,6 +150,7 @@ function selectAnalysis(){
                                 break;
                             case "FIRST":
                                 // just request finalscore
+                                requestedDataPoints[part.Data["DataPoint"]].push(part._id);
                         }
                     });
         
@@ -298,6 +299,44 @@ function selectAnalysis(){
                                         }
                                     });
                                 });
+
+                                var score = match.results.red;
+                                var rp = match.results.redStats.rp;
+                                var penalties = match.results.redStats["tech Foul Count"] + match.results.redStats["foul Count"];
+                                if(requestedDataPoints["score"] != undefined){
+                                    requestedDataPoints["score"].forEach((partId) => {
+                                        if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == "score")){
+                                            // then add to obj
+                                            partSets[partId][foundTeam.team]["score"].push(score)
+                                        }else{
+                                            // then create obj
+                                            partSets[partId][foundTeam.team]["score"] = [score]
+                                        }
+                                    });
+                                }
+                                if(requestedDataPoints["rp"] != undefined){
+                                    requestedDataPoints["rp"].forEach((partId) => {
+                                        if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == "rp")){
+                                            // then add to obj
+                                            partSets[partId][foundTeam.team]["rp"].push(rp)
+                                        }else{
+                                            // then create obj
+                                            partSets[partId][foundTeam.team]["rp"] = [rp]
+                                        }
+                                    });
+                                }
+                                if(requestedDataPoints["penalties"] != undefined){
+                                    requestedDataPoints["penalties"].forEach((partId) => {
+                                        if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == "penalties")){
+                                            // then add to obj
+                                            partSets[partId][foundTeam.team]["penalties"].push(penalties)
+                                        }else{
+                                            // then create obj
+                                            partSets[partId][foundTeam.team]["penalties"] = [penalties]
+                                        }
+                                    });
+                                }
+
                             }else{
                                 var stats = match.results.blueStats;
                                 Object.keys(stats).forEach((key) => {
@@ -315,6 +354,43 @@ function selectAnalysis(){
                                         }
                                     });
                                 });
+
+                                var score = match.results.blue;
+                                var rp = match.results.blueStats.rp;
+                                var penalties = match.results.blueStats["tech Foul Count"] + match.results.blueStats["foul Count"];
+                                if(requestedDataPoints["score"] != undefined){
+                                    requestedDataPoints["score"].forEach((partId) => {
+                                        if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == "score")){
+                                            // then add to obj
+                                            partSets[partId][foundTeam.team]["score"].push(score)
+                                        }else{
+                                            // then create obj
+                                            partSets[partId][foundTeam.team]["score"] = [score]
+                                        }
+                                    });
+                                }
+                                if(requestedDataPoints["rp"] != undefined){
+                                    requestedDataPoints["rp"].forEach((partId) => {
+                                        if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == "rp")){
+                                            // then add to obj
+                                            partSets[partId][foundTeam.team]["rp"].push(rp)
+                                        }else{
+                                            // then create obj
+                                            partSets[partId][foundTeam.team]["rp"] = [rp]
+                                        }
+                                    });
+                                }
+                                if(requestedDataPoints["penalties"] != undefined){
+                                    requestedDataPoints["penalties"].forEach((partId) => {
+                                        if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == "penalties")){
+                                            // then add to obj
+                                            partSets[partId][foundTeam.team]["penalties"].push(penalties)
+                                        }else{
+                                            // then create obj
+                                            partSets[partId][foundTeam.team]["penalties"] = [penalties]
+                                        }
+                                    });
+                                }
                             }
                         });
         
@@ -458,6 +534,47 @@ function selectAnalysis(){
                                         max: max
                                     });
                                     break;
+                                case "FIRST":
+                                    var final = 0;
+                                    var n = 0;
+            
+                                    var method = part.Data["Stat"];
+            
+                                    // first, handle the statistical analysis of the individual parts
+                                    Object.keys(partData).forEach((key) => {
+                                        try{
+                                            var localFinal = 0;
+            
+                                            switch(method){
+                                                case "sum":
+                                                    localFinal = partData[key].reduce((a, b) => a + b, 0);
+                                                    break;
+                                                case "avg":
+                                                    localFinal = partData[key].reduce((a, b) => a + b, 0) / partData[key].length;
+                                                    break;
+                                                case "max":
+                                                    localFinal = Math.max(...partData[key]);
+                                                    break;
+                                                case "min":
+                                                    localFinal = Math.min(...partData[key]);
+                                                    break;
+                                                case "range":
+                                                    localFinal = Math.max(...partData[key]) - Math.min(...partData[key]);
+                                                    break;
+                                            }
+                                            n += 1;
+                                            final += localFinal;
+                                        }catch(e){
+                                            console.log(e);
+                                        }
+                                        
+                                    });
+                                    finalData[team].push({
+                                        name: part.Name,
+                                        type: part.Type,
+                                        value: final
+                                    });
+                                    break;
                             }
                         });
     
@@ -514,15 +631,7 @@ function selectAnalysis(){
                                 }
                                 break;
                             case "FIRST":
-                                try{
-                                    if(requestedDataPoints[part.Data["DataPoint"]] == undefined){
-                                        requestedDataPoints[part.Data["DataPoint"]] = [part._id];
-                                    }else{
-                                        requestedDataPoints[part.Data["DataPoint"]].push(part._id);
-                                    }
-                                }catch(e){
-    
-                                }
+                                requestedDataPoints[part.Data["DataPoint"]].push(part._id);
                                 // just request finalscore
                         }
                     });
@@ -673,6 +782,43 @@ function selectAnalysis(){
                                         }
                                     });
                                 });
+                                
+                                var score = match.results.red;
+                                var rp = match.results.redStats.rp;
+                                var penalties = match.results.redStats["tech Foul Count"] + match.results.redStats["foul Count"];
+                                if(requestedDataPoints["score"] != undefined){
+                                    requestedDataPoints["score"].forEach((partId) => {
+                                        if(Object.keys(partSets[partId]).find(k => k == "score")){
+                                            // then add to obj
+                                            partSets[partId]["score"].push(score)
+                                        }else{
+                                            // then create obj
+                                            partSets[partId]["score"] = [score]
+                                        }
+                                    });
+                                }
+                                if(requestedDataPoints["rp"] != undefined){
+                                    requestedDataPoints["rp"].forEach((partId) => {
+                                        if(Object.keys(partSets[partId]).find(k => k == "rp")){
+                                            // then add to obj
+                                            partSets[partId]["rp"].push(rp)
+                                        }else{
+                                            // then create obj
+                                            partSets[partId]["rp"] = [rp]
+                                        }
+                                    });
+                                }
+                                if(requestedDataPoints["penalties"] != undefined){
+                                    requestedDataPoints["penalties"].forEach((partId) => {
+                                        if(Object.keys(partSets[partId]).find(k => k == "penalties")){
+                                            // then add to obj
+                                            partSets[partId]["penalties"].push(penalties)
+                                        }else{
+                                            // then create obj
+                                            partSets[partId]["penalties"] = [penalties]
+                                        }
+                                    });
+                                }
         
                                 
                             }else{
@@ -692,6 +838,43 @@ function selectAnalysis(){
                                         }
                                     });
                                 });
+
+                                var score = match.results.blue;
+                                var rp = match.results.blueStats.rp;
+                                var penalties = match.results.blueStats["tech Foul Count"] + match.results.blueStats["foul Count"];
+                                if(requestedDataPoints["score"] != undefined){
+                                    requestedDataPoints["score"].forEach((partId) => {
+                                        if(Object.keys(partSets[partId]).find(k => k == "score")){
+                                            // then add to obj
+                                            partSets[partId]["score"].push(score)
+                                        }else{
+                                            // then create obj
+                                            partSets[partId]["score"] = [score]
+                                        }
+                                    });
+                                }
+                                if(requestedDataPoints["rp"] != undefined){
+                                    requestedDataPoints["rp"].forEach((partId) => {
+                                        if(Object.keys(partSets[partId]).find(k => k == "rp")){
+                                            // then add to obj
+                                            partSets[partId]["rp"].push(rp)
+                                        }else{
+                                            // then create obj
+                                            partSets[partId]["rp"] = [rp]
+                                        }
+                                    });
+                                }
+                                if(requestedDataPoints["penalties"] != undefined){
+                                    requestedDataPoints["penalties"].forEach((partId) => {
+                                        if(Object.keys(partSets[partId]).find(k => k == "penalties")){
+                                            // then add to obj
+                                            partSets[partId]["penalties"].push(penalties)
+                                        }else{
+                                            // then create obj
+                                            partSets[partId]["penalties"] = [penalties]
+                                        }
+                                    });
+                                }
                             }
                         });
         
@@ -829,6 +1012,47 @@ function selectAnalysis(){
                                     max: max
                                 });
                                 break;
+                            case "FIRST":
+                                var final = 0;
+                                var n = 0;
+        
+                                var method = part.Data["Stat"];
+        
+                                // first, handle the statistical analysis of the individual parts
+                                Object.keys(partData).forEach((key) => {
+                                    try{
+                                        var localFinal = 0;
+        
+                                        switch(method){
+                                            case "sum":
+                                                localFinal = partData[key].reduce((a, b) => a + b, 0);
+                                                break;
+                                            case "avg":
+                                                localFinal = partData[key].reduce((a, b) => a + b, 0) / partData[key].length;
+                                                break;
+                                            case "max":
+                                                localFinal = Math.max(...partData[key]);
+                                                break;
+                                            case "min":
+                                                localFinal = Math.min(...partData[key]);
+                                                break;
+                                            case "range":
+                                                localFinal = Math.max(...partData[key]) - Math.min(...partData[key]);
+                                                break;
+                                        }
+                                        n += 1;
+                                        final += localFinal;
+                                    }catch(e){
+                                        console.log(e);
+                                    }
+                                    
+                                });
+                                finalData.push({
+                                    name: part.Name,
+                                    type: part.Type,
+                                    value: final
+                                });
+                                break;
                         }
                     });
         
@@ -925,6 +1149,18 @@ function selectAnalysis(){
                                 <hr style="margin-top:20px;margin-bottom:10px"/>
                                 `;
                                 break;
+                            case "FIRST":
+                                teams.forEach((team) => {
+                                    var record = finalData[team].find(p => p.name == part.name);
+                                    tlHTML += `<div class='text important' style="color:#190024;font-weight:600;margin: 0px; 10px">${record.value.toFixed(2)}</div>`;
+                                });
+                                fHTML += `
+                                <div style="border: 1px solid #190024; padding:8px 0px; border-radius:8px;width:100%">
+                                    <div class='flex_apart' style-"width:50%;padding:10px 0px;">${tlHTML}</div>
+                                </div>
+                                 <hr style="margin-top:20px;margin-bottom:10px"/>
+                                `;
+                                break;
                         }
                         
                         
@@ -979,6 +1215,15 @@ function selectAnalysis(){
                                 });
                                 fHTML += `<div style="margin-bottom:20px">${gridHTML}</div>`;
                                 break;
+                            case "FIRST":
+                                fHTML += `
+                                    <div class="flex_apart" style="width:100%;margin-bottom:10px"> 
+                                        <div class='text important' style="color:#190024;margin-right:10px">${part.name}</div>
+                                        <div class='text regular' style="color:#190024;font-weight:600">${part.value.toFixed(2)}</div>
+                                    </div>
+                                `
+                                break;
+                                
                         }
                         
                     });
