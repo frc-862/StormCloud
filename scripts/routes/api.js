@@ -1655,6 +1655,7 @@ router.get("/quick/state", async (req, res, next) => {
     var currentlyRunning = true;
     var allMatches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
     var currentMatchType = env.settings.matchType;
+    console.log(env.settings);
     var largerMatches = allMatches.filter((match) => {return match.matchNumber >= currentMatch});
     currentlyRunning = largerMatches.length > 0;
 
