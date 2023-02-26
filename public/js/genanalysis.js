@@ -1444,12 +1444,7 @@ function selectAnalysis(){
                         });
                     });
 
-                    setTimeout(() => {
-                        Array.from(document.querySelectorAll("text")).forEach((el) => {
-                            el.style.fontSize = "20px";
-                            el['font-size'] = "20px";
-                        });
-                    }, 1500);
+                    
                     
 
                 }else{
@@ -1522,6 +1517,7 @@ function selectAnalysis(){
                     window.print();
                 }
             }
+            
 
         });
 
@@ -1530,3 +1526,9 @@ function selectAnalysis(){
 }
 
 
+setInterval(() => {
+    Array.from(document.querySelectorAll("text")).forEach((el) => {
+        el.style.fontSize = "20px";
+        el['font-size'] = "20px";
+    });
+}, 500);
