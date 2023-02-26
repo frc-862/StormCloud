@@ -1397,7 +1397,7 @@ function selectAnalysis(){
                                     // remove all spaces from part name
                                     var graphName = part.name.replace(/\s/g, '');
                                     fHTML += `
-                                    <div id="graph_${graphName}_${team}"></div>
+                                    <div id="graph_${graphName}_${team}" style="font-size:30px"></div>
                                     `;
                                 });
                                 
@@ -1418,29 +1418,39 @@ function selectAnalysis(){
                             var dataAverage = record.data.reduce((a, b) => a + b, 0) / record.data.length;
 
                             var graphdata = {
-                                labels: record.matches.map((match) => "Match " + match),
+                                labels: record.matches.map((match) => "#" + match),
                                 datasets: [
                                     { values: record.data }
-                                ],
-                                yMarkers: [
-                                    {
-                                        label: "Average",
-                                        value: dataAverage,
-                                        options: { labelPos: 'left' } // default: 'right'
-                                    }
                                 ]
                             }
                             new frappe.Chart( el, {
                                 data: graphdata,
                                 type: 'bar',
-                                height: 200,
+                                height: 300,
                                 colors: ['black'],
+                                valuesOverPoints: 1,
                                 tooltipOptions: {
                                     valuesOverPoints: 1
+                                },
+                                type: 'line',
+                                measures: {
+                                    titleFontSize: 20,
+                                },
+                                lineOptions: {
+                                    dotSize: 8
                                 }
+                                
                             });
                         });
                     });
+
+                    setTimeout(() => {
+                        Array.from(document.querySelectorAll("text")).forEach((el) => {
+                            el.style.fontSize = "20px";
+                            el['font-size'] = "20px";
+                        });
+                    }, 1500);
+                    
 
                 }else{
     
