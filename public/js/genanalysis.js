@@ -1397,6 +1397,7 @@ function selectAnalysis(){
                                     // remove all spaces from part name
                                     var graphName = part.name.replace(/\s/g, '');
                                     fHTML += `
+                                    <div class='text important' style="color:#190024;font-weight:600;margin: 5px; 10px">${team}</div>
                                     <div id="graph_${graphName}_${team}" style="font-size:30px"></div>
                                     `;
                                 });
@@ -1528,7 +1529,7 @@ function selectAnalysis(){
 
 setInterval(() => {
     Array.from(document.querySelectorAll("text")).forEach((el) => {
-        el.style.fontSize = "20px";
-        el['font-size'] = "20px";
+        el.style.fontSize = "24px";
+        el['font-size'] = "24px";
     });
 }, 500);
