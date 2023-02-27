@@ -219,7 +219,7 @@ function selectAnalysis(){
                                 var analysisPart = analysis.Parts.find(p => p._id == partId);
 
                                 if(analysisPart.Type == "Graph"){
-                                    if(!analysisPart.DocumentData){
+                                    if(analysisPart.Data.DocumentData != "true" && analysisPart.Data.DocumentData != true){
                                         return;
                                     }
 
