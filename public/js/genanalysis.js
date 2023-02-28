@@ -867,7 +867,7 @@ function selectAnalysis(){
                                         valueBlue: finalBlue[0],
                                         maxRed: maxRed,
                                         maxBlue: maxBlue,
-                                        separate: part.SeparateColors
+                                        separate: part.Data.SeparateColors
                                     });
                                     break;
                                 case "FIRST":
