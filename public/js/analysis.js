@@ -158,6 +158,9 @@ function refreshAnalysisSet(){
                 
             
                 schemaItems.forEach((item) => {
+                    if(item.componentType == "Select"){
+                        return;
+                    }
                     selectHTML += `<option value="${item.part}---${item.component}" ${part.Data["SchemaFields"] != undefined && part.Data["SchemaFields"].includes(item.part + "---" + item.component) ? "selected" : ""}>${item.part} - ${item.component} (${item.componentType})</option>`
                     
                 });
@@ -239,11 +242,44 @@ function refreshAnalysisSet(){
                 
                 `;
                 break;
+            case "Frequency":
+                var selectSelectHTML ="";
+
+                schemaItems.forEach((item) => {
+                    
+                    selectSelectHTML += `<option value="${item.part}---${item.component}" ${part.Data["SchemaFields"] != undefined && part.Data["SchemaFields"].includes(item.part + "---" + item.component) ? "selected" : ""}>${item.part} - ${item.component}</option>`
+                });
+
+                var firstFieldData = "";
+                if(part.Data["FIRSTFields"] != undefined){
+                    part.Data["FIRSTFields"].forEach((field) => {
+                        firstFieldData += `${field}\n`;
+                    });
+                    
+                }
+
+                partHTML = `
+                <div class="flex_center" style="width:100%">
+                    
+                    <select class="input text regular setting" style="margin:10px;width:50%;pointer-events:all" multiple data-data="multi" onchange="setData('${part._id}', 'SchemaFields', this)">
+                        ${selectSelectHTML}
+                    </select>
+
+                    <textarea class="input text important setting" style="margin:10px;width:40%;pointer-events:all" placeholder="Enter FIRST Data Points" onchange="setData('${part._id}', 'FIRSTFields', this)" data-data="innerHTML">${firstFieldData}</textarea>
+
+                </div>
+                `;
+
+                break;
+
             case "Graph":
                 var selectHTML = "";
                 
             
                 schemaItems.forEach((item) => {
+                    if(item.componentType == "Select"){
+                        return;
+                    }
                     selectHTML += `<option value="${item.part}---${item.component}" ${part.Data["SchemaFields"] != undefined && part.Data["SchemaFields"].includes(item.part + "---" + item.component) ? "selected" : ""}>${item.part} - ${item.component} (${item.componentType})</option>`
                     
                 });

@@ -28,34 +28,103 @@ function post(link, headers, data, callback){
 }
 
 var analysises = [];
+var matches = [];
 
 
 
-function getAllAnalysises(){
+var currentSetupView = "";
+
+
+function switchSetupView(view){
+    currentSetupView = view;
+    Array.from(document.getElementsByClassName("setup")).forEach(e => {
+        e.style.display = "none"
+    }) 
+    Array.from(document.getElementsByClassName("setupbutton")).forEach(e => {
+        e.style.backgroundColor = ""
+    }) 
+    
+    document.querySelector(".setup[data-id='" + view + "']").style.display = "";
+    document.querySelector(".setupbutton[data-id='" + view + "']").style.backgroundColor = "#680991";
+}
+
+switchSetupView("Match")
+
+
+
+
+
+
+
+
+
+function getAllData(){
     get("/api/analysis/all", {}, function(success, data){
         if(success){
             analysises = data["analysis"];
 
-            document.getElementById("analysis_sets").innerHTML = "";
+            document.getElementById("analysis_sets_manual").innerHTML = "";
             analysises.forEach(function(analysis){
-                document.getElementById("analysis_sets").innerHTML += `
+                document.getElementById("analysis_sets_manual").innerHTML += `
                     <option value="${analysis._id}">${analysis.Name}</option>
                 `
             });
-            document.getElementById("analysis_submit").style.display = "";
+            document.getElementById("analysis_sets_match").innerHTML = "";
+            analysises.forEach(function(analysis){
+                document.getElementById("analysis_sets_match").innerHTML += `
+                    <option value="${analysis._id}">${analysis.Name}</option>
+                `
+            });
         }
     });
+    get("/api/matches", {}, function(success, data) {
+        if(success){
+            matches = data["matches"]
+        }
+    })
 }
-getAllAnalysises();
+getAllData();
 
 var compData = undefined;
 
 function selectAnalysis(){
-    var teams = document.getElementById("team_numbers").value.split(",").map(t => parseInt(t));
-    var separate = document.getElementById("team_separate").checked;
+    var teams = [];
+    var separate = false;
+    var analysis = "";
+
+    if(currentSetupView == "Match"){
+        var matchNum = document.getElementById("match_number").value;
+        var color = document.getElementById("match_color").value
+        var match = matches.find(m => m.matchNumber == parseInt(matchNum));
+        if(match == undefined){
+            return;
+        }
+        var localTeams = [];
+        match.teams.forEach(t => {
+            if(t.color == color){
+                localTeams.push(t.team);
+            }
+            
+        })
+        teams = localTeams;
+        if(teams.length == 0){
+            return;
+        }
+        separate = true;
+        analysis = document.getElementById("analysis_sets_match").value;
+    }else{
+        teams = document.getElementById("team_numbers").value.split(",").map(t => parseInt(t));
+        separate = true;
+        
+        analysis = document.getElementById("analysis_sets_manual").value;
+    }   
+
+
     document.getElementById("setup_view").style.display = "none";
     document.getElementById("report_view").style.display = "";
-    var analysis = document.getElementById("analysis_sets").value;
+
+
+    
 
     var analysisObject = analysises.find(a => a._id == analysis);
     get("/api/first/cache", {}, function(success, data){
@@ -145,6 +214,31 @@ function selectAnalysis(){
                                     });
                                 }
                                 catch(e){
+                                    console.log(e);
+                                }
+                                break;
+                            case "Frequency":
+                                try{
+                                    part.Data["SchemaFields"].forEach((field) => {
+                                        if(requestedDataPoints[field] == undefined){
+                                            requestedDataPoints[field] = [part._id];
+                                        }else{
+                                            requestedDataPoints[field].push(part._id);
+                                        }
+                                    });
+                                }catch(e){
+                                    console.log(e);
+                                }
+
+                                try{
+                                    part.Data["FIRSTFields"].forEach((field) => {
+                                        if(requestedDataPoints[field] == undefined){
+                                            requestedDataPoints[field] = [part._id];
+                                        }else{
+                                            requestedDataPoints[field].push(part._id);
+                                        }
+                                    });
+                                }catch(e){
                                     console.log(e);
                                 }
                                 break;
@@ -335,7 +429,16 @@ function selectAnalysis(){
                                         // then create obj
                                         partSets[partId][foundTeam][key] = [field.on == useData ? 1 : 0]
                                     }
-                                }else if(field.componentType == "Grid"){
+                                }else if(field.componentType == "Select"){
+                                    if(Object.keys(partSets[partId][foundTeam]).find(k => k == key)){
+                                        // then add to obj
+                                        partSets[partId][foundTeam][key].push(useData)
+                                    }else{
+                                        // then create obj
+                                        partSets[partId][foundTeam][key] = [useData]
+                                    }
+                                }
+                                else if(field.componentType == "Grid"){
                                     // data point depends on the analysisPart type
                                     var putData = 0;
                                     
@@ -740,6 +843,40 @@ function selectAnalysis(){
                                         value: final
                                     });
                                     break;
+                                case "Frequency":
+
+                                    var uniqueValues = [];
+                                    
+                                    var allValues = [];
+                                    Object.keys(partData).forEach((key) => {
+                                        partData[key].forEach((item) => {
+                                            if(!uniqueValues.includes(item)){
+                                                uniqueValues.push(item);
+                                            }
+                                            allValues.push(item);
+                                        });
+                                    });
+
+                                    uniqueValues = uniqueValues.sort();
+
+                                    var totalItems = allValues.length;
+                                    var percents = [];
+                                    uniqueValues.forEach(u => {
+                                        var count = allValues.filter(v => v == u).length / totalItems;
+                                        count = Math.round(count*100);
+                                        percents.push(count);
+                                    });
+                                    
+
+                                    finalData[team].push({
+                                        name: part.Name,
+                                        type: part.Type,
+                                        fields: uniqueValues,
+                                        values: percents
+                                    });
+
+
+                                    break;
                                 case "Graph":
                                     var matchesUnique = [];
                                     var allDataObjects = [];
@@ -792,11 +929,18 @@ function selectAnalysis(){
                                     var matchesFinal = final.map((obj) => obj.match);
                                     var dataFinal = final.map((obj) => obj.data);
 
+                                    var average = 0;
+                                    dataFinal.forEach(d => {
+                                        average += d;
+                                    })
+                                    average = average / dataFinal.length;
+
                                     finalData[team].push({
                                         name: part.Name,
                                         type: part.Type,
                                         matches: matchesFinal,
-                                        data: dataFinal
+                                        data: dataFinal,
+                                        average: average
                                     });
 
                                     break;
@@ -807,483 +951,6 @@ function selectAnalysis(){
     
     
                         
-                    });
-        
-                    console.log(finalData);
-                }else{
-                    analysis.Parts.forEach((part) => {
-                        partSets[part._id] = {};
-                        
-                        switch(part.Type){
-                            case "Number":
-                                //request SchemaFields and FIRSTFields
-                                try{
-                                    part.Data["SchemaFields"].forEach((field) => {
-                                        if(requestedDataPoints[field] == undefined){
-                                            requestedDataPoints[field] = [part._id];
-                                        }else{
-                                            requestedDataPoints[field].push(part._id);
-                                        }
-                                    });
-                                }catch(e){
-                                    console.log(e);
-                                }
-        
-                                try{
-                                    part.Data["FIRSTFields"].forEach((field) => {
-                                        if(requestedDataPoints[field] == undefined){
-                                            requestedDataPoints[field] = [part._id];
-                                        }else{
-                                            requestedDataPoints[field].push(part._id);
-                                        }
-                                    });
-                                }catch(e){
-                                    console.log(e);
-                                }
-                                
-                                break;
-                            case "Grid":
-                                // just request schemafields
-                                try{
-                                    part.Data["SchemaFields"].forEach((field) => {
-                                        if(requestedDataPoints[field] == undefined){
-                                            requestedDataPoints[field] = [part._id];
-                                        }else{
-                                            requestedDataPoints[field].push(part._id);
-                                        }
-                                    });
-                                }
-                                catch(e){
-                                    console.log(e);
-                                }
-                                break;
-                            case "FIRST":
-                                if(requestedDataPoints["DataPoint"] == undefined){
-                                    requestedDataPoints[part.Data["DataPoint"]] = [part._id];
-                                }else{
-                                    requestedDataPoints[part.Data["DataPoint"]].push(part._id);
-                                }
-                        }
-                    });
-        
-                    allDocs.forEach((doc) => {
-                        var data = JSON.parse(doc.json);
-                        if(!teams.includes(parseInt(data.team))){
-                            // not a doc we are looking for
-                            return;
-                        }
-
-                        if(doc.flagged){
-                            return;
-                        }
-    
-                        if(!data.completed){
-                            return;
-                        }
-    
-                        if(!(data.type == "tablet")){
-                            return;
-                        }
-                        if(!(data.schema == analysis.Schema.Name)){
-                            return;
-                        }
-    
-                        schemaFields.forEach((field) => {
-                            var key = field.part + "---" + field.component;
-                            var indexOfField = schemaFields.indexOf(field);
-                            if(requestedDataPoints[key] == undefined){
-                                return;
-                            }
-    
-                            var useData = JSON.parse(data.data)[indexOfField];
-    
-                            requestedDataPoints[key].forEach((partId) => {
-                                var analysisPart = analysis.Parts.find(p => p._id == partId);
-                                if(field.componentType == "Step" || field.componentType == "Timer"){
-                                    // most likely just requesting number only
-                                    if(Object.keys(partSets[partId]).find(k => k == key)){
-                                        // then add to obj
-                                        partSets[partId][key].push(parseInt(useData))
-                                    }else{
-                                        // then create obj
-                                        partSets[partId][key] = [parseInt(useData)]
-                                    }
-                                }else if(field.componentType == "Check"){
-                                    // most likely just requesting number only
-                                    if(Object.keys(partSets[partId]).find(k => k == key)){
-                                        // then add to obj
-                                        partSets[partId][key].push(field.on == useData ? 1 : 0)
-                                    }else{
-                                        // then create obj
-                                        partSets[partId][key] = [field.on == useData ? 1 : 0]
-                                    }
-                                }
-                                else if(field.componentType == "Grid"){
-                                    // data point depends on the analysisPart type
-                                    var putData = 0;
-                                    switch(analysisPart.Type){
-                                        case "Number":
-                                            // then we are just requesting a number
-                                            var gridData = [];
-                                            var rowData = useData.split("*");
-                                            rowData.forEach((row) => {
-                                                var rowArr = row.split(",");
-                                                gridData = gridData.concat(rowArr);
-                                            });
-    
-                                            var count = 0;
-                                            gridData.forEach((num) => {
-                                                if(parseInt(num) == indexOfField){
-                                                    count += 1;
-                                                }
-                                            });
-    
-                                            putData = count;
-    
-                                            
-    
-                                            break;
-                                        case "Grid":
-                                            // we need the GRID ITSELF
-                                            var gridData = [];
-                                            var rowData = useData.split("*");
-                                            rowData.forEach((row) => {
-                                                var cols = row.split(",");  
-                                                var colsInt = [];
-                                                cols.forEach((col) => {
-                                                    if(parseInt(col) == indexOfField){
-                                                        colsInt.push(1);
-                                                    }else{
-                                                        colsInt.push(-1);
-                                                    }
-                                                });
-    
-                                                gridData.push(colsInt);
-                                            });
-    
-                                            putData = gridData;
-                                            break;
-    
-                                    }
-                                    if(Object.keys(partSets[partId]).find(k => k == key)){
-                                        // then add to obj
-                                        partSets[partId][key].push(putData)
-                                    }else{
-                                        // then create obj
-                                        partSets[partId][key] = [putData]
-                                    }
-                                }
-    
-                                // handle EACH PART ID AND ADDING DATA
-                                
-                            });
-    
-                            
-                        });
-    
-        
-                    });
-        
-                    allMatches.forEach((match) => {
-                        var foundTeams = match.teams.filter(t => teams.includes(t.team));
-                        if(foundTeams == undefined || foundTeams.length == 0){
-                            return;
-                        }
-    
-                        foundTeams.forEach((foundTeam) => {
-                            if(!match.results.finished){
-                                return;
-                            }
-            
-                            if(foundTeam.color == "Red"){
-                                var stats = match.results.redStats;
-                                Object.keys(stats).forEach((key) => {
-                                    if(requestedDataPoints[key] == undefined){
-                                        return;
-                                    }
-                                    requestedDataPoints[key].forEach((partId) => {
-                                        // handle EACH PART ID AND ADDING DATA
-                                        if(Object.keys(partSets[partId]).find(k => k == key)){
-                                            // then add to obj
-                                            partSets[partId][key].push(stats[key])
-                                        }else{
-                                            // then create obj
-                                            partSets[partId][key] = [stats[key]]
-                                        }
-                                    });
-                                });
-                                
-                                var score = match.results.red;
-                                var rp = match.results.redStats.rp;
-                                var penalties = match.results.redStats["tech Foul Count"] + match.results.redStats["foul Count"];
-                                if(requestedDataPoints["score"] != undefined){
-                                    requestedDataPoints["score"].forEach((partId) => {
-                                        if(Object.keys(partSets[partId]).find(k => k == "score")){
-                                            // then add to obj
-                                            partSets[partId]["score"].push(score)
-                                        }else{
-                                            // then create obj
-                                            partSets[partId]["score"] = [score]
-                                        }
-                                    });
-                                }
-                                if(requestedDataPoints["rp"] != undefined){
-                                    requestedDataPoints["rp"].forEach((partId) => {
-                                        if(Object.keys(partSets[partId]).find(k => k == "rp")){
-                                            // then add to obj
-                                            partSets[partId]["rp"].push(rp)
-                                        }else{
-                                            // then create obj
-                                            partSets[partId]["rp"] = [rp]
-                                        }
-                                    });
-                                }
-                                if(requestedDataPoints["penalties"] != undefined){
-                                    requestedDataPoints["penalties"].forEach((partId) => {
-                                        if(Object.keys(partSets[partId]).find(k => k == "penalties")){
-                                            // then add to obj
-                                            partSets[partId]["penalties"].push(penalties)
-                                        }else{
-                                            // then create obj
-                                            partSets[partId]["penalties"] = [penalties]
-                                        }
-                                    });
-                                }
-        
-                                
-                            }else{
-                                var stats = match.results.blueStats;
-                                Object.keys(stats).forEach((key) => {
-                                    if(requestedDataPoints[key] == undefined){
-                                        return;
-                                    }
-                                    requestedDataPoints[key].forEach((partId) => {
-                                        // handle EACH PART ID AND ADDING DATA
-                                        if(Object.keys(partSets[partId]).find(k => k == key)){
-                                            // then add to obj
-                                            partSets[partId][key].push(stats[key])
-                                        }else{
-                                            // then create obj
-                                            partSets[partId][key] = [stats[key]]
-                                        }
-                                    });
-                                });
-
-                                var score = match.results.blue;
-                                var rp = match.results.blueStats.rp;
-                                var penalties = match.results.blueStats["tech Foul Count"] + match.results.blueStats["foul Count"];
-                                if(requestedDataPoints["score"] != undefined){
-                                    requestedDataPoints["score"].forEach((partId) => {
-                                        if(Object.keys(partSets[partId]).find(k => k == "score")){
-                                            // then add to obj
-                                            partSets[partId]["score"].push(score)
-                                        }else{
-                                            // then create obj
-                                            partSets[partId]["score"] = [score]
-                                        }
-                                    });
-                                }
-                                if(requestedDataPoints["rp"] != undefined){
-                                    requestedDataPoints["rp"].forEach((partId) => {
-                                        if(Object.keys(partSets[partId]).find(k => k == "rp")){
-                                            // then add to obj
-                                            partSets[partId]["rp"].push(rp)
-                                        }else{
-                                            // then create obj
-                                            partSets[partId]["rp"] = [rp]
-                                        }
-                                    });
-                                }
-                                if(requestedDataPoints["penalties"] != undefined){
-                                    requestedDataPoints["penalties"].forEach((partId) => {
-                                        if(Object.keys(partSets[partId]).find(k => k == "penalties")){
-                                            // then add to obj
-                                            partSets[partId]["penalties"].push(penalties)
-                                        }else{
-                                            // then create obj
-                                            partSets[partId]["penalties"] = [penalties]
-                                        }
-                                    });
-                                }
-                            }
-                        });
-        
-                        
-        
-        
-                    });
-        
-                    console.log(partSets);
-        
-                    finalData = [];
-                    Object.keys(partSets).forEach((partId) => {
-                        // now we condense
-        
-                        var part = analysis.Parts.find(p => p._id == partId);
-                        var partData = partSets[partId];
-        
-                        switch(part.Type){
-                            case "Number":
-                                var final = 0;
-                                var n = 0;
-        
-                                var method = part.Data["Stat_Between"];
-                                var finalMethod = part.Data["Stat_Final"];
-        
-                                // first, handle the statistical analysis of the individual parts
-                                Object.keys(partData).forEach((key) => {
-                                    try{
-                                        var localFinal = 0;
-        
-                                        switch(method){
-                                            case "sum":
-                                                localFinal = partData[key].reduce((a, b) => a + b, 0);
-                                                break;
-                                            case "avg":
-                                                localFinal = partData[key].reduce((a, b) => a + b, 0) / partData[key].length;
-                                                break;
-                                            case "max":
-                                                localFinal = Math.max(...partData[key]);
-                                                break;
-                                            case "min":
-                                                localFinal = Math.min(...partData[key]);
-                                                break;
-                                            case "range":
-                                                localFinal = Math.max(...partData[key]) - Math.min(...partData[key]);
-                                                break;
-                                        }
-                                        n += 1;
-                                        final += localFinal;
-                                    }catch(e){
-                                        console.log(e);
-                                    }
-                                    
-                                });
-                                if(finalMethod == "avg"){
-                                    final = final / n;
-                                }
-                                finalData.push({
-                                    name: part.Name,
-                                    type: part.Type,
-                                    value: final
-                                });
-        
-        
-                                break;
-                            case "Grid":
-                                // get one grid for each team!
-                                var final = [];
-    
-                                Object.keys(partData).forEach((key) => {
-                                    try{
-                                        if(partData[key].length == 0){
-                                            return;
-                                        }
-                                        var localFinalForAll = [];
-                                        
-                                        var height = partData[key][0].length;
-                                        var width = partData[key][0][0].length;
-    
-                                        for(var i = 0; i < height; i++){
-                                            var row = [];
-                                            for(var j = 0; j < width; j++){
-                                                row.push(0);
-                                            }
-                                            localFinalForAll.push(row);
-                                        }
-    
-                                        partData[key].forEach((grid) => {
-                                            grid.forEach((row, i) => {
-                                                row.forEach((col, j) => {
-                                                    var toAdd = 0;
-                                                    if(parseInt(grid[i][j]) != -1){
-                                                        toAdd = 1;
-                                                    }
-                                                    localFinalForAll[i][j] += toAdd;
-                                                });
-                                            });
-                                        });
-    
-                                        final.push(localFinalForAll);
-                                    }catch(e){
-                                        // if it reaches here, then it is of a different size
-                                    }
-                                    
-                                });
-    
-                                var max = 0;
-    
-                                for(var i = 1; i < final.length; i++){
-                                    for(var r = 0; r < final[i].length; r++){
-                                        for(var c = 0; c < final[i][r].length; c++){
-                                            if(final[i][r][c] != -1){
-                                                final[0][r][c] += final[i][r][c];
-                                                
-                                            }
-                                        }
-                                    }
-                                }
-                                try{
-                                    for(var r = 0; r < final[0].length; r++){
-                                        for(var c = 0; c < final[0][r].length; c++){
-                                            if(final[0][r][c] > max){
-                                                max = final[0][r][c];
-                                            }
-                                        }
-                                    }
-                                }catch(e){
-    
-                                }
-    
-                                finalData.push({
-                                    name: part.Name,
-                                    type: part.Type,
-                                    value: final[0],
-                                    max: max
-                                });
-                                break;
-                            case "FIRST":
-                                var final = 0;
-                                var n = 0;
-        
-                                var method = part.Data["Stat"];
-        
-                                // first, handle the statistical analysis of the individual parts
-                                Object.keys(partData).forEach((key) => {
-                                    try{
-                                        var localFinal = 0;
-        
-                                        switch(method){
-                                            case "sum":
-                                                localFinal = partData[key].reduce((a, b) => a + b, 0);
-                                                break;
-                                            case "avg":
-                                                localFinal = partData[key].reduce((a, b) => a + b, 0) / partData[key].length;
-                                                break;
-                                            case "max":
-                                                localFinal = Math.max(...partData[key]);
-                                                break;
-                                            case "min":
-                                                localFinal = Math.min(...partData[key]);
-                                                break;
-                                            case "range":
-                                                localFinal = Math.max(...partData[key]) - Math.min(...partData[key]);
-                                                break;
-                                        }
-                                        n += 1;
-                                        final += localFinal;
-                                    }catch(e){
-                                        console.log(e);
-                                    }
-                                    
-                                });
-                                finalData.push({
-                                    name: part.Name,
-                                    type: part.Type,
-                                    value: final
-                                });
-                                break;
-                        }
                     });
         
                     console.log(finalData);
@@ -1391,13 +1058,38 @@ function selectAnalysis(){
                                  <hr style="margin-top:20px;margin-bottom:10px"/>
                                 `;
                                 break;
+                            case "Frequency":
+                                teams.forEach((team) => {
+                                    var record = finalData[team].find(p => p.name == part.name);
+                                    var rHTML = "";
+
+                                    for(var i = 0; i < record.fields.length; i+=1){
+                                        rHTML += `<div class='text important' style="color:#190024;font-weight:600"><span style="font-size:24px;font-weight:500">${record.fields[i]}</span> - ${record.values[i]}%</div>`
+                                    }
+
+
+                                    tlHTML += `<div style="margin:0px 10px">
+                                        ${rHTML}
+                                    </div>`
+                                });
+
+                                fHTML += `
+                                <div style="border: 1px solid #190024; padding:8px 0px; border-radius:8px;width:100%">
+                                    <div class='flex_apart' style-"width:50%;padding:10px 0px;">${tlHTML}</div>
+                                </div>
+                                 <hr style="margin-top:20px;margin-bottom:10px"/>
+                                `;
+                                break;
+
                             case "Graph":
                                 teams.forEach((team) => {
                                     
                                     // remove all spaces from part name
                                     var graphName = part.name.replace(/\s/g, '');
+                                    var record = finalData[team].find(p => p.name == part.name);
                                     fHTML += `
                                     <div class='text important' style="color:#190024;font-weight:600;margin: 5px; 10px">${team}</div>
+                                    <div class='text regular' style="color:#190024;font-weight:600;margin: 5px; 10px">Average Value: ${Math.round(record.average, 2)}</div>
                                     <div id="graph_${graphName}_${team}" style="font-size:30px"></div>
                                     `;
                                 });
@@ -1448,68 +1140,6 @@ function selectAnalysis(){
                     
                     
 
-                }else{
-    
-                    var teamString = "";
-                    
-                    teams.forEach((team) => {
-                        teamString += `<div class='text regular' style="color:#190024;font-weight:600;margin: 0px; 10px">${team}</div>&`;
-                    });
-                    teamString = teamString.substring(0, teamString.length - 1);
-    
-                    fHTML += `
-                    <div style="border: 2px solid #190024; padding:12px 0px; border-radius:8px;width:100%;margin-bottom:40px">
-                        <div class="text caption" style="color:#190024;margin-bottom:10px;font-weight:bold">${analysis.Name}</div>
-                        <div class="text caption" style="color:#190024;margin-bottom:20px">Generated at ${now.toLocaleString()}</div>
-                        <div class="flex_center">
-                            ${teamString}
-                        </div>
-                    </div>
-                    
-                   
-                    `
-                    finalData.forEach((part) => {
-                        switch(part.type){
-                            case "Number":
-                                fHTML += `
-                                    <div class="flex_apart" style="width:100%;margin-bottom:10px"> 
-                                        <div class='text important' style="color:#190024;margin-right:10px">${part.name}</div>
-                                        <div class='text regular' style="color:#190024;font-weight:600">${part.value.toFixed(2)}</div>
-                                    </div>
-                                `
-                                break;
-                            case "Grid":
-                                var max = part.max;
-                                if(part.value == undefined){
-                                    return;
-                                }
-                                if(max == 0){
-                                    max = 1;
-                                }
-                                var gridHTML = "";
-    
-                                part.value.forEach((row) => {
-                                    var rowHTML = "";
-                                    row.forEach((col) => {
-                                        rowHTML += `<div class="text regular" style="border:2px solid #190024;border-radius:8px;font-weight:600;margin:4px;padding:10px 15px;color:${col/max > 0.5 ? "#ffffff" : "#190024"};background-color:rgba(25,0,26,${(col/max).toFixed(3)})">${col}</div>`;
-                                    });
-                                    gridHTML += `<div class="flex_center">${rowHTML}</div>`;
-                                });
-                                fHTML += `<div style="margin-bottom:20px">${gridHTML}</div>`;
-                                break;
-                            case "FIRST":
-                                fHTML += `
-                                    <div class="flex_apart" style="width:100%;margin-bottom:10px"> 
-                                        <div class='text important' style="color:#190024;margin-right:10px">${part.name}</div>
-                                        <div class='text regular' style="color:#190024;font-weight:600">${part.value.toFixed(2)}</div>
-                                    </div>
-                                `
-                                break;
-
-                        }
-                        
-                    });
-                    document.getElementById("report").innerHTML = fHTML;
                 }
     
                 

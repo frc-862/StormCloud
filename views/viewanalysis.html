@@ -49,27 +49,62 @@
 
         <div class="center flex_center" style="width:100%" id="setup_view">
             <div style="width:60%;padding:20px;border:4px solid #190024;border-radius:20px">
-                <div class="flex_apart" style="margin:10px">
-                    <span class="textslim" style="width:40%;color:#190024">Team Numbers</span>
-                    <input type="text" class="input text important" id="team_numbers" style="pointer-events: all;width:60%" value="" placeholder="862,67,254"/>
-                </div>
-                <div class="flex_apart" style="margin:10px;text-align:center">
-                    <span class="textslim" style="width:40%;color:#190024">Separate By Team Number</span>
-                    <input type="checkbox" class="input text important" id="team_separate" style="pointer-events: all;width:60%;display:inline-block" value=""/>
-                </div>
-                <div class="flex_apart" style="margin:10px">
-                    <span class="textslim" style="width:40%;color:#190024">Analysis Scheme</span>
-                    <select class="input text important level1bg" id="analysis_sets" style="width:60%;pointer-events: all">
 
-                    </select>
+                <div class="flex_center">
+                    <div class="level1bg container clickable setupbutton" data-id="Match" style="padding:10px; margin:25px 20px" onclick="switchSetupView('Match')">
+                        <span class="text caption">Generate By Match</span>
+                    </div>
+                    <div class="level1bg container clickable setupbutton" data-id="Manual" style="padding:10px; margin:25px 20px" onclick="switchSetupView('Manual')">
+                        <span class="text caption">Generate Manually</span>
+                    </div>
                 </div>
-                <div class="flex_apart" style="margin:10px;text-align:center">
-                    <span class="textslim" style="width:40%;color:#190024">Print on Finish</span>
-                    <input type="checkbox" class="input text important" id="analysis_print" style="pointer-events: all;width:60%;display:inline-block" value=""/>
+
+                <div class="setup" data-id="Match" style="display:none">
+                    <div class="flex_apart" style="margin:10px">
+                        <span class="textslim" style="width:40%;color:#190024">Match Number</span>
+                        <input type="text" class="input text important" id="match_number" style="pointer-events: all;width:60%" value="" placeholder="2"/>
+                    </div>
+                    <div class="flex_apart" style="margin:10px">
+                        <span class="textslim" style="width:40%;color:#190024">Color</span>
+                        <select class="input text important level1bg" id="match_color" style="width:60%;pointer-events: all">
+                            <option value="Red">Red</option>
+                            <option value="Blue">Blue</option>
+                        </select>
+                    </div>
+                    <div class="flex_apart" style="margin:10px">
+                        <span class="textslim" style="width:40%;color:#190024">Analysis Scheme</span>
+                        <select class="input text important level1bg" id="analysis_sets_match" style="width:60%;pointer-events: all">
+    
+                        </select>
+                    </div>
+                    <div class="flex_apart" style="margin:10px;text-align:center">
+                        <span class="textslim" style="width:40%;color:#190024">Print on Finish</span>
+                        <input type="checkbox" class="input text important" id="analysis_print" style="pointer-events: all;width:60%;display:inline-block" value=""/>
+                    </div>
+                    <div class="level1bg container clickable" style="padding:10px; margin:25px 20px;" onclick="selectAnalysis()">
+                        <span class="text caption">Generate</span>
+                    </div>
                 </div>
-                <div class="level1bg container clickable" style="padding:10px; margin:25px 20px;display:none" id="analysis_submit" onclick="selectAnalysis()">
-                    <span class="text caption">Show</span>
+                <div class="setup" data-id="Manual" style="display:none">
+                    <div class="flex_apart" style="margin:10px">
+                        <span class="textslim" style="width:40%;color:#190024">Team Numbers</span>
+                        <input type="text" class="input text important" id="team_numbers" style="pointer-events: all;width:60%" value="" placeholder="862,67,254"/>
+                    </div>
+                    <div class="flex_apart" style="margin:10px">
+                        <span class="textslim" style="width:40%;color:#190024">Analysis Scheme</span>
+                        <select class="input text important level1bg" id="analysis_sets_manual" style="width:60%;pointer-events: all">
+    
+                        </select>
+                    </div>
+                    <div class="flex_apart" style="margin:10px;text-align:center">
+                        <span class="textslim" style="width:40%;color:#190024">Print on Finish</span>
+                        <input type="checkbox" class="input text important" id="analysis_print" style="pointer-events: all;width:60%;display:inline-block" value=""/>
+                    </div>
+                    <div class="level1bg container clickable" style="padding:10px; margin:25px 20px;" onclick="selectAnalysis()">
+                        <span class="text caption">Generate</span>
+                    </div>
                 </div>
+                
             </div>
         </div>
 
