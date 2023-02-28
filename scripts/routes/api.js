@@ -1386,6 +1386,7 @@ router.post("/submit/data", async (req, res, next) => {
             deviceId: dataPiece.DeviceID,
             identifier: dataPiece.Identifier,
             match: dataPiece.Number,
+            color: dataPiece.Color,
             type: "tablet",
             disabled: dataPiece.Disabled
         }

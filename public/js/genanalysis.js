@@ -481,6 +481,25 @@ function selectAnalysis(){
     
                                                 gridData.push(colsInt);
                                             });
+
+
+
+                                            if(data.Color == undefined){
+                                                // TRY to get the match
+                                                var applicableMatch = allMatches.find(m => m.matchNumber == data.match)
+                                                if(applicableMatch == undefined){
+                                                    data.Color = "Red";
+                                                }
+                                                else{
+                                                    var applicableTeam = applicableMatch.teams.find(t => t.team == foundTeam);
+                                                    if(applicableTeam == undefined){
+                                                        data.Color = "Red";
+                                                    }
+                                                    else{
+                                                        data.Color = applicableTeam.color;
+                                                    }
+                                                }
+                                            }
     
                                             putData = {
                                                 color: data.Color,
