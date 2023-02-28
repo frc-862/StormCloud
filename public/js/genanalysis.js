@@ -765,8 +765,8 @@ function selectAnalysis(){
                                             var localFinalForTeamRed = [];
                                             var localFinalForTeamBlue = [];
                                             
-                                            var height = partData[key]["data"][0].length;
-                                            var width = partData[key]["data"][0][0].length;
+                                            var height = partData[key][0]["data"].length;
+                                            var width = partData[key][0]["data"][0].length;
         
                                             for(var i = 0; i < height; i++){
                                                 var row = [];
