@@ -774,7 +774,7 @@ function selectAnalysis(){
                                                     row.push(0);
                                                 }
                                                 localFinalForTeamRed.push(row);
-                                                localFinalForTeamBlue.push(row);
+                                                localFinalForTeamBlue.push(row.map(c => c));
                                             }
         
                                             partData[key].forEach((gridD) => {
