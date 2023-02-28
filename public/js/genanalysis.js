@@ -866,7 +866,8 @@ function selectAnalysis(){
                                         valueRed: finalRed[0],
                                         valueBlue: finalBlue[0],
                                         maxRed: maxRed,
-                                        maxBlue: maxBlue
+                                        maxBlue: maxBlue,
+                                        separate: part.SeparateColors
                                     });
                                     break;
                                 case "FIRST":
@@ -1113,7 +1114,7 @@ function selectAnalysis(){
                                             var colRed = rowRed[c];
                                             var colBlue = rowBlue[c];
 
-                                            if(part.Data.SeparateColors){
+                                            if(part.separate){
                                                 rowHTML += `<div class="text regular" style="border:2px solid #190024;border-radius:8px;font-weight:600;margin:4px;padding:4px;">
                                                     <div style="border-radius:4px;font-weight:600;padding:4px 10px;margin: 4px 0px;color:${colRed/maxRed > 0.5 ? "#ffffff" : "#190024"};background-color:rgba(25,0,26,${(colRed)/(maxRed).toFixed(3)})">${colRed}</div>
                                                     <div style="border-radius:4px;font-weight:600;padding:4px 10px;margin: 4px 0px;color:${colBlue/maxBlue > 0.5 ? "#ffffff" : "#190024"};background-color:rgba(25,0,26,${(colBlue)/(maxBlue).toFixed(3)})">${colBlue}</div>
