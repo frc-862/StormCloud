@@ -1090,7 +1090,7 @@ function selectAnalysis(){
                                     var record = finalData[team].find(p => p.name == part.name);
                                     
                                     
-                                    if(record.value == undefined){
+                                    if(record.valueRed == undefined){
                                         return;
                                     }
                                     var maxRed = record.maxRed;
