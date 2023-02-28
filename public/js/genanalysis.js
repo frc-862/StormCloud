@@ -482,7 +482,10 @@ function selectAnalysis(){
                                                 gridData.push(colsInt);
                                             });
     
-                                            putData = gridData;
+                                            putData = {
+                                                color: data.Color,
+                                                data: gridData
+                                            };
                                             break;
     
                                     }
@@ -732,60 +735,104 @@ function selectAnalysis(){
                                     break;
                                 case "Grid":
                                     // get one grid for each team!
-                                    var final = [];
+                                    var finalRed = [];
+                                    var finalBlue = [];
     
                                     Object.keys(partData).forEach((key) => {
                                         try{
                                             if(partData[key].length == 0){
                                                 return;
                                             }
-                                            var localFinalForTeam = [];
+                                            var localFinalForTeamRed = [];
+                                            var localFinalForTeamBlue = [];
                                             
-                                            var height = partData[key][0].length;
-                                            var width = partData[key][0][0].length;
+                                            var height = partData[key]["data"][0].length;
+                                            var width = partData[key]["data"][0][0].length;
         
                                             for(var i = 0; i < height; i++){
                                                 var row = [];
                                                 for(var j = 0; j < width; j++){
                                                     row.push(0);
                                                 }
-                                                localFinalForTeam.push(row);
+                                                localFinalForTeamRed.push(row);
+                                                localFinalForTeamBlue.push(row);
                                             }
         
-                                            partData[key].forEach((grid) => {
-                                                grid.forEach((row, i) => {
-                                                    row.forEach((col, j) => {
-                                                        var toAdd = 0;
-                                                        if(parseInt(grid[i][j]) != -1){
-                                                            toAdd = 1;
-                                                        }
-                                                        localFinalForTeam[i][j] += toAdd;
+                                            partData[key].forEach((gridD) => {
+                                                var grid = gridD.data;
+                                                var color = gridD.color;
+                                                if(color == "Red"){
+                                                    grid.forEach((row, i) => {
+                                                        row.forEach((col, j) => {
+                                                            var toAdd = 0;
+                                                            if(parseInt(grid[i][j]) != -1){
+                                                                toAdd = 1;
+                                                            }
+                                                            localFinalForTeamRed[i][j] += toAdd;
+                                                        });
                                                     });
-                                                });
+
+                                                }else{
+                                                    grid.forEach((row, i) => {
+                                                        row.forEach((col, j) => {
+                                                            var toAdd = 0;
+                                                            if(parseInt(grid[i][j]) != -1){
+                                                                toAdd = 1;
+                                                            }
+                                                            localFinalForTeamBlue[i][j] += toAdd;
+                                                        });
+                                                    });
+                                                }
+
+                                                
                                             });
         
-                                            final.push(localFinalForTeam);
+                                            finalRed.push(localFinalForTeamRed);
+                                            finalBlue.push(localFinalForTeamBlue);
                                         }catch(e){
                                             // if it reaches here, then it is of a different size
                                         }
                                         
                                     });
     
-                                    var max = 0;
-                                    for(var i = 1; i < final.length; i++){
-                                        for(var r = 0; r < final[i].length; r++){
-                                            for(var c = 0; c < final[i][r].length; c++){
-                                                if(final[i][r][c] != -1){
-                                                    final[0][r][c] += final[i][r][c];
+                                    var maxRed = 0;
+                                    
+                                    for(var i = 1; i < finalRed.length; i++){
+                                        for(var r = 0; r < finalRed[i].length; r++){
+                                            for(var c = 0; c < finalRed[i][r].length; c++){
+                                                if(finalRed[i][r][c] != -1){
+                                                    finalRed[0][r][c] += finalRed[i][r][c];
                                                 }
                                             }
                                         }
                                     }
                                     try{
-                                        for(var r = 0; r < final[0].length; r++){
-                                            for(var c = 0; c < final[0][r].length; c++){
-                                                if(final[0][r][c] > max){
-                                                    max = final[0][r][c];
+                                        for(var r = 0; r < finalRed[0].length; r++){
+                                            for(var c = 0; c < finalRed[0][r].length; c++){
+                                                if(finalRed[0][r][c] > maxRed){
+                                                    maxRed = finalRed[0][r][c];
+                                                }
+                                            }
+                                        }
+                                    }catch(e){
+    
+                                    }
+
+                                    var maxBlue = 0;
+                                    for(var i = 1; i < finalBlue.length; i++){
+                                        for(var r = 0; r < finalBlue[i].length; r++){
+                                            for(var c = 0; c < finalBlue[i][r].length; c++){
+                                                if(finalBlue[i][r][c] != -1){
+                                                    finalBlue[0][r][c] += finalBlue[i][r][c];
+                                                }
+                                            }
+                                        }
+                                    }
+                                    try{
+                                        for(var r = 0; r < finalBlue[0].length; r++){
+                                            for(var c = 0; c < finalBlue[0][r].length; c++){
+                                                if(finalBlue[0][r][c] > maxBlue){
+                                                    maxBlue = finalBlue[0][r][c];
                                                 }
                                             }
                                         }
@@ -797,8 +844,10 @@ function selectAnalysis(){
                                     finalData[team].push({
                                         name: part.Name,
                                         type: part.Type,
-                                        value: final[0],
-                                        max: max
+                                        valueRed: finalRed[0],
+                                        valueBlue: finalBlue[0],
+                                        maxRed: maxRed,
+                                        maxBlue: maxBlue
                                     });
                                     break;
                                 case "FIRST":
@@ -1021,23 +1070,47 @@ function selectAnalysis(){
                                     tlHTML += `<div class='text important' style="color:#190024;font-weight:600;margin: 5px; 10px">${team}</div>`;
                                     var record = finalData[team].find(p => p.name == part.name);
                                     
+                                    
                                     if(record.value == undefined){
                                         return;
                                     }
-                                    var max = record.max;
-                                    if(max == 0){
-                                        max = 1;
+                                    var maxRed = record.maxRed;
+                                    var maxBlue = record.maxBlue;
+                                    if(maxRed == 0){
+                                        maxRed = 1;
+                                    }
+                                    if(maxBlue == 0){
+                                        maxBlue = 1;
                                     }
                                     var gridHTML = "";
-    
-                                    record.value.forEach((row) => {
-                                        var rowHTML = "";
-                                        row.forEach((col) => {
-                                            rowHTML += `<div class="text regular" style="border:2px solid #190024;border-radius:8px;font-weight:600;margin:4px;padding:10px 15px;color:${col/max > 0.5 ? "#ffffff" : "#190024"};background-color:rgba(25,0,26,${(col/max).toFixed(3)})">${col}</div>`;
-                                        });
+
+                                    for(var r = 0; r < record.valueRed.length; r+=1){
+                                        var rowRed = record.valueRed[r];
+                                        var rowBlue = record.valueBlue[r];
+
+                                        var rowHTML = ""
+
+                                        for(var c = 0; c < rowRed.length; c+=1){
+                                            var colRed = rowRed[c];
+                                            var colBlue = rowBlue[c];
+
+                                            if(part.Data.SeparateColors){
+                                                rowHTML += `<div class="text regular" style="border:2px solid #190024;border-radius:8px;font-weight:600;margin:4px;padding:4px;">
+                                                    <div style="border-radius:4px;font-weight:600;padding:4px 10px;margin: 4px 0px;color:${colRed/maxRed > 0.5 ? "#ffffff" : "#190024"};background-color:rgba(25,0,26,${(colRed)/(maxRed).toFixed(3)})">${colRed}</div>
+                                                    <div style="border-radius:4px;font-weight:600;padding:4px 10px;margin: 4px 0px;color:${colBlue/maxBlue > 0.5 ? "#ffffff" : "#190024"};background-color:rgba(25,0,26,${(colBlue)/(maxBlue).toFixed(3)})">${colBlue}</div>
+                                                </div>`;
+                                            }else{
+                                                rowHTML += `<div class="text regular" style="border:2px solid #190024;border-radius:8px;font-weight:600;margin:4px;padding:10px 15px;color:${(colRed + colBlue)/(maxRed + maxBlue) > 0.5 ? "#ffffff" : "#190024"};background-color:rgba(25,0,26,${(colRed + colBlue)/(maxRed + maxBlue).toFixed(3)})">${colRed + colBlue}</div>`;
+                                            }
+                                            
+                                        }
                                         gridHTML += `<div class="flex_center">${rowHTML}</div>`;
-                                    });
+                                    }
+    
+
                                     tlHTML += `<div style="margin-bottom:20px">${gridHTML}</div>`;
+
+                                    
                                 });
                                 fHTML += `
                                 <div class="flex_center">
