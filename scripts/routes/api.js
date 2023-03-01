@@ -1598,10 +1598,22 @@ async function updateCache(year, competition, matchType){
     })
     var currentMatch = latestMatch + 1;
 
+    var fResComp = await firstApiTools.getCompetitionInfo(year, competition);
+    var comp = fResComp["Events"][0];
+    var competitionName = "Unknown";
+    var location = "Unknown";
+    if(comp != undefined){
+        competitionName = comp["name"];
+        location = comp["city"] + ", " + comp["stateprov"];
+    }
+
+
     var cache = {
         rankings: finalRankings,
         currentMatch: currentMatch,
-        updated: new Date()
+        updated: new Date(),
+        competitionName: competitionName,
+        location: location
     }
 
     await db.updateDoc("Environment", {_id: env._id}, {cachedCompetitionData: cache});
@@ -1657,6 +1669,8 @@ router.get("/quick/state", async (req, res, next) => {
     var env = await authTools.getEnvironment(environment);
 
     var currentMatch = env.cachedCompetitionData.currentMatch;
+    var competitionName = env.cachedCompetitionData.competitionName;
+    var location = env.cachedCompetitionData.location;
     var currentlyRunning = true;
     var allMatches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
     var currentMatchType = env.settings.matchType;
@@ -1664,7 +1678,7 @@ router.get("/quick/state", async (req, res, next) => {
     var largerMatches = allMatches.filter((match) => {return match.matchNumber >= currentMatch});
     currentlyRunning = largerMatches.length > 0;
 
-    res.status(200).json({currentMatch: currentMatch, currentlyRunning: currentlyRunning, matchType: currentMatchType});
+    res.status(200).json({currentMatch: currentMatch, currentlyRunning: currentlyRunning, matchType: currentMatchType, competitionName: competitionName, location: location});
     
 });
 
