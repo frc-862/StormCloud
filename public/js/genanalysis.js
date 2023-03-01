@@ -1038,15 +1038,15 @@ function selectAnalysis(){
                         var rankingObj = compData.rankings.find(r => r.team == team);
                         if(rankingObj == undefined){
                             teamHTML += `<div style="margin:10px">
-                                <span class='text important' style="color:#190024;font-weight:600;margin:5px">${team}</span>
+                                <span class='text important' style="color:#190024;font-weight:600;margin:5px;font-size:2.2em">${team}</span>
                                 
                             </div>`;
                         }else{
                             teamHTML += `<div style="margin:10px">
-                                <span class='text important' style="color:#190024;font-weight:600;margin:5px">${team}</span>
-                                <span class='text regular' style="color:#190024;margin:5px">${rankingObj == undefined ? "???" : "Rank "  + rankingObj.rank}</span>
-                                <span class='text regular' style="color:#190024;margin:5px">${rankingObj == undefined ? "???" : rankingObj.rankingPoints + " RP"}</span>
-                                <span class='text regular' style="color:#190024;margin:5px">${rankingObj == undefined ? "???" : rankingObj.record.wins + "-" + rankingObj.record.losses + "-" + rankingObj.record.ties}</span>
+                                <span class='text important' style="color:#190024;font-weight:600;margin:5px;font-size:2.2em">${team}</span>
+                                <span class='text regular' style="color:#190024;margin:5px;font-size:1.7em">${rankingObj == undefined ? "???" : "#"  + rankingObj.rank + " (" + rankingObj.record.wins + "-" + rankingObj.record.losses + "-" + rankingObj.record.ties + ")"}</span>
+                                <span class='text regular' style="color:#190024;margin:5px;font-size:1.7em">${rankingObj == undefined ? "???" : rankingObj.rankingPoints + " RP"}</span>
+                                
                             </div>`;
                         }
                         
@@ -1115,7 +1115,7 @@ function selectAnalysis(){
                                             var colBlue = rowBlue[c];
 
                                             if(part.separate){
-                                                rowHTML += `<div class="text regular" style="border:2px solid #190024;border-radius:8px;font-weight:600;margin:4px;padding:4px;">
+                                                rowHTML += `<div class="text regular" style="border:2px solid #190024;border-radius:8px;font-weight:600;margin:4px;padding:4px;font-size:1.7em">
                                                     <div style="border-radius:4px;font-weight:600;padding:4px 20px;margin: 4px 0px;color:${colRed/maxRed > 0.5 ? "#ffffff" : "#190024"};background-color:rgba(25,0,26,${(colRed)/(maxRed).toFixed(3)})">${colRed}</div>
                                                     <div style="border-radius:4px;font-weight:600;padding:4px 20px;margin: 4px 0px;color:${colBlue/maxBlue > 0.5 ? "#ffffff" : "#190024"};background-color:rgba(25,0,26,${(colBlue)/(maxBlue).toFixed(3)})">${colBlue}</div>
                                                 </div>`;
@@ -1182,7 +1182,7 @@ function selectAnalysis(){
                                     var record = finalData[team].find(p => p.name == part.name);
                                     fHTML += `
                                     <div class='text important' style="color:#190024;font-weight:600;margin: 5px; 10px">${team}</div>
-                                    <div class='text regular' style="color:#190024;font-weight:600;margin: 5px; 10px">Average Value: ${Math.round(record.average, 2)}</div>
+                                    <div class='text regular' style="color:#190024;font-weight:600;margin: 5px; 10px;font-size:1.7em">Average Value: ${Math.round(record.average, 2)}</div>
                                     <div id="graph_${graphName}_${team}" style="font-size:30px"></div>
                                     `;
                                 });
