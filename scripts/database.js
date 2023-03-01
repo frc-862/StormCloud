@@ -64,7 +64,9 @@ const models = {
                 }
             }],
             currentMatch: Number,
-            updated: Date
+            updated: Date,
+            competitionName: String,
+            location: String
         }
     })),
     'Match' : mongoose.model('Match', new mongoose.Schema({
