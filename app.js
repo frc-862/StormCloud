@@ -48,6 +48,10 @@ app.get("/analysis", function(req, res) {
     res.sendFile(__dirname + "/views/viewanalysis.html"); 
 });
 
+app.get("/report", function(req, res) {
+    res.sendFile(__dirname + "/views/report.html"); 
+});
+
 
 // direct all API requests to the API router
 
