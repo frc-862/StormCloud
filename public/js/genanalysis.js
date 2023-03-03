@@ -113,13 +113,14 @@ function getAllData(){
 
                     var teamMatches = matches.filter(m => m.teams.find(t => t.team == teamToUse) != undefined);
                     teamMatches.sort((a, b) => parseInt(a.matchNumber) - parseInt(b.matchNumber));
-                    var nextMatchUp = undefined;
+                    var nextMatchUp = teamMatches[teamMatches.length - 1];
                     for(var i = 0; i < teamMatches.length; i++){
-                        if(teamMatches[i].results.finished){
+                        if(!teamMatches[i].results.finished){
                             nextMatchUp = teamMatches[i];
                             break;
                         }
                     }
+                    
                     
                     if(nextMatchUp != undefined){
                         document.getElementById("match_number").value = nextMatchUp.matchNumber;
