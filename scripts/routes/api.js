@@ -30,11 +30,6 @@ router.get('/matches*', async function(req, res, next) {
     let env = await authTools.getEnvironment(environment);
     let token = req.cookies.token;
 
-    var authorized = await authTools.authorize(token, "READ_ALL", env);
-    if(!authorized){
-        res.status(401).json({message: "Unauthorized"});
-        return;
-    }
 
     var matches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
     var teams = await db.getDocs("Team", {environment: env.friendlyId});

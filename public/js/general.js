@@ -1908,7 +1908,7 @@ document.querySelector("#match_createMatch").addEventListener("click", function(
 
     overlaySaveFunction = (e) => {
         var prevMatchObject = persistantData["matches"].find((i) => i["matchNumber"] == parseInt(document.querySelector("#overlay_matchNumber").value && i["competition"] == settings["competitionYear"] + settings["competitionCode"]));
-        if(prevMatchObject != undefined){
+        if(prevMatchObject == undefined){
             var sendObject = {
                 "matchNumber": parseInt(document.querySelector("#overlay_matchNumber").value),
                 "environment": environmentData["friendlyId"],

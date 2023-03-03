@@ -29,6 +29,12 @@ function post(link, headers, data, callback){
 
 var analysises = [];
 var matches = [];
+var defaultTeam = undefined;
+
+
+
+
+
 
 
 
@@ -77,11 +83,57 @@ function getAllData(){
             });
         }
     });
-    get("/api/matches", {}, function(success, data) {
-        if(success){
-            matches = data["matches"]
-        }
-    })
+    
+    get("/api/environment", {}, function(success, data){
+        defaultTeam = data["environment"]["settings"]["team"];
+        get("/api/matches", {}, function(success, data) {
+            if(success){
+                matches = data["matches"]
+
+                const urlParams = new URLSearchParams(window.location.search);
+                var automatic = urlParams.get('automatic');
+                var team = urlParams.get('teamNumber');
+                var analysis = urlParams.get('analysis');
+                
+                if(automatic == "yes"){
+                    // automatically generate based on the next match number of OUR TEAM
+                    switchSetupView("Match");
+
+
+                    var teamToUse = defaultTeam;
+                    if(team != undefined && team != null){
+                        teamToUse = team;
+                    }
+                    if(analysis != undefined && analysis != null){
+                        var applicableAnalysis = analysises.find(a => a.Name == analysis);
+                        document.getElementById("analysis_sets_match").value = applicableAnalysis._id;
+                    }
+
+
+
+                    var teamMatches = matches.filter(m => m.teams.find(t => t.team == teamToUse) != undefined);
+                    teamMatches.sort((a, b) => parseInt(a.matchNumber) - parseInt(b.matchNumber));
+                    var nextMatchUp = undefined;
+                    for(var i = 0; i < teamMatches.length; i++){
+                        if(teamMatches[i].results.finished){
+                            nextMatchUp = teamMatches[i];
+                            break;
+                        }
+                    }
+                    
+                    if(nextMatchUp != undefined){
+                        document.getElementById("match_number").value = nextMatchUp.matchNumber;
+                        document.getElementById("match_color").value = nextMatchUp.teams.find(t => t.team == teamToUse).color;
+                        selectAnalysis();
+                    }
+
+
+
+                }
+            }
+        })
+        
+    });
 }
 getAllData();
 

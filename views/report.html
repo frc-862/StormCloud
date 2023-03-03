@@ -1,0 +1,64 @@
+<html>
+    <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com"> 
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> 
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+        <link rel="stylesheet" href="css/dark_style.css">
+        <style>
+            html{
+                background-color: white;
+
+            }
+            body{
+                background-color: white;
+                color: black;
+            }
+
+            @page {
+                size: auto;  /* auto is the initial value */
+                margin: 0mm; /* this affects the margin in the printer settings */
+              }
+              html {
+                background-color: #FFFFFF;
+                margin: 0px; /* this affects the margin on the HTML before sending to printer */
+              }
+              
+            *{
+                font-family: 'Roboto', sans-serif;
+            }
+            .material-symbols-rounded {
+                font-variation-settings:
+                'FILL' 1,
+                'wght' 600,
+                'GRAD' 200,
+                'opsz' 48
+              }
+
+              .chart-container .axis, .chart-container .chart-label{
+                font-size: 24px;
+                font-weight: 600;
+                color: #190024;
+              }
+              .line-graph-path {
+                stroke-width: 4px !important;
+            }
+        </style>
+    </head>
+    <body>
+
+
+
+        
+
+        <div class="centercontent flex_center" style="width:100%" id="report_view">
+            <div id="report" style="width:90%;max-width:800px">
+                
+            </div>
+        </div>
+        <script src="https://unpkg.com/frappe-charts@latest"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="js/report.js"></script>
+    </body>
+    
+</html>
