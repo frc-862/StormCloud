@@ -1493,7 +1493,7 @@ router.get("/first/schedule*", async (req, res, next) => {
 
 
     if(matchType != "Qualification" && matchType != "Playoff" && matchType != "Practice" && matchType != "None"){
-        matchType = "Qualification";
+        matchType = env.settings.matchType;
     }
 
     var doNotPush = req.query.doNotPush == "true";
