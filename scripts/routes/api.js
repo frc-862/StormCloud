@@ -1372,6 +1372,11 @@ router.post("/submit/data", async (req, res, next) => {
     for(var i = 0; i < dataPieces.length; i++){
         var dataPiece = dataPieces[i];
 
+
+        if(env.settings.matchType == "Playoff"){
+            dataPiece.Number += 900;
+        }
+
         var generatedData = {
             team: dataPiece.Team,
             completed: true,
@@ -1510,13 +1515,18 @@ router.get("/first/schedule*", async (req, res, next) => {
         var schedule = fRes["Schedule"];
         schedule.forEach(async (match) => {
 
+            
+            if(match["tournamentLevel"] == "Playoff"){
+                match["matchNumber"] += 900;
+            }
+            var matchNumber = match["matchNumber"];
 
             var existingMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: match["matchNumber"], competition: year +competition});
             if(existingMatch.length > 0){
                 return;
             }
 
-            var matchNumber = match["matchNumber"];
+            
             var teams = [];
             match["teams"].forEach((team) => {
                 teams.push({
@@ -1584,6 +1594,9 @@ async function updateCache(year, competition, matchType){
     var latestMatch = 0;
     var matchResults = fRes2["Matches"];
     matchResults.forEach((match) => {
+        if(match["tournamentLevel"] == "Playoff"){
+            match["matchNumber"] += 900;
+        }
         if(match["actualStartTime"] != null && match["actualStartTime"] != undefined){
             if(match["matchNumber"] > latestMatch){
                 latestMatch = match["matchNumber"];
@@ -1753,6 +1766,11 @@ router.get("/first/results*", async(req, res, next) => {
             var matches = fRes["MatchScores"];
             for(var i = 0; i < matches.length; i++){
                 var match = matches[i];
+
+                if(match["matchLevel"] == "Playoff"){
+                    match["matchNumber"] += 900;
+                }
+
                 var existingMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: match["matchNumber"], competition: year+competition});
                 if(existingMatch.length == 0){
                     return;
@@ -1823,6 +1841,9 @@ router.get("/first/results*", async(req, res, next) => {
             });
             for(var i = 0; i < matches.length; i++){
                 var match = matches[i];
+                if(match["matchLevel"] == "Playoff"){
+                    match["matchNumber"] += 900;
+                }
                 var existingMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: match["matchNumber"], competition: year+competition});
                 if(existingMatch.length == 0){
                     return;
