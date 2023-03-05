@@ -81,6 +81,7 @@ function getAllData(){
                     <option value="${analysis._id}">${analysis.Name}</option>
                 `
             });
+            const urlParams = new URLSearchParams(window.location.search);
             var analysis = urlParams.get('analysis');
             if(analysis != undefined && analysis != null){
                 var applicableAnalysis = analysises.find(a => a.Name == analysis);
