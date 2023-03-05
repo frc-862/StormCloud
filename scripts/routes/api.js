@@ -1444,6 +1444,14 @@ router.get("/first/teams*", async(req, res, next) => {
 
     var year = req.query.year;
     var competition = req.query.competition;
+
+    if(year == undefined || year == ""){
+        year = env.settings.competitionYear;
+    }
+    if(competition == undefined || competition == ""){
+        competition = env.settings.competitionCode;
+    }
+
     var doNotPush = req.query.doNotPush == "true";
 
     var fRes = await firstApiTools.getTeams(year, competition);
@@ -1494,6 +1502,12 @@ router.get("/first/schedule*", async (req, res, next) => {
 
     if(matchType != "Qualification" && matchType != "Playoff" && matchType != "Practice" && matchType != "None"){
         matchType = env.settings.matchType;
+    }
+    if(competition == undefined || competition == ""){
+        competition = env.settings.competitionCode;
+    }
+    if(year == undefined || year == ""){
+        year = env.settings.competitionYear;
     }
 
     var doNotPush = req.query.doNotPush == "true";
@@ -1746,6 +1760,12 @@ router.get("/first/results*", async(req, res, next) => {
     var matchType = req.query.matchType;
     if(matchType != "Qualification" && matchType != "Playoff" && matchType != "Practice" && matchType != "None"){
         matchType = "Qualification";
+    }
+    if(year == undefined || year == ""){
+        year = env.settings.competitionYear;
+    }
+    if(competition == undefined || competition == ""){
+        competition = env.settings.competitionCode;
     }
 
     var doNotPush = req.query.doNotPush == "true";

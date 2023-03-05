@@ -100,9 +100,7 @@
                         <span class="textslim" style="width:40%;color:#190024">Print on Finish</span>
                         <input type="checkbox" class="input text important" id="analysis_print" style="pointer-events: all;width:60%;display:inline-block" value=""/>
                     </div>
-                    <div class="level1bg container clickable" style="padding:10px; margin:25px 20px;" onclick="selectAnalysis()">
-                        <span class="text caption">Generate</span>
-                    </div>
+                    
                 </div>
                 
             </div>
@@ -116,6 +114,18 @@
         <div class="centercontent flex_center" style="width:100%;display:none" id="report_view">
             <div id="report" style="width:90%;max-width:800px">
                 
+            </div>
+            <div class="bottomcontent" class="setup" data-id="Match" style="display:none">
+                <input type="text" class="input text important" id="team_numbers_re" style="pointer-events: all;width:200px" value="" placeholder="862,67,254"/>
+                <div class="level1bg container clickable" style="padding:10px; margin:25px 20px;" onclick="reselectAnalysis()">
+                    <span class="text caption">Generate</span>
+                </div>
+            </div>
+            <div class="bottomcontent" class="setup" data-id="Match" style="display:none">
+                <input type="text" class="input text important" id="match_number_re" style="pointer-events: all;width:200px" value="" placeholder="Match 1"/>
+                <div class="level1bg container clickable" style="padding:10px; margin:25px 20px;" onclick="reselectAnalysis()">
+                    <span class="text caption">Generate</span>
+                </div>
             </div>
         </div>
         <script src="https://unpkg.com/frappe-charts@latest"></script>

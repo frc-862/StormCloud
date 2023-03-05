@@ -94,6 +94,11 @@ function getAllData(){
                 var automatic = urlParams.get('automatic');
                 var team = urlParams.get('teamNumber');
                 var analysis = urlParams.get('analysis');
+
+                if(analysis != undefined && analysis != null){
+                    var applicableAnalysis = analysises.find(a => a.Name == analysis);
+                    document.getElementById("analysis_sets_match").value = applicableAnalysis._id;
+                }
                 
                 if(automatic == "yes"){
                     // automatically generate based on the next match number of OUR TEAM
@@ -104,10 +109,7 @@ function getAllData(){
                     if(team != undefined && team != null){
                         teamToUse = team;
                     }
-                    if(analysis != undefined && analysis != null){
-                        var applicableAnalysis = analysises.find(a => a.Name == analysis);
-                        document.getElementById("analysis_sets_match").value = applicableAnalysis._id;
-                    }
+                    
 
 
 
@@ -139,6 +141,15 @@ function getAllData(){
 getAllData();
 
 var compData = undefined;
+
+function reselectAnalysis(){
+    var teams = document.getElementById("team_numbers_re").value;
+    document.getElementById("team_numbers").value = teams;
+
+    var matchNum = document.getElementById("match_number_re").value;
+    document.getElementById("match_number").value = matchNum;
+
+}
 
 function selectAnalysis(){
     var teams = [];
