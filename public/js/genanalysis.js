@@ -82,11 +82,7 @@ function getAllData(){
                 `
             });
             const urlParams = new URLSearchParams(window.location.search);
-            var analysis = urlParams.get('analysis');
-            if(analysis != undefined && analysis != null){
-                var applicableAnalysis = analysises.find(a => a.Name == analysis);
-                document.getElementById("analysis_sets_match").value = applicableAnalysis._id;
-            }
+            
         }
     });
     
@@ -115,7 +111,11 @@ function getAllData(){
                     }
                     
 
-
+                    var analysis = urlParams.get('analysis');
+                    if(analysis != undefined && analysis != null){
+                        var applicableAnalysis = analysises.find(a => a.Name == analysis);
+                        document.getElementById("analysis_sets_match").value = applicableAnalysis._id;
+                    }
 
                     var teamMatches = matches.filter(m => m.teams.find(t => t.team == teamToUse) != undefined);
                     teamMatches.sort((a, b) => parseInt(a.matchNumber) - parseInt(b.matchNumber));
