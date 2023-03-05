@@ -275,7 +275,7 @@ function tryRequestAPI(button, link){
 
     var year = settings["competitionYear"];
     var competition = settings["competitionCode"];
-    var matchType = "Qualification";
+    var matchType = settings["matchType"];
 
     get(link + `?competition=${competition}&year=${year}&matchType=${matchType}`, {}, function(success, data){
         Array.from(document.getElementsByClassName("firstSyncOption")).forEach((item)=>{
