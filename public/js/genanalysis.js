@@ -86,6 +86,10 @@ function getAllData(){
     
     get("/api/environment", {}, function(success, data){
         defaultTeam = data["environment"]["settings"]["team"];
+        if(analysis != undefined && analysis != null){
+            var applicableAnalysis = analysises.find(a => a.Name == analysis);
+            document.getElementById("analysis_sets_match").value = applicableAnalysis._id;
+        }
         get("/api/matches", {}, function(success, data) {
             if(success){
                 matches = data["matches"]
@@ -95,10 +99,7 @@ function getAllData(){
                 var team = urlParams.get('teamNumber');
                 var analysis = urlParams.get('analysis');
 
-                if(analysis != undefined && analysis != null){
-                    var applicableAnalysis = analysises.find(a => a.Name == analysis);
-                    document.getElementById("analysis_sets_match").value = applicableAnalysis._id;
-                }
+                
                 
                 if(automatic == "yes"){
                     // automatically generate based on the next match number of OUR TEAM
