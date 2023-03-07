@@ -1729,8 +1729,25 @@ router.get("/quick/matches*", async (req, res, next) => {
 
     var teamNumber = req.query.teamNumber;
     if(teamNumber == undefined){
+
+        var matchType = env.settings.matchType;
+        
+
         var allMatches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
-        var sendBackMatches = allMatches;
+        
+        var sendBackMatches = allMatches.filter(function(m){
+            if(m.matchNumber > 900 && matchType == "Playoff"){
+                return true;
+            }else if(m.matchNumber < 900 && matchType == "Qualification" ){
+                return true;
+            }
+            return false;
+        });
+        if(matchType == "Playoff"){
+            sendBackMatches.forEach((m) => {
+                m.matchNumber -= 900;
+            });
+        }
         // remove all specific scoring data
         for(var i = 0; i < sendBackMatches.length; i++){
             sendBackMatches[i].documents = [];
@@ -1746,6 +1763,19 @@ router.get("/quick/matches*", async (req, res, next) => {
 
     var allMatches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
     var sendBackMatches = allMatches.filter((m) => m.teams.find((t) => t.team == teamNumber) != undefined);
+    sendBackMatches = sendBackMatches.filter(function(m){
+        if(m.matchNumber > 900 && matchType == "Playoff"){
+            return true;
+        }else if(m.matchNumber < 900 && matchType == "Qualification" ){
+            return true;
+        }
+        return false;
+    });
+    if(matchType == "Playoff"){
+        sendBackMatches.forEach((m) => {
+            m.matchNumber -= 900;
+        });
+    }
     // remove all specific scoring data
     for(var i = 0; i < sendBackMatches.length; i++){
         sendBackMatches[i].documents = [];
