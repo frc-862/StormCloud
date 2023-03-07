@@ -1728,9 +1728,10 @@ router.get("/quick/matches*", async (req, res, next) => {
     var env = await authTools.getEnvironment(environment);
 
     var teamNumber = req.query.teamNumber;
+    var matchType = env.settings.matchType;
     if(teamNumber == undefined){
 
-        var matchType = env.settings.matchType;
+        
         
 
         var allMatches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
@@ -1762,7 +1763,7 @@ router.get("/quick/matches*", async (req, res, next) => {
     }
 
     var allMatches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
-    var sendBackMatches = allMatches.filter((m) => m.teams.find((t) => t.team == teamNumber) != undefined);
+    var sendBackMatches = allMatches.filter((m) => m.teams.find((t) => t.team.toString() == teamNumber) != undefined);
     sendBackMatches = sendBackMatches.filter(function(m){
         if(m.matchNumber > 900 && matchType == "Playoff"){
             return true;
