@@ -1536,10 +1536,6 @@ router.get("/first/schedule*", async (req, res, next) => {
             var matchNumber = match["matchNumber"];
 
             var existingMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: match["matchNumber"], competition: year +competition});
-            if(existingMatch.length > 0){
-                return;
-            }
-
             
             var teams = [];
             match["teams"].forEach((team) => {
@@ -1548,8 +1544,19 @@ router.get("/first/schedule*", async (req, res, next) => {
                     color: team["station"].substring(0, team["station"].length - 1)
                 });
             });
-
             var date = new Date(match["startTime"]);
+
+            if(existingMatch.length > 0){
+
+                await db.updateDoc("Match", {_id: existingMatch[0]._id}, {teams: teams, planned: date});
+
+                return;
+            }
+
+            
+            
+
+            
 
             var match = {
                 environment: env.friendlyId,
