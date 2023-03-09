@@ -58,9 +58,12 @@ switchSetupView("Match")
 
 
 
+const urlParams = new URLSearchParams(window.location.search);
 
 
-
+if(urlParams.get('automatic') == "yes"){
+    switchSetupView("Loading")
+}
 
 
 
@@ -81,7 +84,6 @@ function getAllData(){
                     <option value="${analysis._id}">${analysis.Name}</option>
                 `
             });
-            const urlParams = new URLSearchParams(window.location.search);
             
         }
     });
@@ -92,8 +94,6 @@ function getAllData(){
         get("/api/matches", {}, function(success, data) {
             if(success){
                 matches = data["matches"]
-
-                const urlParams = new URLSearchParams(window.location.search);
                 var automatic = urlParams.get('automatic');
                 var team = urlParams.get('teamNumber');
                 

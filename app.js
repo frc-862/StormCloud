@@ -52,6 +52,11 @@ app.get("/report", function(req, res) {
     res.sendFile(__dirname + "/views/report.html"); 
 });
 
+app.get("/landing", function(req, res) {
+    res.sendFile(__dirname + "/views/landing.html"); 
+});
+
+
 
 // direct all API requests to the API router
 

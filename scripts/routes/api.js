@@ -1625,7 +1625,12 @@ async function updateCache(year, competition, matchType){
         }
         
     })
-    var currentMatch = latestMatch + 1;
+    var currentMatch = 0;
+    if(latestMatch != 0){
+        currentMatch = latestMatch + 1;
+    }else{
+        currentMatch = -1;
+    }
 
     var fResComp = await firstApiTools.getCompetitionInfo(year, competition);
     var comp = fResComp["Events"][0];
@@ -1700,14 +1705,29 @@ router.get("/quick/state", async (req, res, next) => {
     var currentMatch = env.cachedCompetitionData.currentMatch;
     var competitionName = env.cachedCompetitionData.competitionName;
     var location = env.cachedCompetitionData.location;
+    
     var currentlyRunning = true;
     var allMatches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
+    var ourNextMatches = allMatches.filter((match) => match.teams.find((team) => team.team == env.settings.teamNumber) != undefined && match.results.finished == false);
+    ourNextMatches = ourNextMatches.sort((a, b) => a.matchNumber - b.matchNumber);
+    var ourNextMatch = -1;
+    if(ourNextMatches.length > 0){
+        ourNextMatch = ourNextMatches[0];
+        ourNextMatch.documents = [];
+        var color = "";
+        ourNextMatch.teams.forEach(t => {
+            if(t.team.toString() == env.settings.teamNumber.toString()){
+                color = t.color;
+            }
+        })
+        ourNextMatch.color = color;
+    }
     var currentMatchType = env.settings.matchType;
     console.log(env.settings);
     var largerMatches = allMatches.filter((match) => {return match.matchNumber >= currentMatch});
     currentlyRunning = largerMatches.length > 0;
 
-    res.status(200).json({currentMatch: currentMatch, currentlyRunning: currentlyRunning, matchType: currentMatchType, competitionName: competitionName, location: location});
+    res.status(200).json({currentMatch: currentMatch, ourNextMatch: ourNextMatch, currentlyRunning: currentlyRunning, matchType: currentMatchType, competitionName: competitionName, location: location});
     
 });
 
