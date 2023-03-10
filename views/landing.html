@@ -53,5 +53,18 @@
         </div>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script src="js/landing.js"></script>
+        <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
+        <script>
+            window.OneSignal = window.OneSignal || [];
+            OneSignal.push(function() {
+                OneSignal.init({
+                appId: "e5b08ab2-484c-4e7f-ad43-3635832e137e",
+                safari_web_id: "web.com.robosmrt.stormcloud",
+                notifyButton: {
+                    enable: true,
+                },
+                });
+            });
+        </script>
     </body>
 </html>
