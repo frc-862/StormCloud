@@ -49,9 +49,14 @@ function switchSetupView(view){
     Array.from(document.getElementsByClassName("setupbutton")).forEach(e => {
         e.style.backgroundColor = ""
     }) 
+    try{
+        document.querySelector(".setup[data-id='" + view + "']").style.display = "";
+        document.querySelector(".setupbutton[data-id='" + view + "']").style.backgroundColor = "#680991";
+    }catch(e){
+
+    }
     
-    document.querySelector(".setup[data-id='" + view + "']").style.display = "";
-    document.querySelector(".setupbutton[data-id='" + view + "']").style.backgroundColor = "#680991";
+    
 }
 
 switchSetupView("Match")
