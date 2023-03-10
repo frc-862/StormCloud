@@ -22,19 +22,36 @@
     </head>
     <body class="background">
         <div class="center flex_center" style="flex-wrap:wrap;width:80%">
-            <div class="level1bg container clickable" style="padding: 40px;margin:20px;width:400px" onclick="window.location='/'">
+            <div class="level1bg container clickable" style="padding: 40px;margin:20px;width:800px;margin-bottom:50px">
+                <div class="flex_center">
+                    <div>
+                        <span class="text important white" style="font-weight:600" id="matchNumber">Unknown Match</span>
+                        <span class="text important white" id="matchStart"><i></i></span>
+                    </div>  
+                    <div>
+                        <div class="flex_center" id="redTeams">
+
+                        </div>
+                        <div class="flex_center" id="blueTeams">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="level1bg container clickable widget" style="padding: 40px;margin:20px;width:400px" onclick="window.location='/'" data-link="/">
                 <span class="text hugeicon material-symbols-rounded" style="margin:10px 0px">house</span>
                 <span class="text important white" style="font-weight:600">Main Page</span>
             </div>
-            <div class="level1bg container clickable" style="padding: 40px;margin:20px;width:400px" onclick="window.location='/'">
+            <div class="level1bg container clickable widget" style="padding: 40px;margin:20px;width:400px" onclick="window.location='/'" data-link="/analysis?automatic=yes&teamNumber=[TEAM]&analysis=LansingA">
                 <span class="text hugeicon material-symbols-rounded" style="margin:10px 0px">house</span>
                 <span class="text important white" style="font-weight:600">Our Next Match</span>
             </div>
-            <div class="level1bg container clickable" style="padding: 40px;margin:20px;width:400px" onclick="window.location='/'">
+            <div class="level1bg container clickable widget" style="padding: 40px;margin:20px;width:400px" onclick="window.location='/'" data-link="/report?teamNumber=[TEAM]">
                 <span class="text hugeicon material-symbols-rounded" style="margin:10px 0px">house</span>
                 <span class="text important white" style="font-weight:600">All Our Matches</span>
             </div>
         </div>
-        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="js/landing.js"></script>
     </body>
 </html>
