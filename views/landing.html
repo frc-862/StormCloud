@@ -21,39 +21,81 @@
         </style>
     </head>
     <body class="background">
-        <div class="center flex_center" style="flex-wrap:wrap;width:80%">
-            <div class="level1bg container clickable" style="padding: 40px;margin:20px;width:800px;margin-bottom:50px">
+        <div class="flex_center" style="margin-top:40px">
+            <div style="width:100%">
                 <div class="flex_center">
-                    <div>
-                        <span class="text important white" style="font-weight:600" id="matchNumber">Unknown Match</span>
-                        <span class="text important white" id="matchStart"><i></i></span>
-                    </div>  
-                    <div>
-                        <div class="flex_center" id="redTeams">
+                    <div class="level1bg container clickable" style="padding: 40px;margin:20px;width:1000px">
+                        <div class="flex_apart">
+                            <span class="text important white" style="font-weight:600" id="ranking">Rank ?</span>
+                            <span class="text important white" style="font-weight:600" id="record">0 / 0 / 0</span>
+                            <span class="text regular white"  id="rankingPoints">0.0 RP</span>
 
                         </div>
-                        <div class="flex_center" id="blueTeams">
+                        <div class="flex_center" style="margin-top:15px">
+                            <div class="container redbg" style="width:30%;padding:5px;margin:5px" id="behind">
+
+                            </div>
+                            <div class="container greenbg" style="width:30%;padding:5px;margin:5px" id="ahead">
+                                
+                            </div>
+                        </div>  
+                        
+                        
+                    </div>
+                </div>
+                <div class="flex_center">
+                    <div class="level1bg container clickable" style="padding: 40px;margin:20px;width:1000px">
+                        <div class="flex_center">
+                            <div>
+                                <span class="text header white" style="font-weight:600;margin:2px" id="matchNumber">Loading...</span>
+                                <span class="text important white" style="margin:2px" id="matchStart"></span>
+                                <i><span class="text regular white" style="margin:2px" id="matchCurrent"></span></i>
+                            </div>  
+                            <div class="level2bg container" style="margin-left:40px">
+                                <div class="flex_center" id="redTeams">
+        
+                                </div>
+                                <div class="flex_center" id="blueTeams">
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex_center">
                             
+                        </div>
+                        <div class="flex_center" id="analysisButtons" style="display:none">
+                            <div class="redbg container clickable" style="padding:10px;margin:20px" onclick="openAnalysis('Red')">
+                                <span class="text caption">Show Red Analysis</span>
+                            </div>
+                            <div class="bluebg container clickable" style="padding:10px;margin:20px" onclick="openAnalysis('Blue')">
+                                <span class="text caption">Show Blue Analysis</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="level1bg container clickable widget" style="padding: 40px;margin:20px;width:400px" data-link="/">
-                <span class="text hugeicon material-symbols-rounded" style="margin:10px 0px">house</span>
-                <span class="text important white" style="font-weight:600">Main Page</span>
-            </div>
-            <div class="level1bg container clickable widget" style="padding: 40px;margin:20px;width:400px" data-link="/analysis?automatic=yes&teamNumber=[TEAM]&analysis=LansingA">
-                <span class="text hugeicon material-symbols-rounded" style="margin:10px 0px">monitoring</span>
-                <span class="text important white" style="font-weight:600">Our Next Match</span>
-            </div>
-            <div class="level1bg container clickable widget" style="padding: 40px;margin:20px;width:400px" data-link="/report?teamNumber=[TEAM]">
-                <span class="text hugeicon material-symbols-rounded" style="margin:10px 0px">flag</span>
-                <span class="text important white" style="font-weight:600">All Our Matches</span>
+                
+                
+                <div class="flex_center" style="flex-wrap:wrap;">
+                    <div class="level1bg container clickable widget" style="padding: 40px;margin:20px;width:400px" data-link="/">
+                        <span class="text hugeicon material-symbols-rounded" style="margin:10px 0px">house</span>
+                        <span class="text important white" style="font-weight:600">Main Page</span>
+                    </div>
+                    <div class="level1bg container clickable widget" style="padding: 40px;margin:20px;width:400px" data-link="/analysis?automatic=yes&teamNumber=[TEAM]&analysis=LansingA">
+                        <span class="text hugeicon material-symbols-rounded" style="margin:10px 0px">monitoring</span>
+                        <span class="text important white" style="font-weight:600">Our Next Match</span>
+                    </div>
+                    <div class="level1bg container clickable widget" style="padding: 40px;margin:20px;width:400px" data-link="/report?teamNumber=[TEAM]&fan=yes">
+                        <span class="text hugeicon material-symbols-rounded" style="margin:10px 0px">flag</span>
+                        <span class="text important white" style="font-weight:600">All Our Matches</span>
+                    </div>
+                </div>
+                
             </div>
         </div>
+        
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script src="js/landing.js"></script>
-        <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
+        <!-- <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
         <script>
             window.OneSignal = window.OneSignal || [];
             OneSignal.push(function() {
@@ -65,6 +107,6 @@
                 },
                 });
             });
-        </script>
+        </script> -->
     </body>
 </html>

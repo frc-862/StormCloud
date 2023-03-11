@@ -28,13 +28,51 @@ function post(link, headers, data, callback){
 }
 
 var teamNumber = undefined;
+var nextUpMatchNumber = undefined;
+var analysis = undefined;
 function getLatestData(){
     get("/api/environment", {}, function(success, data){
         teamNumber = data.environment.settings.team;
-        get("/api/quick/matches?teamNumber=" + teamNumber, {}, function(success, data){
+        analysis = data.environment.settings.defaultAnalysis;
+        get("/api/first/cache", {}, function(success, data){
+            var rankings = data.cache.rankings;
+
+            var ourRanking = rankings.filter(r => r.team == teamNumber)[0];
+            document.getElementById("ranking").innerHTML = "Rank " + ourRanking.rank;
+            document.getElementById("rankingPoints").innerHTML = ourRanking.rankingPoints + " RP (of " + ourRanking.matchesPlayed +" matches)";
+            document.getElementById("record").innerHTML = ourRanking.record.wins + " / " + ourRanking.record.losses + " / " + ourRanking.record.ties;
+
+            var behind = rankings.filter(r => r.rank < ourRanking.rank).sort((a, b) => b.rank - a.rank);
+            var ahead = rankings.filter(r => r.rank > ourRanking.rank);
+
+            var behindHTML = "";
+            var aheadHTML = "";
+
+            for(var i = 0; i < 3; i++){
+                if(behind[2-i] != undefined){
+                    behindHTML += `
+                    <div class="container dimredbg" style="margin:5px;padding:5px">
+                        <span class="text regular white">${behind[2-i].team} w/ ${behind[2-i].rankingPoints} RP</span>
+                    </div>
+                    `;
+                }
+                if(ahead[i] != undefined){
+                    aheadHTML += `
+                    <div class="container dimgreenbg" style="margin:5px;padding:5px">
+                        <span class="text regular white">${ahead[i].team} w/ ${ahead[i].rankingPoints} RP</span>
+                    </div>
+                    `;
+                }
+            }
+
+            document.getElementById("behind").innerHTML = behindHTML;
+            document.getElementById("ahead").innerHTML = aheadHTML;
+        });
+        get("/api/quick/matches", {}, function(success, data){
             var matches = data.matches.sort((a, b) => a.matchNumber - b.matchNumber);
-            var nextUpMatch = matches.filter(match => match.finished == false)[0];
-            if(nextUpMatch == undefined){
+            var ourNextUpMatch = matches.filter(match => match.results.finished == false && match.teams.find(t => t.team == teamNumber))[0];
+            var nextUpMatch = matches.filter(match => match.results.finished == false)[0];
+            if(ourNextUpMatch == undefined){
                 document.getElementById("matchNumber").innerHTML = "No more matches";
                 document.getElementById("matchStart").innerHTML = "";
                 document.getElementById("redTeams").innerHTML = "";
@@ -43,17 +81,19 @@ function getLatestData(){
                 return;
             }
 
+            nextUpMatchNumber = ourNextUpMatch.matchNumber;
 
 
-            document.getElementById("matchNumber").innerHTML = "Match " + nextUpMatch.matchNumber;
-            document.getElementById("matchStart").innerHTML = nextUpMatch.planned;
+            document.getElementById("matchNumber").innerHTML = "Match " + ourNextUpMatch.matchNumber;
+            document.getElementById("matchStart").innerHTML = new Date(ourNextUpMatch.planned).toLocaleTimeString();
+            document.getElementById("matchCurrent").innerHTML = "Field on Match " + (nextUpMatch.matchNumber + 1);
 
-            var ourColor = nextUpMatch.teams.find(t => t.team == teamNumber).color;
+            var ourColor = ourNextUpMatch.teams.find(t => t.team == teamNumber).color;
 
             var redHTML = "";
             var blueHTML = "";
 
-            nextUpMatch.teams.forEach(t => {
+            ourNextUpMatch.teams.forEach(t => {
                 if(t.color == "Red"){
 
                     redHTML += `
@@ -70,9 +110,21 @@ function getLatestData(){
                 }
             });
 
+            document.getElementById("redTeams").innerHTML = redHTML;
+            document.getElementById("blueTeams").innerHTML = blueHTML;
+            document.getElementById("analysisButtons").style.display = "";
+
+
         });
     });
 }
+
+
+
+function openAnalysis(color){
+    window.location = "/analysis?automatic=yes&color=" + color + "&matchNumber=" + nextUpMatchNumber + "&analysis=" + analysis;
+}
+
 
 getLatestData();
 setInterval(getLatestData, 10000);

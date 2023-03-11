@@ -67,6 +67,8 @@ function getMatchAnalysis(){
         var matches = data["matches"];
         matches.sort((a, b) => parseInt(a.matchNumber) - parseInt(b.matchNumber));
 
+        var ourUpcomingMatch = matches.filter(m => m.results.finished == false)[0];
+
         matches.forEach(function(match){
 
             var prevMatch = matches[matches.indexOf(match) - 1];
@@ -77,11 +79,15 @@ function getMatchAnalysis(){
             }
 
             var mHTML = `
-            <div class="flex_apart${fan == "yes" ? " container" : ""}" style="${fan == "yes" ? "margin:10px;padding:20px 40px;border-radius:16px;background-color:rgba(0,0,0,0.5);" : ""}"> 
+            <div class="flex_apart${fan == "yes" ? " container" : ""}" style="margin:20px 10px;padding:20px 40px;${fan == "yes" ? "border-radius:16px;background-color:rgba(0,0,0,0.5);" : (ourUpcomingMatch.matchNumber == match.matchNumber ? "border-radius:16px;background-color:#e4a6ff" : "")}"> 
             `;
 
             mHTML += `
-            <span class="important" style="color:${textColor}">Match ${match.matchNumber}</span>
+            <div>
+            <span class="important" style="color:${textColor};display:block">Match ${match.matchNumber}</span>
+            <span class="regular" style="color:${textColor};display:block">${(new Date(match.planned)).toLocaleTimeString()}</span>
+            </div>
+            
             `
 
             var redTeams = match.teams.filter(t => t.color == "Red");
@@ -126,7 +132,7 @@ function getMatchAnalysis(){
                 var winner = redScore > blueScore ? "Red" : (redScore == blueScore ? "Tie" : "Blue");
 
                 mHTML += `
-                <div class="${redScore > blueScore ? "redbg" : (redScore == blueScore ? "primarybg":"bluebg")} container" style="margin:10px; padding:10px; border-radius:12px;width:160px;${winner == ourTeam.color ? "border: 2px solid white" : "border: 2px solid transparent"}">
+                <div class="${redScore > blueScore ? "redbg" : (redScore == blueScore ? "primarybg":"bluebg")} container" style="margin:10px; padding:10px; border-radius:12px;width:160px;${winner == ourTeam.color ? (fan == "yes" ? "border: 2px solid white" : "border: 4px solid #1ffa1b") : "border: 2px solid transparent"}">
                     <div class="flex_center">
                         <span class="important" style="color:white">${redScore} - ${blueScore}</span>
                     </div>
@@ -139,8 +145,8 @@ function getMatchAnalysis(){
                 `
             }else{
                 mHTML += `
-                <div class="whitebg container flex_center" style="margin:10px; padding:10px; border-radius:12px;width:160px">
-                    <span class="important" style="color:white">Not Played</span>
+                <div class="whitebg container flex_center" style="margin:10px; padding:10px; border-radius:12px;width:160px${ourUpcomingMatch.matchNumber == match.matchNumber ? ";background-color:#b61bfa" : ""}">
+                    <span class="important" style="color:white">${ourUpcomingMatch.matchNumber == match.matchNumber ? "Up Next!" : "Not Played"}</span>
                 </div>
                 `
             }

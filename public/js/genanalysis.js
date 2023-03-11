@@ -157,6 +157,19 @@ function getAllData(){
                         if(nextMatchUp != undefined){
                             document.getElementById("match_number").value = nextMatchUp.matchNumber;
                             document.getElementById("match_color").value = nextMatchUp.teams.find(t => t.team == teamToUse).color;
+
+                            var preferredColor = urlParams.get('color');
+                            var preferredMatch = urlParams.get('matchNumber');
+
+                            if(preferredColor != undefined && preferredColor != null){
+                                document.getElementById("match_color").value = preferredColor;
+                            }
+                            if(preferredMatch != undefined && preferredMatch != null){
+                                document.getElementById("match_number").value = preferredMatch;
+                            }
+
+
+                            
                             selectAnalysis();
                         }
                     }
