@@ -85,8 +85,8 @@ function getLatestData(){
 
 
             document.getElementById("matchNumber").innerHTML = "Match " + ourNextUpMatch.matchNumber;
-            document.getElementById("matchStart").innerHTML = new Date(ourNextUpMatch.planned).toLocaleTimeString();
-            document.getElementById("matchCurrent").innerHTML = "Field on Match " + (nextUpMatch.matchNumber + 1);
+            document.getElementById("matchStart").innerHTML = new Date(ourNextUpMatch.planned).toTimeString();
+            document.getElementById("matchCurrent").innerHTML = "Field on Match " + (nextUpMatch.matchNumber);
 
             var ourColor = ourNextUpMatch.teams.find(t => t.team == teamNumber).color;
 
