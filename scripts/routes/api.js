@@ -54,7 +54,8 @@ router.get('/matches*', async function(req, res, next) {
 
 
         documents.forEach(doc => {
-            if(match.documents.includes(doc._id.toString())){
+            var docData = JSON.parse(doc.json);
+            if(match.matchNumber == docData.matchNumber && match.competition == doc.competition){
                 matchData.documents.push(doc);
                 
             }
@@ -85,7 +86,7 @@ router.get("/request/scouter*", async(req, res, next) => {
     if(authValid){
         var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match", competition: competition});
         sendBackDocuments = documents.filter(doc => {
-            var data = JSON.parse(doc.data);
+            var data = JSON.parse(doc.json);
             return data.scouter == scouter || data.author == scouter;
         })
     }
@@ -123,7 +124,8 @@ router.get("/request/match*", async (req, res, next) => {
     if(authValid){
         var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match", competition: competition});
         documents.forEach(doc => {
-            if(match.documents.includes(doc._id.toString())){
+            var docData = JSON.parse(doc.json);
+            if(match.matchNumber == docData.matchNumber && match.competition == doc.competition){
                 sendBackMatch.documents.push(doc);
             }
         });
@@ -773,7 +775,7 @@ router.post("/match/document", async (req, res, next) => {
         res.status(404).json({message: "Document not found!"});
         return;
     }
-    match.documents.push(docId);
+    
 
     await db.updateDoc("Match", {_id: match._id}, {documents: match.documents});
     res.status(200).json({message: "Document added!"});
@@ -1209,8 +1211,8 @@ router.post("/submit/photo", async (req, res, next) => {
                 console.log("WORK");
                 matches.forEach(async (match) => {
                     console.log("Match: " + match)
-                    var associatedMatch = possibleMatches.find((m) => m.matchNumber == match);
-                    console.log("Associated: " + associatedMatch);
+                    var associatedMatch = possibleMatches.find((m) => m.matchNumber == match && m.competition == env.settings.competitionYear + env.settings.competitionCode);
+                    
                     if(associatedMatch != undefined){
                         associatedMatch.documents.push(doc._id);
     
