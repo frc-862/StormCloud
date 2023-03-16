@@ -224,6 +224,83 @@ var cached = [];
 
 var sections = [];
 
+function select_addOption(element, sectionId){
+    var _id = element.dataset.id;
+    var index = sections.findIndex(s => s._id == sectionId);
+
+    var optionName = document.querySelector(`.optionNameAdd[data-id="${_id}"]`).value;
+    var itemIndex = sections[index].Components.findIndex(i => i._id == _id);
+
+    if(sections[index].Components[itemIndex].Options == undefined){
+        sections[index].Components[itemIndex].Options = [];
+    }
+    if(sections[index].Components[itemIndex].Options.find(o => o.Name == optionName) != undefined || optionName == ""){
+        return;
+    }
+
+
+    var option = {
+        Name: optionName,
+        Points: 0
+    }
+    sections[index].Components[itemIndex].Options.push(option);
+    document.querySelector(`.optionNameAdd[data-id="${_id}"]`).value = "";
+    select_refreshOptions(_id, sectionId);
+}  
+function select_deleteOption(element, sectionId){
+    var _id = element.dataset.id;
+    var index = sections.findIndex(s => s._id == sectionId);
+
+    var optionName = element.dataset.option;
+    var itemIndex = sections[index].Components.findIndex(i => i._id == _id);
+
+    var optionIndex = sections[index].Components[itemIndex].Options.findIndex(o => o.Name == optionName);
+    sections[index].Components[itemIndex].Options.splice(optionIndex, 1);
+    select_refreshOptions(_id, sectionId);
+}
+function select_editOption(element, property, sectionId){
+    var _id = element.dataset.id;
+    var index = sections.findIndex(s => s._id == sectionId);
+
+    var optionName = element.dataset.option;
+    var itemIndex = sections[index].Components.findIndex(i => i._id == _id);
+
+    var optionIndex = sections[index].Components[itemIndex].Options.findIndex(o => o.Name == optionName);
+    var value = element.value;
+    if(element.dataset.field == "Points"){
+        value = parseInt(value);
+    }else if(element.dataset.field == "Name"){
+        if(sections[index].Components[itemIndex].Options.find(o => o.Name == value) != undefined || value == ""){
+            element.value = optionName;
+            return;
+        }
+    }
+    sections[index].Components[itemIndex].Options[optionIndex][element.dataset.field] = value;
+    select_refreshOptions(_id, sectionId);
+}
+function select_refreshOptions(itemId, sectionId){
+    var _id = itemId;
+    var index = sections.findIndex(s => s._id == sectionId);
+
+    var itemIndex = sections[index].Components.findIndex(i => i._id == _id);
+    
+
+    var el = document.querySelector(`.options[data-id="${_id}"]`);
+    el.innerHTML = ``;
+    sections[index].Components[itemIndex].Options.forEach(function(option){
+        el.innerHTML += `
+        <div class="flex_apart container primarybg" style="padding:10px;border-radius:8px;margin:5px">
+            <input class="input small" value="${option.Name}" data-id="${_id}" data-option="${option.Name}" data-field="Name" onchange="select_editOption(this, 'Name', '${sectionId}')" type="text" placeholder="Option Name" style="width:60%;display:inline-block"/>
+            <input class="input small" value="${option.Points}" data-id="${_id}" data-option="${option.Name}" data-field="Points" onchange="select_editOption(this, 'Points', '${sectionId}')" type="number" placeholder="Points" style="width:20%;display:inline-block"/>
+            <div class="container redbg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${_id}" data-option="${option.Name}" onclick="select_deleteOption(this, '${sectionId}')">
+                <span class="text regular material-symbols-rounded">close</span>
+            </div>
+        </div>
+        `;
+    });
+    
+}
+
 function editItem(element, field, sectionId){
     var _id = element.dataset.id;
     var index = sections.findIndex(s => s._id == sectionId);
@@ -446,10 +523,13 @@ function reshowItems(sectionId){
                             <input class="input small" value="${i.Min}" style="display: inline-block;width:80px;text-align:center" type="number" placeholder="0" data-id="${i._id}" onchange="editItem(this, 'Min', '${sectionId}')"/>
                             <span class="text caption" style="margin: 5px 10px;text-align:left">Max</span>
                             <input class="input small" value="${i.Max}" style="display: inline-block;width:80px;text-align:center" type="number" placeholder="0" data-id="${i._id}" onchange="editItem(this, 'Max', '${sectionId}')"/>
+                            
                         </div>
                         <div style="width:30%;text-align:left">
                             <span class="text caption" style="margin: 5px 10px;text-align:left">Default</span>
                             <input class="input small" value="${i.Default}" style="display: inline-block;width:80px;text-align:center" type="number" placeholder="0" data-id="${i._id}" onchange="editItem(this, 'Default', '${sectionId}')"/>
+                            <span class="text caption" style="margin: 5px 10px;text-align:left" title="Using 'x' as the variable, write an equation that corresponds to points scored through this stepper">Points Equation</span>
+                            <input class="input small" value="${i.Points}" style="display: inline-block;width:160px;text-align:center" type="text" placeholder="x" data-id="${i._id}" onchange="editItem(this, 'Points', '${sectionId}')"/>
                         </div>
                         <div style="width:30%;text-align:left">
                             <span class="text caption" style="margin: 5px 10px;text-align:left">Color</span>
@@ -457,6 +537,7 @@ function reshowItems(sectionId){
                         </div>
                         
                     </div>
+
 
                     <div class="flex_apart" style="width:10%;justify-content:right">
                         <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="moveItem(this, -1, '${sectionId}')">
@@ -483,8 +564,8 @@ function reshowItems(sectionId){
 
                     <div style="width:50%" class="flex_apart">
                         <div style="width:90%;text-align:left">
-                            <span class="text caption" style="margin: 5px 10px;text-align:left">Extra Text</span>
-                            <input class="input small" value="${i.Contents}" style="display: inline-block;text-align:left;width:100%" type="text" placeholder="Contents" data-id="${i._id}" onchange="editItem(this, 'Contents', '${sectionId}')"/>
+                            <span class="text caption" style="margin: 5px 10px;text-align:left">Extra Text (one per line)</span>
+                            <textarea class="input small" style="display: inline-block;text-align:left;width:100%" type="text" placeholder="Contents" data-id="${i._id}" onchange="editItem(this, 'Contents', '${sectionId}')">${i.Contents}</textarea>
                         </div>
                         
                         
@@ -514,18 +595,29 @@ function reshowItems(sectionId){
                         </div>
 
                         <div style="width:50%" class="flex_apart">
-                            <div style="width:30%;text-align:left">
-                                <span class="text caption" style="margin: 5px 10px;text-align:left">Value for OFF</span>
-                                <input class="input small" value="${i.Off}" style="display: inline-block;width:160px" type="text" placeholder="No" data-id="${i._id}" onchange="editItem(this, 'Off', '${sectionId}')"/>
+                            <div>
+                                <div style="width:60%;text-align:left">
+                                    <span class="text caption" style="margin: 5px 10px;text-align:left">Value for OFF</span>
+                                    <input class="input small" value="${i.Off}" style="display: inline-block;width:160px" type="text" placeholder="No" data-id="${i._id}" onchange="editItem(this, 'Off', '${sectionId}')"/>
+                                </div>
+                                <div style="width:60%;text-align:left">
+                                    <span class="text caption" style="margin: 5px 10px;text-align:left">Value for ON</span>
+                                    <input class="input small" value="${i.On}" style="display: inline-block;width:160px" type="text" placeholder="Yes" data-id="${i._id}" onchange="editItem(this, 'On', '${sectionId}')"/>
+                                </div>
                             </div>
-                            <div style="width:30%;text-align:left">
-                                <span class="text caption" style="margin: 5px 10px;text-align:left">Value for ON</span>
-                                <input class="input small" value="${i.On}" style="display: inline-block;width:160px" type="text" placeholder="Yes" data-id="${i._id}" onchange="editItem(this, 'On', '${sectionId}')"/>
+
+                            <div>
+                                <div style="width:30%;text-align:left">
+                                    <span class="text caption" style="margin: 5px 10px;text-align:left">Color</span>
+                                    <input class="input small" value="${i.Color}" style="display: inline-block;width:120px;text-align:center" type="text" placeholder="red" data-id="${i._id}" onchange="editItem(this, 'Color', '${sectionId}')"/>
+                                </div>
+                                <div style="width:30%;text-align:left">
+                                    <span class="text caption" style="margin: 5px 10px;text-align:left" title="Specify the number of points that your 'Yes' being checked is worth">Points for ON</span>
+                                    <input class="input small" value="${i.Points}" style="display: inline-block;width:160px;text-align:center" type="text" placeholder="x" data-id="${i._id}" onchange="editItem(this, 'Points', '${sectionId}')"/>
+                                </div>
                             </div>
-                            <div style="width:30%;text-align:left">
-                                <span class="text caption" style="margin: 5px 10px;text-align:left">Color</span>
-                                <input class="input small" value="${i.Color}" style="display: inline-block;width:120px;text-align:center" type="text" placeholder="red" data-id="${i._id}" onchange="editItem(this, 'Color', '${sectionId}')"/>
-                            </div>
+                            
+                            
                             
                             
                         </div>
@@ -545,11 +637,6 @@ function reshowItems(sectionId){
                     `;
                 break;
             case "Select":
-                var optionsString = "";
-                i.Options.forEach(o => {
-                    optionsString += o + ";";
-                });
-                optionsString = optionsString.slice(0, -1);
                 contentElement.innerHTML += `
                     <div class="level2bg container flex_apart" style="margin:5px 0px">
                         
@@ -558,11 +645,22 @@ function reshowItems(sectionId){
                             <input class="input small" value="${i.Name}" type="text" placeholder="Level Achieved" data-id="${i._id}" onchange="editItem(this, 'Name', '${sectionId}')"/>
                         </div>
 
-                        <div style="width:50%" class="flex_apart">
-                            <div style="width:50%;text-align:left">
-                                <span class="text caption" style="margin: 5px 10px;text-align:left">Options (separate by ";")</span>
-                                <input class="input small" value="${optionsString}" style="display: inline-block;width:400px" type="text" placeholder="Yes;No" data-id="${i._id}" onchange="editItem(this, 'Options', '${sectionId}')"/>
+                        <div style="width:50%">
+                            <div class="flex_apart">
+                                <div style="width:50%;text-align:left">
+                                    <span class="text caption" style="margin: 5px 10px;text-align:left">Add Option Name</span>
+                                    <input class="input small optionNameAdd" value="" style="display: inline-block;width:400px" type="text" placeholder="Climbed Successfully" data-id="${i._id}"/>
+                                </div>
+                                
+                                <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:200px" data-id="${i._id}" onclick="select_addOption(this, '${sectionId}')">
+                                    <span class="text regular">Add Option</span>
+                                </div>
                             </div>
+                            <div class="options" data-id="${i._id}" style="margin:5px 0px">
+
+                            </div>
+
+                            
                             <div style="width:50%;text-align:left">
                                 <span class="text caption" style="margin: 5px 10px;text-align:left">Color</span>
                                 <input class="input small" value="${i.Color}" style="display: inline-block;width:120px;text-align:center" type="text" placeholder="red" data-id="${i._id}" onchange="editItem(this, 'Color', '${sectionId}')"/>
@@ -584,6 +682,7 @@ function reshowItems(sectionId){
                         </div>
                     </div>
                     `;
+                    select_refreshOptions(i._id, sectionId);
                 break;
             case "Event":
                 contentElement.innerHTML += `
@@ -717,13 +816,17 @@ function reshowItems(sectionId){
                         </div>
 
                         <div style="width:40%" class="flex_apart">
-                            <div style="width:50%;text-align:left">
+                            <div style="width:30%;text-align:left">
                                 <span class="text caption" style="margin: 5px 10px;text-align:left">Max Seconds (0 for infinite)</span>
                                 <input class="input small" value="${i.Max}" style="display: inline-block;width:120px" type="number" placeholder="0" data-id="${i._id}" onchange="editItem(this, 'Max', '${sectionId}')"/>
                             </div>
-                            <div style="width:50%;text-align:left">
+                            <div style="width:30%;text-align:left">
                                 <span class="text caption" style="margin: 5px 10px;text-align:left">Color</span>
                                 <input class="input small" value="${i.Color}" style="display: inline-block;width:120px;text-align:center" type="text" placeholder="red" data-id="${i._id}" onchange="editItem(this, 'Color', '${sectionId}')"/>
+                            </div>
+                            <div style="width:30%;text-align:left">
+                                <span class="text caption" style="margin: 5px 10px;text-align:left" title="Using 'x' as the variable, write an equation that corresponds to points scored through this stepper">Points Equation</span>
+                                <input class="input small" value="${i.Points}" style="display: inline-block;width:160px;text-align:center" type="text" placeholder="2x+3" data-id="${i._id}" onchange="editItem(this, 'Points', '${sectionId}')"/>
                             </div>
                             
                             
