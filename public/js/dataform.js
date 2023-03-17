@@ -396,6 +396,7 @@ function addItem(element, type){
         case "Input":
             item.Placeholder = "";
             item.Color = "default";
+            break;
     }
 
     sections[index].Components.push(item);
@@ -497,7 +498,7 @@ function reshowSections(){
                     <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px" data-id="${s._id}" onclick="addItem(this, 'Label')">
                         <span class="text caption">+ Text Label</span>
                     </div>
-                    <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px" data-id="${s._id}" onclick="addItem(this, 'Label')">
+                    <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px" data-id="${s._id}" onclick="addItem(this, 'Input')">
                         <span class="text caption">+ Input</span>
                     </div>
                 </div>
