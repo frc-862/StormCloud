@@ -393,6 +393,9 @@ function addItem(element, type){
             item.Max = 0;
             item.Color = "default";
             break;
+        case "Input":
+            item.Placeholder = "";
+            item.Color = "default";
     }
 
     sections[index].Components.push(item);
@@ -494,6 +497,9 @@ function reshowSections(){
                     <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px" data-id="${s._id}" onclick="addItem(this, 'Label')">
                         <span class="text caption">+ Text Label</span>
                     </div>
+                    <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px" data-id="${s._id}" onclick="addItem(this, 'Label')">
+                        <span class="text caption">+ Input</span>
+                    </div>
                 </div>
 
                 
@@ -574,6 +580,38 @@ function reshowItems(sectionId){
                         <div style="width:90%;text-align:left">
                             <span class="text caption" style="margin: 5px 10px;text-align:left">Extra Text (one per line)</span>
                             <textarea class="input small" style="display: inline-block;text-align:left;width:100%" type="text" placeholder="Contents" data-id="${i._id}" onchange="editItem(this, 'Contents', '${sectionId}')">${i.Contents}</textarea>
+                        </div>
+                        
+                        
+                    </div>
+
+                    <div class="flex_apart" style="width:10%;justify-content:right">
+                        <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="moveItem(this, -1, '${sectionId}')">
+                            <span class="text regular material-symbols-rounded">arrow_upward</span>
+                        </div>
+                        <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="moveItem(this, 1, '${sectionId}')">
+                            <span class="text regular material-symbols-rounded">arrow_downward</span>
+                        </div>
+                        <div class="container redbg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="deleteItem(this, '${sectionId}')">
+                            <span class="text regular material-symbols-rounded">close</span>
+                        </div>
+                    </div>
+                </div>
+                `;
+                break;
+            case "Input":
+                contentElement.innerHTML += `
+                <div class="level2bg container flex_apart" style="margin:5px 0px">
+                    
+                    <div style="width:30%">
+                        <span class="text caption" style="margin: 5px 10px;text-align:left">Input Label</span>
+                        <input class="input small" style="width:100%" type="text" value="${i.Name}" placeholder="Title" data-id="${i._id}" onchange="editItem(this, 'Name', '${sectionId}')"/>
+                    </div>
+
+                    <div style="width:50%" class="flex_apart">
+                        <div style="width:90%;text-align:left">
+                            <span class="text caption" style="margin: 5px 10px;text-align:left">Placeholder</span>
+                            <input class="input small" style="width:100%" type="text" value="${i.Placeholder}" placeholder="Placeholder" data-id="${i._id}" onchange="editItem(this, 'Placeholder', '${sectionId}')"/>
                         </div>
                         
                         
@@ -697,7 +735,7 @@ function reshowItems(sectionId){
                     <div class="level2bg container flex_apart" style="margin:5px 0px">
                         
                         <div style="width:20%">
-                            <span class="text caption" style="margin: 5px 10px;text-align:left">Dropdown Label</span>
+                            <span class="text caption" style="margin: 5px 10px;text-align:left">Multiselect Label</span>
                             <input class="input small" value="${i.Name}" type="text" placeholder="Level Achieved" data-id="${i._id}" onchange="editItem(this, 'Name', '${sectionId}')"/>
                         </div>
 
