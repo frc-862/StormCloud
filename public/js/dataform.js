@@ -370,6 +370,11 @@ function addItem(element, type){
             item.Options = [];
             item.Color = "default";
             break;
+        case "Multi-Select":
+            item.Options = [];
+            item.Color = "default";
+            item.MaxSelect = -1;
+            break;
         case "Event":
             item.Trigger = "";
             item.Color = "default";
@@ -473,6 +478,9 @@ function reshowSections(){
                     </div>
                     <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px" data-id="${s._id}" onclick="addItem(this, 'Select')">
                         <span class="text caption">+ Dropdown</span>
+                    </div>
+                    <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px" data-id="${s._id}" onclick="addItem(this, 'Multi-Select')">
+                        <span class="text caption">+ Multi-Select</span>
                     </div>
                     <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px" data-id="${s._id}" onclick="addItem(this, 'Event')">
                         <span class="text caption">+ Event</span>
@@ -665,6 +673,60 @@ function reshowItems(sectionId){
                                 <span class="text caption" style="margin: 5px 10px;text-align:left">Color</span>
                                 <input class="input small" value="${i.Color}" style="display: inline-block;width:120px;text-align:center" type="text" placeholder="red" data-id="${i._id}" onchange="editItem(this, 'Color', '${sectionId}')"/>
                             </div>
+                            
+                            
+                        </div>
+    
+                        <div class="flex_apart" style="width:10%;justify-content:right">
+                            <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="moveItem(this, -1, '${sectionId}')">
+                                <span class="text regular material-symbols-rounded">arrow_upward</span>
+                            </div>
+                            <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="moveItem(this, 1, '${sectionId}')">
+                                <span class="text regular material-symbols-rounded">arrow_downward</span>
+                            </div>
+                            <div class="container redbg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="deleteItem(this, '${sectionId}')">
+                                <span class="text regular material-symbols-rounded">close</span>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                    select_refreshOptions(i._id, sectionId);
+                break;
+            case "Select":
+                contentElement.innerHTML += `
+                    <div class="level2bg container flex_apart" style="margin:5px 0px">
+                        
+                        <div style="width:20%">
+                            <span class="text caption" style="margin: 5px 10px;text-align:left">Dropdown Label</span>
+                            <input class="input small" value="${i.Name}" type="text" placeholder="Level Achieved" data-id="${i._id}" onchange="editItem(this, 'Name', '${sectionId}')"/>
+                        </div>
+
+                        <div style="width:50%">
+                            <div class="flex_apart">
+                                <div style="width:50%;text-align:left">
+                                    <span class="text caption" style="margin: 5px 10px;text-align:left">Add Option Name</span>
+                                    <input class="input small optionNameAdd" value="" style="display: inline-block;width:400px" type="text" placeholder="Climbed Successfully" data-id="${i._id}"/>
+                                </div>
+                                
+                                <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:200px" data-id="${i._id}" onclick="select_addOption(this, '${sectionId}')">
+                                    <span class="text regular">Add Option</span>
+                                </div>
+                            </div>
+                            <div class="options" data-id="${i._id}" style="margin:5px 0px">
+
+                            </div>
+
+                            <div class="flex_apart">
+                                <div style="width:50%;text-align:left">
+                                    <span class="text caption" style="margin: 5px 10px;text-align:left">Color</span>
+                                    <input class="input small" value="${i.Color}" style="display: inline-block;width:120px;text-align:center" type="text" placeholder="red" data-id="${i._id}" onchange="editItem(this, 'Color', '${sectionId}')"/>
+                                </div>
+                                <div style="width:50%;text-align:left">
+                                    <span class="text caption" style="margin: 5px 10px;text-align:left">Max Select</span>
+                                    <input class="input small" value="${i.MaxSelect}" style="display: inline-block;width:120px;text-align:center" type="number" placeholder="red" data-id="${i._id}" onchange="editItem(this, 'MaxSelect', '${sectionId}')"/>
+                                </div>
+                            </div>
+                            
                             
                             
                         </div>
