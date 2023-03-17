@@ -692,7 +692,7 @@ function reshowItems(sectionId){
                     `;
                     select_refreshOptions(i._id, sectionId);
                 break;
-            case "Select":
+            case "Multi-Select":
                 contentElement.innerHTML += `
                     <div class="level2bg container flex_apart" style="margin:5px 0px">
                         
