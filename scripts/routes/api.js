@@ -1726,7 +1726,7 @@ router.get("/quick/state", async (req, res, next) => {
         }
     });
 
-    var ourNextMatches = allMatches.filter((match) => match.teams.find((team) => team.team == env.settings.teamNumber) != undefined && match.results.finished == false);
+    var ourNextMatches = allMatches.filter((match) => match.teams.find((team) => team.team == env.settings.team) != undefined && match.results.finished == false);
     ourNextMatches = ourNextMatches.sort((a, b) => a.matchNumber - b.matchNumber);
     var ourNextMatch = -1;
     if(ourNextMatches.length > 0){
@@ -1734,7 +1734,7 @@ router.get("/quick/state", async (req, res, next) => {
         ourNextMatch.documents = [];
         var color = "";
         ourNextMatch.teams.forEach(t => {
-            if(t.team.toString() == env.settings.teamNumber.toString()){
+            if(t.team.toString() == env.settings.team.toString()){
                 color = t.color;
             }
         })
@@ -1745,7 +1745,7 @@ router.get("/quick/state", async (req, res, next) => {
     var largerMatches = allMatches.filter((match) => {return match.matchNumber >= currentMatch});
     currentlyRunning = largerMatches.length > 0;
 
-    res.status(200).json({currentMatch: currentMatch, ourNextMatch: ourNextMatch, currentlyRunning: currentlyRunning, matchType: currentMatchType, competitionName: competitionName, location: location, matches: allMatches, teamNumber: env.settings.teamNumber});
+    res.status(200).json({currentMatch: currentMatch, ourNextMatch: ourNextMatch, currentlyRunning: currentlyRunning, matchType: currentMatchType, competitionName: competitionName, location: location, matches: allMatches, teamNumber: env.settings.team});
     
 });
 
