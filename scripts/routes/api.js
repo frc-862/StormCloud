@@ -1711,6 +1711,21 @@ router.get("/quick/state", async (req, res, next) => {
     
     var currentlyRunning = true;
     var allMatches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
+
+    allMatches.forEach((match) => {
+        if(match.results.finished == false){
+            match.results = {
+                finished: false
+            }
+        }else{
+            match.results = {
+                finished: true,
+                red: match.results.red,
+                blue: match.results.blue
+            }
+        }
+    });
+
     var ourNextMatches = allMatches.filter((match) => match.teams.find((team) => team.team == env.settings.teamNumber) != undefined && match.results.finished == false);
     ourNextMatches = ourNextMatches.sort((a, b) => a.matchNumber - b.matchNumber);
     var ourNextMatch = -1;
