@@ -118,7 +118,8 @@ const models = {
     'Schema' : mongoose.model('Schema', new mongoose.Schema({
         Name: String,
         Updated: Date,
-        Parts: [Object]
+        Parts: [Object],
+        Settings: Object
     })),
     'AnalysisSet' : mongoose.model('AnalysisSet', new mongoose.Schema({
         Name: String,

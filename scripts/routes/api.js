@@ -1049,14 +1049,15 @@ router.post("/schema", async (req, res, next) => {
 
     var name = req.body.name;
     var data = req.body.data;
+    var settings = req.body.settings;
 
     var docs = await db.getDocs("Schema", {Name: name});
     if(docs.length > 0){
-        await db.updateDoc("Schema", {Name: name}, {Parts: data, Updated: new Date()});
+        await db.updateDoc("Schema", {Name: name}, {Parts: data, Updated: new Date(), Settings: settings});
         res.status(200).json({message: "Schema updated!"});
         return;
     }
-    db.createDoc("Schema", {Name: name, Parts: data, Updated: new Date()});
+    db.createDoc("Schema", {Name: name, Parts: data, Updated: new Date(), Settings: settings});
     res.status(200).json({message: "Schema created!"});
 });
 
@@ -1729,7 +1730,7 @@ router.get("/quick/state", async (req, res, next) => {
     var largerMatches = allMatches.filter((match) => {return match.matchNumber >= currentMatch});
     currentlyRunning = largerMatches.length > 0;
 
-    res.status(200).json({currentMatch: currentMatch, ourNextMatch: ourNextMatch, currentlyRunning: currentlyRunning, matchType: currentMatchType, competitionName: competitionName, location: location});
+    res.status(200).json({currentMatch: currentMatch, ourNextMatch: ourNextMatch, currentlyRunning: currentlyRunning, matchType: currentMatchType, competitionName: competitionName, location: location, matches: allMatches});
     
 });
 

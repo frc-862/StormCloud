@@ -56,6 +56,7 @@ function stripIds(schema){
 }
 
 currentlySelectedSchema = "";
+var schemaData = {};
 
 function generateIds(schema){
     schema.forEach(function(section){
@@ -143,6 +144,7 @@ function loadSchemas(){
             overlaySaveFunction = ()=>{
                 if(overlaySaveData["currentSchema"] != undefined){
                     currentlySelectedSchema = overlaySaveData["schemas"][overlaySaveData["currentSchema"]]["Name"];
+                    schemaData = overlaySaveData["schemas"][overlaySaveData["currentSchema"]];
                     sections = overlaySaveData["schemas"][overlaySaveData["currentSchema"]]["Parts"];
                     cached = generateIds(sections);
                     document.querySelector("#overlay").style.display = "none";
@@ -190,23 +192,51 @@ function saveSchemaData(){
 
     document.querySelector("#overlayClose").style.display = "";
     document.querySelector("#overlayTitle").innerHTML = "Save Schema As";
+
+    var useMatchNumbers = false;
+    var allowRobotDisable = false;
+
+    if(schemaData["Settings"] != undefined){
+        useMatchNumbers = schemaData["Settings"]["UseMatchNumbers"] == true;
+        allowRobotDisable = schemaData["Settings"]["AllowRobotDisable"] == true;
+    }
+
     document.querySelector("#overlayContent").innerHTML = `
     
     <div class="flex_center">
         <input class="input small" value="${currentlySelectedSchema}" id="overlay_saveAs" type="text" placeholder="Schema Name" style="width:60%;display:inline-block"/>
+
     </div>
+    <div class="flex_apart" style="width:400px">
+        <span class="text regular">Use Match Numbers</span>
+        <input class="input small" value="${useMatchNumbers}" id="overlay_useMatchNumbers" type="checkbox" style="display:inline-block"/>
+
+    </div>
+    <div class="flex_apart" style="width:400px">
+        <span class="text regular">Allow for Disabled Robots</span>
+        <input class="input small" value="${allowRobotDisable}" id="overlay_allowRobotDisable" type="checkbox" style="display:inline-block"/>
+
+    </div>
+
     `;
     document.querySelector("#overlay").style.display = "";
 
     overlaySaveFunction = ()=>{
         var name = document.querySelector("#overlay_saveAs").value;
+        var useMatchNumbers = document.querySelector("#overlay_useMatchNumbers").checked;
+        var allowRobotDisable = document.querySelector("#overlay_allowRobotDisable").checked;
+
+        var settings = {
+            UseMatchNumbers: useMatchNumbers,
+            AllowRobotDisable: allowRobotDisable
+        }
         if(name == ""){
             alert("Please enter a name");
             return;
         }
         var data = stripIds(sections);
         document.querySelector("#overlay").style.display = "none";
-        post("/api/schema", {}, {name: name, data: data}, function(success, data){
+        post("/api/schema", {}, {name: name, data: data, settings:settings}, function(success, data){
             cached = data;
             showQrCode();
             if(!success){
