@@ -1711,7 +1711,7 @@ router.get("/quick/state", async (req, res, next) => {
     
     var currentlyRunning = true;
     var allMatches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
-
+    allMatches = allMatches.sort((a,b) => a.matchNumber - b.matchNumber);
     allMatches.forEach((match) => {
         if(match.results.finished == false){
             match.results = {
@@ -1727,7 +1727,7 @@ router.get("/quick/state", async (req, res, next) => {
     });
 
     var ourNextMatches = allMatches.filter((match) => match.teams.find((team) => team.team == env.settings.team) != undefined && match.results.finished == false);
-    ourNextMatches = ourNextMatches.sort((a, b) => a.matchNumber - b.matchNumber);
+    
     var ourNextMatch = -1;
     if(ourNextMatches.length > 0){
         ourNextMatch = ourNextMatches[0];
