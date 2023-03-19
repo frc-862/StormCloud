@@ -55,7 +55,7 @@ router.get('/matches*', async function(req, res, next) {
 
         documents.forEach(doc => {
             var docData = JSON.parse(doc.json);
-            if(match.matchNumber == docData.matchNumber && match.competition == doc.competition){
+            if(match.matchNumber == docData.match){
                 matchData.documents.push(doc);
                 
             }
