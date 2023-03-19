@@ -272,6 +272,43 @@ function refreshAnalysisSet(){
 
                 break;
 
+            case "Custom":
+
+                partHTML = `
+                <div class="flex_center" style="width:100%">
+                            <span class="text small" style="margin: 5px 10px;text-align:left">Interpret Final Number</span>
+                            <select value="${part.Data["Stat_Final"]}" class="input text important setting" style="margin:10px;width:50%;pointer-events:all" onchange="setData('${part._id}', 'Stat_Final', this)">
+                                <option value="sum" ${part.Data["Stat_Final"] == "sum" ? "selected": ""}>Sum Of...</option>
+                                <option value="avg" ${part.Data["Stat_Final"] == "avg" ? "selected": ""}>Average Of...</option>
+                                <option value="max" ${part.Data["Stat_Final"] == "max" ? "selected": ""}>Maximum Of...</option>
+                                <option value="min" ${part.Data["Stat_Final"] == "min" ? "selected": ""}>Minimum Of...</option>
+                                <option value="range" ${part.Data["Stat_Final"] == "range" ? "selected": ""}>Range Of...</option>    
+                            
+                            </select>
+                        </div>
+                <div class="flex_center" style="width:100%">
+                
+                    <div>
+                        
+                        <div class="flex_center" style="width:100%">
+                            <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:200px" data-id="${part._id}" onclick="custom_addDataPiece('${part._id}')">
+                                <span class="text regular">Add Data Piece</span>
+                            </div>
+                        </div>
+                        <div class="custom_data_pieces" data-id="${part._id}"></div>
+                    </div>
+                    <div>
+                        <span class="text small" style="margin: 5px 10px;text-align:left">Code (MUST return #)</span>
+                        <textarea class="input text important setting" style="margin:10px;width:40%;pointer-events:all" placeholder="Javascript Here" onchange="setData('${part._id}', 'Code', this)" data-data="innerHTML">${part.Data["Code"]}</textarea>
+                    </div>
+                    
+                    
+                </div>
+                
+                `;
+                
+                break;
+
             case "Graph":
                 var selectHTML = "";
                 
@@ -314,7 +351,7 @@ function refreshAnalysisSet(){
                         ${selectHTML}
                     </select>
 
-                    <textarea class="input text important setting" style="margin:10px;width:40%;pointer-events:all" placeholder="Enter FIRST Data Points" onchange="setData('${part._id}', 'FIRSTFields', this)" data-data="innerHTML">${firstFieldData}</textarea>
+                    <textarea class="input text important setting" style="margin:10px;width:40%;pointer-events:all;text-align:left" placeholder="Enter FIRST Data Points" onchange="setData('${part._id}', 'FIRSTFields', this)" data-data="innerHTML">${firstFieldData}</textarea>
 
                 </div>
                 
@@ -375,6 +412,10 @@ function refreshAnalysisSet(){
     
     });
     document.querySelector("#items").innerHTML = fHTML;
+
+    currentAnalysisSet.Parts.filter(i => i.Type == "Custom").forEach(part => {
+        custom_refreshDataPiece(part._id);
+    });
 }
 
 refreshAnalysisSet();
@@ -402,8 +443,128 @@ function setData(item, dataPoint, elem){
     }
 
     
-    refreshAnalysisSet();
+    //refreshAnalysisSet();
 }
+
+
+
+var customLabelAvailableVariables = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+function custom_addDataPiece(partid){
+
+    var index = currentAnalysisSet.Parts.indexOf(currentAnalysisSet.Parts.find(i => i._id == partid));
+
+    if(currentAnalysisSet.Parts[index].Data.DataPieces.length >= 26){
+        return;
+    }
+
+    var newPiece = {
+        "Variable": customLabelAvailableVariables[currentAnalysisSet.Parts[index].Data.DataPieces.length],
+        "Type": "Document (Value)",
+        "DataPoint": ""
+    }
+
+    currentAnalysisSet.Parts[index].Data.DataPieces.push(newPiece);
+
+    custom_refreshDataPiece(partid);
+
+
+}
+
+function custom_deleteDataPiece(partid, dataindex){
+
+    var index = currentAnalysisSet.Parts.indexOf(currentAnalysisSet.Parts.find(i => i._id == partid));
+
+    currentAnalysisSet.Parts[index].Data.DataPieces.splice(dataindex, 1);
+    custom_refreshDataPiece(partid);
+}
+
+function custom_setDataPiece(partid, edit, dataindex, elem){
+    var index = currentAnalysisSet.Parts.indexOf(currentAnalysisSet.Parts.find(i => i._id == partid));
+
+    if(elem.dataset.data == "innerHTML"){
+        currentAnalysisSet.Parts[index].Data.DataPieces[dataindex][edit] = elem.value.split("\n");
+    }
+    else if(elem.dataset.data == "multi"){
+        var selectedOptions = elem.selectedOptions;
+        currentAnalysisSet.Parts[index].Data.DataPieces[dataindex][edit] = Array.from(selectedOptions).map(({ value }) => value);;
+    }
+    else if(elem.dataset.data == "check"){
+        currentAnalysisSet.Parts[index].Data.DataPieces[dataindex][edit] = elem.checked;
+    }
+    else{
+        currentAnalysisSet.Parts[index].Data.DataPieces[dataindex][edit] = elem.value;
+    }
+
+    custom_refreshDataPiece(partid);
+
+}
+
+function custom_refreshDataPiece(partid){
+
+
+    var index = currentAnalysisSet.Parts.indexOf(currentAnalysisSet.Parts.find(i => i._id == partid));
+
+    var fHTML = "";
+    currentAnalysisSet.Parts[index].Data.DataPieces.forEach((piece, i) => {
+        if(piece.Type == "Document (Value)" || piece.Type == "Document (Points)"){
+            var selectSelectHTML = "";
+            schemaItems.forEach((item) => {
+                    
+                selectSelectHTML += `<option value="${item.part}---${item.component}" ${item.part + "---" + item.component == piece.DataPoint ? "selected" : ""}>${item.part} - ${item.component}</option>`
+            });
+
+            console.log(piece);
+            fHTML += `
+        
+            <div class="container primarybg flex_apart" style="padding:10px;border-radius:8px;margin:4px">
+                <span class="text small white" style="margin: 5px 10px;text-align:left">${piece.Variable}</span>
+
+                <select class="input text important setting small" style="width:100%;pointer-events:all" data-data="select" onchange="custom_setDataPiece('${partid}', 'Type',${i}, this)">
+                    <option value="Document (Value)" ${piece.Type == "Document (Value)" ? "selected": ""}>Document (Value)</option>
+                    <option value="Document (Points)" ${piece.Type == "Document (Points)" ? "selected": ""}>Document (Points)</option>
+                    <option value="FIRST" ${piece.Type == "FIRST" ? "selected": ""}>FIRST</option>
+                </select>
+
+                <select class="input text important setting small" style="width:100%;pointer-events:all" data-data="select" onchange="custom_setDataPiece('${partid}', 'DataPoint',${i}, this)">
+                    ${selectSelectHTML}
+                </select>
+
+                <div class="container redbg clickable" style="padding: 10px;margin:5px;width:50px" onclick="custom_deleteDataPiece('${partid}', ${i})">
+                    <span class="text regular material-symbols-rounded">close</span>
+                </div>
+            </div>
+            
+            `;
+        }else{
+            console.log(piece);
+            fHTML += `
+        
+            <div class="container primarybg flex_apart" style="padding:10px;border-radius:8px;margin:4px">
+                <span class="text small white" style="margin: 5px 10px;text-align:left">${piece.Variable}</span>
+
+                <select class="input text important setting small" style="width:100%;pointer-events:all" data-data="select" onchange="custom_setDataPiece('${partid}', 'Type',${i}, this)">
+                    <option value="Document (Value)" ${piece.Type == "Document (Value)" ? "selected": ""}>Document (Value)</option>
+                    <option value="Document (Points)" ${piece.Type == "Document (Points)" ? "selected": ""}>Document (Points)</option>
+                    <option value="FIRST" ${piece.Type == "FIRST" ? "selected": ""}>FIRST</option>
+                </select>
+
+
+                <input value="${piece.DataPoint}" class="input text important setting small" style="width:100%;pointer-events:all" data-data="value" onchange="custom_setDataPiece('${partid}', 'DataPoint',${i}, this)">
+
+                <div class="container redbg clickable" style="padding: 10px;margin:5px;width:50px" onclick="custom_deleteDataPiece('${partid}', ${i})">
+                    <span class="text regular material-symbols-rounded">close</span>
+                </div>
+            </div>
+            
+            `;
+        }
+        
+    });
+
+    document.querySelector(`.custom_data_pieces[data-id='${partid}']`).innerHTML = fHTML;
+
+}
+
 
 function moveItem(item, dir){
     try{
@@ -451,7 +612,7 @@ function loadAnalysises(){
         console.log(success);
         if(success){
             document.querySelector("#overlayClose").style.display = "";
-            document.querySelector("#overlayContent").innerHTML = `<div id="overlay_analysis" style="max-height:50vh"></div>`;
+            document.querySelector("#overlayContent").innerHTML = `<div id="overlay_analysis" style="max-height:50vh;overflow-y:scroll"></div>`;
 
             var index = 0;
             data["analysis"].forEach(function(analysis){
@@ -515,6 +676,48 @@ function addItem(itemType){
         Type: itemType,
         Data: {},
         _id: Math.random().toString(36).substring(7)
+    }
+
+    switch(itemType){
+        case "Number":
+            item.Data = {
+                "Stat_Final": "sum",
+                "Stat_Between": "sum",
+                "FIRSTFields": [],
+                "SchemaFields": []
+            }
+            break;
+        case "Grid":
+            item.Data = {
+                "Display": "heatmap",
+                "SchemaFields": []
+            }
+            break;
+        case "Frequency":
+            item.Data = {
+                "FIRSTFields": [],
+                "SchemaFields": []
+            }
+            break;
+        case "Graph":
+            item.Data = {
+                "Stat_Between": "sum",
+                "DocumentData": true,
+                "FIRSTFields": [],
+                "SchemaFields": []
+            }
+            break;
+        case "FIRST":
+            item.Data = {
+                "Stat": "sum",
+                "DataPoint": "score"
+            }
+            break;
+        case "Custom":
+            item.Data = {
+                "Code": "",
+                "DataPieces": []
+            }
     }
 
     currentAnalysisSet.Parts.push(item);
