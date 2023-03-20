@@ -6,6 +6,7 @@ var firstApiTools = require('../tools/firstApi.js');
 var bodyParser = require('body-parser');
 let environment = "test";
 var fs = require('fs');
+var { sendNotificationAll } = require('../tools/notifications.js');
 
 
 /**
@@ -1599,7 +1600,8 @@ async function updateCache(year, competition, matchType){
     var finalRankings = [];
     var rankings = fRes1["Rankings"];
     rankings.forEach((ranking) => {
-        finalRankings.push({
+
+        var rankingObject = {
             team: ranking["teamNumber"],
             rank: ranking["rank"],
             record: {
@@ -1609,7 +1611,26 @@ async function updateCache(year, competition, matchType){
             },
             rankingPoints: ranking["sortOrder1"],
             matchesPlayed: ranking["matchesPlayed"]
-        });
+        }
+
+        if(ranking["teamNumber"] == env.settings.teamNumber){
+            var previousRankingObject = env.cachedCompetitionData.rankings.find(r => r.team == ranking["teamNumber"]);
+            if(previousRankingObject != undefined){
+                // send notification ONLY if ranking or RP is different
+                if(previousRankingObject.rank != rankingObject.rank || previousRankingObject.rankingPoints != rankingObject.rankingPoints){
+                    var message = {
+                        title: "Ranking Update 🏆",
+                        body: `We detected an update to ${ranking["teamNumber"]}'s ranking...\nCurrent Ranking: ${rankingObject.rank}\nCurrent RP: ${rankingObject.rankingPoints}`,
+                        data: {
+                            team: ranking["teamNumber"].toString()
+                        }
+                    }
+                    sendNotificationAll(message.title, message.body, message.data, "general");
+                }
+            }
+        }
+
+        finalRankings.push(rankingObject);
     });
 
     var fRes2 = await firstApiTools.getSimpleMatchResults(year, competition, matchType);
@@ -1652,11 +1673,70 @@ async function updateCache(year, competition, matchType){
         competitionName: competitionName,
         location: location
     }
+    var matchToCheckQueue = matchResults.find((m => m.matchNumber == 901));
+    var redTeamString = "";
+    var blueTeamString = "";
+
+    matchToCheckQueue.teams.forEach((team) => {
+        if(team["station"].substring(0, team["station"].length - 1) == "Red"){
+            redTeamString += team["teamNumber"] + ", ";
+        }else{
+            blueTeamString += team["teamNumber"] + ", ";
+        }
+    });
+    redTeamString = redTeamString.substring(0, redTeamString.length - 2);
+    blueTeamString = blueTeamString.substring(0, blueTeamString.length - 2);
+    var message = {
+        title: "Ranking Update 🏆",
+        body: `We detected an update to 862's ranking...\nCurrent Ranking: 2\nCurrent RP: 2.24`,
+        data: {
+            match: "20"
+        }
+    }
+    sendNotificationAll(message.title, message.body, message.data, "queue");
+
+    if(env.cachedCompetitionData.currentMatch != cache.currentMatch){
+        var matchToCheckQueue = matchResults.find((m => m.matchNumber == cache.currentMatch+2));
+        if(matchToCheckQueue != undefined){
+            var areWeIn = matchToCheckQueue.teams.find(t => t.team == env.settings.teamNumber) != undefined;
+            if(areWeIn){
+                var redTeamString = "";
+                var blueTeamString = "";
+                matchToCheckQueue.teams.forEach((team) => {
+                    if(team["station"].substring(0, team["station"].length - 1) == "Red"){
+                        redTeamString += team["teamNumber"] + ", ";
+                    }else{
+                        blueTeamString += team["teamNumber"] + ", ";
+                    }
+                });
+                redTeamString = redTeamString.substring(0, redTeamString.length - 2);
+                blueTeamString = blueTeamString.substring(0, blueTeamString.length - 2);
+                var message = {
+                    title: "We're Almost Up 🔔",
+                    body: `We are in Match ${matchToCheckQueue["matchNumber"]}! Currently, Match ${cache.currentMatch} is playing...\n🔴 - ${redTeamString}\n🔵 - ${blueTeamString}`,
+                    data: {
+                        match: matchToCheckQueue["matchNumber"]
+                    }
+                }
+                sendNotificationAll(message.title, message.body, message.data, "queue");
+            }
+
+        }
+    }
 
     await db.updateDoc("Environment", {_id: env._id}, {cachedCompetitionData: cache});
 
     return cache;
 }
+
+router.get("/sendNotif*", async(req, res,next) => {
+    var title = req.query.title;
+    var body = req.query.body;
+    var data = req.query.data;
+
+    sendNotificationAll(title, body, {match: "22"}, "general");
+    res.send(200);
+})
 
 router.get("/first/cache", async (req, res, next) => {
     // if data is older than 5 minutes, update it
@@ -1700,6 +1780,25 @@ router.get("/first/updateCache", async (req, res, next) => {
 
 
     
+});
+
+router.get("/quick/download", async (req, res, next) => {
+    var env = await authTools.getEnvironment(environment);
+
+    var analysisSets = await db.getDocs("AnalysisSet", {environment: env.friendlyId});
+    var schemas = await db.getDocs("Schema", {environment: env.friendlyId});
+
+    var matches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
+    var documents = await db.getDocs("Document", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
+    var rankings = env.cachedCompetitionData.rankings;
+
+    res.status(200).json({
+        analysisSets: analysisSets,
+        schemas: schemas,
+        matches: matches,
+        documents: documents,
+        rankings: rankings
+    });
 });
 
 router.get("/quick/state", async (req, res, next) => {
