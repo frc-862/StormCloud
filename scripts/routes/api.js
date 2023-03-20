@@ -1401,6 +1401,7 @@ router.post("/submit/data", async (req, res, next) => {
             await db.updateDoc("Document", {_id: prevDoc._id}, {json: JSON.stringify(generatedData), datetime: new Date(dataPiece.Created)});
             continue;
         }
+        
 
 
         var document = {
@@ -1410,6 +1411,11 @@ router.post("/submit/data", async (req, res, next) => {
             datetime: new Date(dataPiece.Created),
             competition: env.settings.competitionYear + env.settings.competitionCode,
             name: ""
+        }
+
+        var similarDoc = allDocs.find((doc) => JSON.parse(doc.json).match == dataPiece.Number && JSON.parse(doc.json).team == dataPiece.Team);
+        if(similarDoc != undefined){
+            document.flagged = true;
         }
 
         var associatedMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: dataPiece.Number, competition: env.settings.competitionYear + env.settings.competitionCode});
@@ -1613,7 +1619,7 @@ async function updateCache(year, competition, matchType){
             matchesPlayed: ranking["matchesPlayed"]
         }
 
-        if(ranking["teamNumber"] == env.settings.teamNumber){
+        if(ranking["teamNumber"] == env.settings.team){
             var previousRankingObject = env.cachedCompetitionData.rankings.find(r => r.team == ranking["teamNumber"]);
             if(previousRankingObject != undefined){
                 // send notification ONLY if ranking or RP is different
@@ -1678,7 +1684,7 @@ async function updateCache(year, competition, matchType){
     if(env.cachedCompetitionData.currentMatch != cache.currentMatch){
         var matchToCheckQueue = matchResults.find((m => m.matchNumber == cache.currentMatch+2));
         if(matchToCheckQueue != undefined){
-            var areWeIn = matchToCheckQueue.teams.find(t => t.team == env.settings.teamNumber) != undefined;
+            var areWeIn = matchToCheckQueue.teams.find(t => t.team == env.settings.team) != undefined;
             if(areWeIn){
                 var redTeamString = "";
                 var blueTeamString = "";
@@ -1954,9 +1960,18 @@ router.get("/first/results*", async(req, res, next) => {
                 existingMatch = existingMatch[0];
 
 
-                existingMatch.results["finished"] = true;
+               
 
                 
+
+                var previousStats = {
+                    finished: existingMatch.results.finished,
+                    red: existingMatch.results.red,
+                    blue: existingMatch.results.blue
+                }
+
+                existingMatch.results.finished = true;
+
 
                 var redAlliance = match["alliances"].find(a => a.alliance == "Red");
                 if(redAlliance == undefined){
@@ -1995,6 +2010,24 @@ router.get("/first/results*", async(req, res, next) => {
                     existingMatch.results["blueStats"][words] = blueAlliance[key];
                     
                 });
+
+
+                if(previousStats.red != existingMatch.results.red || previousStats.blue != existingMatch.results.blue || previousStats.finished != existingMatch.results.finished){
+                    var message = {
+                        title: "Match " + existingMatch.matchNumber + " Results Updated",
+                        body: `There's been an update to Match Scores!\n🔴 - ${existingMatch.results.red} points\n🔵 - ${existingMatch.results.blue} points\n${existingMatch.results.blue > existingMatch.results.red ? "Blue Wins!" : (existingMatch.results.blue < existingMatch.results.red ? "Red Wins!" : "It's a Tie!")}`,
+                        data: {
+                            team: ranking["teamNumber"].toString()
+                        }
+                    }
+                    sendNotificationAll(message.title, message.body, message.data, "resultsAll");
+
+                    var weAreInMatch = existingMatch.teams.find((t) => t.team.toString() == env.settings.team.toString()) != undefined;
+                    if(weAreInMatch){
+                        sendNotificationAll(message.title, message.body, message.data, "results");
+                    }
+                }
+
                 
                 await db.updateDoc("Match", {_id: existingMatch._id}, {results: existingMatch.results});
             }
