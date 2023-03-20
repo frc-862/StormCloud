@@ -433,7 +433,7 @@ function selectAnalysis(){
 
 
                                 var analysisPart = analysis.Parts.find(p => p._id == partId);
-                                var usePoints = analysisPart.Data.UsePoints == true;
+                                var usePoints = analysisPart.Data.UsePoints == "true";
                                 if(analysisPart.Type == "Graph"){
                                     if(analysisPart.Data.DocumentData != "true" && analysisPart.Data.DocumentData != true){
                                         return;
