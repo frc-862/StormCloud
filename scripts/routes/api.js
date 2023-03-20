@@ -1673,27 +1673,7 @@ async function updateCache(year, competition, matchType){
         competitionName: competitionName,
         location: location
     }
-    var matchToCheckQueue = matchResults.find((m => m.matchNumber == 901));
-    var redTeamString = "";
-    var blueTeamString = "";
-
-    matchToCheckQueue.teams.forEach((team) => {
-        if(team["station"].substring(0, team["station"].length - 1) == "Red"){
-            redTeamString += team["teamNumber"] + ", ";
-        }else{
-            blueTeamString += team["teamNumber"] + ", ";
-        }
-    });
-    redTeamString = redTeamString.substring(0, redTeamString.length - 2);
-    blueTeamString = blueTeamString.substring(0, blueTeamString.length - 2);
-    var message = {
-        title: "Ranking Update 🏆",
-        body: `We detected an update to 862's ranking...\nCurrent Ranking: 2\nCurrent RP: 2.24`,
-        data: {
-            match: "20"
-        }
-    }
-    sendNotificationAll(message.title, message.body, message.data, "queue");
+    
 
     if(env.cachedCompetitionData.currentMatch != cache.currentMatch){
         var matchToCheckQueue = matchResults.find((m => m.matchNumber == cache.currentMatch+2));
