@@ -158,9 +158,7 @@ function refreshAnalysisSet(){
                 
             
                 schemaItems.forEach((item) => {
-                    if(item.componentType == "Select"){
-                        return;
-                    }
+                    
                     selectHTML += `<option value="${item.part}---${item.component}" ${part.Data["SchemaFields"] != undefined && part.Data["SchemaFields"].includes(item.part + "---" + item.component) ? "selected" : ""}>${item.part} - ${item.component} (${item.componentType})</option>`
                     
                 });
@@ -191,6 +189,10 @@ function refreshAnalysisSet(){
                         <option value="sum" ${part.Data["Stat_Between"] == "sum" ? "selected": ""}>Total Sum</option>
                         <option value="avg" ${part.Data["Stat_Between"] == "avg" ? "selected": ""}>Total Average</option>
                     </select>
+                </div>
+                <div class="flex_center" style="width:100%">
+                    <span class="text small" style="margin: 5px 10px;text-align:left">Use Points Instead of Values </span>
+                    <input type="checkbox" data-data="check" onchange="setData('${part._id}', 'UsePoints', this)" ${part.Data["UsePoints"] ? "checked" : ""}>
                 </div>
                 <div class="flex_center" style="width:100%">
                     
@@ -259,6 +261,10 @@ function refreshAnalysisSet(){
                 }
 
                 partHTML = `
+                <div class="flex_center" style="width:100%">
+                    <span class="text small" style="margin: 5px 10px;text-align:left">Use Points Instead of Values </span>
+                    <input type="checkbox" data-data="check" onchange="setData('${part._id}', 'UsePoints', this)" ${part.Data["UsePoints"] ? "checked" : ""}>
+                </div>
                 <div class="flex_center" style="width:100%">
                     
                     <select class="input text regular setting" style="margin:10px;width:50%;pointer-events:all" multiple data-data="multi" onchange="setData('${part._id}', 'SchemaFields', this)">
@@ -343,6 +349,10 @@ function refreshAnalysisSet(){
                 <div class="flex_center" style="width:100%">
                     <span class="text small" style="margin: 5px 10px;text-align:left">Show Document Data</span>
                     <input type="checkbox" data-data="check" onchange="setData('${part._id}', 'DocumentData', this)" ${part.Data["DocumentData"] ? "checked" : ""}>
+                </div>
+                <div class="flex_center" style="width:100%">
+                    <span class="text small" style="margin: 5px 10px;text-align:left">Use Points Instead of Values </span>
+                    <input type="checkbox" data-data="check" onchange="setData('${part._id}', 'UsePoints', this)" ${part.Data["UsePoints"] ? "checked" : ""}>
                 </div>
                 
                 <div class="flex_center" style="width:100%">
@@ -684,7 +694,8 @@ function addItem(itemType){
                 "Stat_Final": "sum",
                 "Stat_Between": "sum",
                 "FIRSTFields": [],
-                "SchemaFields": []
+                "SchemaFields": [],
+                "UsePoints": false
             }
             break;
         case "Grid":
@@ -696,7 +707,8 @@ function addItem(itemType){
         case "Frequency":
             item.Data = {
                 "FIRSTFields": [],
-                "SchemaFields": []
+                "SchemaFields": [],
+                "UsePoints": false
             }
             break;
         case "Graph":
@@ -704,7 +716,8 @@ function addItem(itemType){
                 "Stat_Between": "sum",
                 "DocumentData": true,
                 "FIRSTFields": [],
-                "SchemaFields": []
+                "SchemaFields": [],
+                "UsePoints": false
             }
             break;
         case "FIRST":

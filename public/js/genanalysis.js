@@ -195,6 +195,17 @@ function reselectAnalysis(){
     document.getElementById("match_number").value = matchNum;
 
 }
+var partSets = {};
+var requestedDataPoints = {};
+function addData(partId, team, key, value){
+    if(Object.keys(partSets[partId][team]).find(k => k == key)){
+        // then add to obj
+        partSets[partId][team][key].push(value)
+    }else{
+        // then create obj
+        partSets[partId][team][key] = [value];
+    }
+}
 
 function selectAnalysis(){
     var teams = [];
@@ -246,8 +257,8 @@ function selectAnalysis(){
                 var allDocs = data["allDocs"];
                 var allMatches = data["allMatches"];
     
-                var partSets = {};
-                var requestedDataPoints = {};
+                partSets = {};
+                requestedDataPoints = {};
     
                 var schemaFields = [];
                 data["schema"].Parts.forEach((part) => {
@@ -261,7 +272,8 @@ function selectAnalysis(){
                                 component: component.Name,
                                 componentType: component.Type,
                                 on: component.On,
-                                off: component.Off
+                                off: component.Off,
+                                points: component.Points
                             })
                             return;
                         }
@@ -269,6 +281,7 @@ function selectAnalysis(){
                             part: part.Name,
                             component: component.Name,
                             componentType: component.Type,
+                            points: component.Points
                         })
                     });
                 });
@@ -420,132 +433,68 @@ function selectAnalysis(){
 
 
                                 var analysisPart = analysis.Parts.find(p => p._id == partId);
-
+                                var usePoints = analysisPart.Data.UsePoints == true;
                                 if(analysisPart.Type == "Graph"){
                                     if(analysisPart.Data.DocumentData != "true" && analysisPart.Data.DocumentData != true){
                                         return;
                                     }
 
                                     if(field.componentType == "Step" || field.componentType == "Timer"){
-                                        if(Object.keys(partSets[partId][foundTeam]).find(k => k == key)){
-                                            // then add to obj
-                                            partSets[partId][foundTeam][key].push({
-                                                match: data.match,
-                                                data: parseInt(useData)
-                                            })
-                                        }else{
-                                            // then create obj
-                                            partSets[partId][foundTeam][key] = [{
-                                                match: data.match,
-                                                data: parseInt(useData)
-                                            }]
+                                        var points = 0;
+                                        if(usePoints){
+                                            points = Function(`
+                                                var x = ${useData};
+                                                return ${field.points};
+                                            `)();
+
                                         }
+                                        addData(partId, foundTeam, key, {
+                                            match: data.match,
+                                            data: parseInt(usePoints ? points : useData)
+                                        });
                                     }
                                     else if(field.componentType == "Check"){
-                                        if(Object.keys(partSets[partId][foundTeam]).find(k => k == key)){
-                                            // then add to obj
-                                            partSets[partId][foundTeam][key].push({
-                                                match: data.match,
-                                                data: field.on == useData ? 1 : 0
-                                            })
-                                        }else{
-                                            // then create obj
-                                            partSets[partId][foundTeam][key] = [{
-                                                match: data.match,
-                                                data: field.on == useData ? 1 : 0
-                                            }]
+
+                                        var points = 0;
+                                        if(usePoints){
+                                            points = field.points;
                                         }
-                                    }
-                                    else if(field.componentType == "Grid"){
-                                        // data point depends on the analysisPart type
-                                        var putData = 0;
-                                        
-                                        switch(analysisPart.Type){
-                                            case "Number":
-                                                // then we are just requesting a number
-                                                var gridData = [];
-                                                var rowData = useData.split("*");
-                                                rowData.forEach((row) => {
-                                                    var rowArr = row.split(",");
-                                                    gridData = gridData.concat(rowArr);
-                                                });
-        
-                                                var count = 0;
-                                                gridData.forEach((num) => {
-                                                    if(parseInt(num) == indexOfField){
-                                                        count += 1;
-                                                    }
-                                                });
-        
-                                                putData = count;
-        
-                                                
-        
-                                                break;
-                                            case "Grid":
-                                                // we need the GRID ITSELF
-                                                var gridData = [];
-                                                var rowData = useData.split("*");
-                                                rowData.forEach((row) => {
-                                                    var cols = row.split(",");
-                                                    var colsInt = [];
-                                                    cols.forEach((col) => {
-                                                        if(parseInt(col) == indexOfField){
-                                                            colsInt.push(1);
-                                                        }else{
-                                                            colsInt.push(-1);
-                                                        }
-                                                    });
-        
-                                                    gridData.push(colsInt);
-                                                });
-        
-                                                putData = gridData;
-                                                break;
-        
-                                        }
-                                        if(Object.keys(partSets[partId][foundTeam]).find(k => k == key)){
-                                            // then add to obj
-                                            partSets[partId][foundTeam][key].push({
-                                                match: data.match,
-                                                data: putData
-                                            })
-                                        }else{
-                                            // then create obj
-                                            partSets[partId][foundTeam][key] = [{
-                                                match: data.match,
-                                                data: putData
-                                            }]
-                                        }
+
+                                        addData(partId, foundTeam, key, {match: data.match, data: field.on == useData ? (usePoints ? points : 1) : 0})
                                     }
                                     return;
                                 }
                                 if(field.componentType == "Step" || field.componentType == "Timer"){
-                                    // most likely just requesting number only
-                                    if(Object.keys(partSets[partId][foundTeam]).find(k => k == key)){
-                                        // then add to obj
-                                        partSets[partId][foundTeam][key].push(parseInt(useData))
-                                    }else{
-                                        // then create obj
-                                        partSets[partId][foundTeam][key] = [parseInt(useData)]
+                                    var points = 0;
+                                    if(usePoints){
+                                        points = Function(`
+                                            var x = ${useData};
+                                            return ${field.points};
+                                        `)();
+
                                     }
+                                    addData(partId, foundTeam, key, usePoints ? points : parseInt(useData))
                                 }else if(field.componentType == "Check"){
-                                    // most likely just requesting number only
-                                    if(Object.keys(partSets[partId][foundTeam]).find(k => k == key)){
-                                        // then add to obj
-                                        partSets[partId][foundTeam][key].push(field.on == useData ? 1 : 0)
-                                    }else{
-                                        // then create obj
-                                        partSets[partId][foundTeam][key] = [field.on == useData ? 1 : 0]
+                                    var points = 0;
+                                    if(usePoints){
+                                        points = field.points;
                                     }
+                                    addData(partId, foundTeam, key, field.on == useData ? (usePoints ? points : 1) : 0);
                                 }else if(field.componentType == "Select"){
-                                    if(Object.keys(partSets[partId][foundTeam]).find(k => k == key)){
-                                        // then add to obj
-                                        partSets[partId][foundTeam][key].push(useData)
-                                    }else{
-                                        // then create obj
-                                        partSets[partId][foundTeam][key] = [useData]
-                                    }
+                                    var optionSelected = field.options.find(o => o.Name == useData);
+
+                                    addData(partId, foundTeam, key, usePoints ? optionSelected.Points : optionSelected.Name)
+                                }else if(field.componentType == "Multi-Select"){
+                                    var optionsSelected = useData.split(";");
+                                    //var toSendData = [];
+                                    optionsSelected.forEach((option) => {
+                                        var optionSelected = field.options.find(o => o.Name == option);
+                                        addData(partId, foundTeam, key, usePoints ? optionSelected.Points : optionSelected.Name)
+                                        //toSendData.append(usePoints ? optionSelected.Points : optionSelected.Name);
+                                    });
+                                    
+
+                                    
                                 }
                                 else if(field.componentType == "Grid"){
                                     // data point depends on the analysisPart type
@@ -617,14 +566,7 @@ function selectAnalysis(){
                                             break;
     
                                     }
-                                    if(Object.keys(partSets[partId][foundTeam]).find(k => k == key)){
-                                        // then add to obj
-                                        partSets[partId][foundTeam][key].push(putData)
-                                    }else{
-                                        // then create obj
-                                        partSets[partId][foundTeam][key] = [putData]
-                                    }
-                                }
+                                    addData(partId, foundTeam, key, putData);
     
                                 // handle EACH PART ID AND ADDING DATA
                                 
@@ -655,29 +597,14 @@ function selectAnalysis(){
                                     requestedDataPoints[key].forEach((partId) => {
                                         var analysisPart = analysis.Parts.find(p => p._id == partId);
                                         if(analysisPart.Type == "Graph"){
-                                            if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == key)){
-                                                // then add to obj
-                                                partSets[partId][foundTeam.team][key].push({
-                                                    match: match.matchNumber,
-                                                    data: stats[key]
-                                                })
-                                            }else{
-                                                // then create obj
-                                                partSets[partId][foundTeam.team][key] = [{
-                                                    match: match.matchNumber,
-                                                    data: stats[key]
-                                                }]
-                                            }
+                                            addData(partId, foundTeam.team, key, {
+                                                match: match.matchNumber,
+                                                data: stats[key]
+                                            })
                                             return;
                                         }
                                         // handle EACH PART ID AND ADDING DATA
-                                        if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == key)){
-                                            // then add to obj
-                                            partSets[partId][foundTeam.team][key].push(stats[key])
-                                        }else{
-                                            // then create obj
-                                            partSets[partId][foundTeam.team][key] = [stats[key]]
-                                        }
+                                        addData(partId, foundTeam.team, key, stats[key]);
                                     });
                                 });
 
@@ -686,35 +613,17 @@ function selectAnalysis(){
                                 var penalties = match.results.redStats["tech Foul Count"] + match.results.redStats["foul Count"];
                                 if(requestedDataPoints["score"] != undefined){
                                     requestedDataPoints["score"].forEach((partId) => {
-                                        if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == "score")){
-                                            // then add to obj
-                                            partSets[partId][foundTeam.team]["score"].push(score)
-                                        }else{
-                                            // then create obj
-                                            partSets[partId][foundTeam.team]["score"] = [score]
-                                        }
+                                        addData(partId, foundTeam.team, "score", score);
                                     });
                                 }
                                 if(requestedDataPoints["rp"] != undefined){
                                     requestedDataPoints["rp"].forEach((partId) => {
-                                        if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == "rp")){
-                                            // then add to obj
-                                            partSets[partId][foundTeam.team]["rp"].push(rp)
-                                        }else{
-                                            // then create obj
-                                            partSets[partId][foundTeam.team]["rp"] = [rp]
-                                        }
+                                        addData(partId, foundTeam.team, "rp", rp);
                                     });
                                 }
                                 if(requestedDataPoints["penalties"] != undefined){
                                     requestedDataPoints["penalties"].forEach((partId) => {
-                                        if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == "penalties")){
-                                            // then add to obj
-                                            partSets[partId][foundTeam.team]["penalties"].push(penalties)
-                                        }else{
-                                            // then create obj
-                                            partSets[partId][foundTeam.team]["penalties"] = [penalties]
-                                        }
+                                        addData(partId, foundTeam.team, "penalties", penalties);
                                     });
                                 }
 
@@ -727,29 +636,13 @@ function selectAnalysis(){
                                     requestedDataPoints[key].forEach((partId) => {
                                         var analysisPart = analysis.Parts.find(p => p._id == partId);
                                         if(analysisPart.Type == "Graph"){
-                                            if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == key)){
-                                                // then add to obj
-                                                partSets[partId][foundTeam.team][key].push({
-                                                    match: match.matchNumber,
-                                                    data: stats[key]
-                                                })
-                                            }else{
-                                                // then create obj
-                                                partSets[partId][foundTeam.team][key] = [{
-                                                    match: match.matchNumber,
-                                                    data: stats[key]
-                                                }]
-                                            }
+                                            addData(partId, foundTeam.team, key, {
+                                                match: match.matchNumber,
+                                                data: stats[key]
+                                            });
                                             return;
                                         }
-                                        // handle EACH PART ID AND ADDING DATA
-                                        if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == key)){
-                                            // then add to obj
-                                            partSets[partId][foundTeam.team][key].push(stats[key])
-                                        }else{
-                                            // then create obj
-                                            partSets[partId][foundTeam.team][key] = [stats[key]]
-                                        }
+                                        addData(partId, foundTeam.team, key, stats[key]);
                                     });
                                 });
 
@@ -758,35 +651,17 @@ function selectAnalysis(){
                                 var penalties = match.results.blueStats["tech Foul Count"] + match.results.blueStats["foul Count"];
                                 if(requestedDataPoints["score"] != undefined){
                                     requestedDataPoints["score"].forEach((partId) => {
-                                        if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == "score")){
-                                            // then add to obj
-                                            partSets[partId][foundTeam.team]["score"].push(score)
-                                        }else{
-                                            // then create obj
-                                            partSets[partId][foundTeam.team]["score"] = [score]
-                                        }
+                                        addData(partId, foundTeam.team, "score", score);
                                     });
                                 }
                                 if(requestedDataPoints["rp"] != undefined){
                                     requestedDataPoints["rp"].forEach((partId) => {
-                                        if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == "rp")){
-                                            // then add to obj
-                                            partSets[partId][foundTeam.team]["rp"].push(rp)
-                                        }else{
-                                            // then create obj
-                                            partSets[partId][foundTeam.team]["rp"] = [rp]
-                                        }
+                                        addData(partId, foundTeam.team, "rp", rp);
                                     });
                                 }
                                 if(requestedDataPoints["penalties"] != undefined){
                                     requestedDataPoints["penalties"].forEach((partId) => {
-                                        if(Object.keys(partSets[partId][foundTeam.team]).find(k => k == "penalties")){
-                                            // then add to obj
-                                            partSets[partId][foundTeam.team]["penalties"].push(penalties)
-                                        }else{
-                                            // then create obj
-                                            partSets[partId][foundTeam.team]["penalties"] = [penalties]
-                                        }
+                                        addData(partId, foundTeam.team, "penalties", penalties);
                                     });
                                 }
                             }
