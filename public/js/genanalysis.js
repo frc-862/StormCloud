@@ -567,7 +567,7 @@ function selectAnalysis(){
     
                                     }
                                     addData(partId, foundTeam, key, putData);
-    
+                                }
                                 // handle EACH PART ID AND ADDING DATA
                                 
                             });
