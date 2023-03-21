@@ -273,6 +273,7 @@ function selectAnalysis(){
                                 componentType: component.Type,
                                 options: component.Options
                             });
+                            return;
                         }
                         if(component.Type == "Check"){
                             schemaFields.push({
