@@ -475,6 +475,8 @@ function selectAnalysis(){
                                         var optionSelected = field.options.find(o => o.Name == useData);
                                         if(optionSelected != undefined){
                                             addData(partId, foundTeam, key, {match:data.match, data: usePoints ? parseInt(optionSelected.Points) : optionSelected.Name})
+                                        }else{
+                                            addData(partId, foundTeam, key, {match:data.match, data: usePoints ? 0 : useData})
                                         }
     
                                   
@@ -487,6 +489,8 @@ function selectAnalysis(){
                                             var optionSelected = field.options.find(o => o.Name == option);
                                             if(optionSelected != undefined){
                                                 addData(partId, foundTeam, key, {match:data.match, data: usePoints ? parseInt(optionSelected.Points) : optionSelected.Name})
+                                            }else{
+                                                addData(partId, foundTeam, key, {match:data.match, data: usePoints ? 0 : option})
                                             }
                                             
                                         });
