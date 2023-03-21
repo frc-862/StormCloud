@@ -266,6 +266,14 @@ function selectAnalysis(){
                         if(component.Type == "Label"){
                             return;
                         }
+                        if(component.Type == "Select" || component.Type == "Multi-Select"){
+                            schemaFields.push({
+                                part: part.Name,
+                                component: component.Name,
+                                componentType: component.Type,
+                                options: component.Options
+                            });
+                        }
                         if(component.Type == "Check"){
                             schemaFields.push({
                                 part: part.Name,
