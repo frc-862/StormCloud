@@ -320,9 +320,7 @@ function refreshAnalysisSet(){
                 
             
                 schemaItems.forEach((item) => {
-                    if(item.componentType == "Select"){
-                        return;
-                    }
+                    
                     selectHTML += `<option value="${item.part}---${item.component}" ${part.Data["SchemaFields"] != undefined && part.Data["SchemaFields"].includes(item.part + "---" + item.component) ? "selected" : ""}>${item.part} - ${item.component} (${item.componentType})</option>`
                     
                 });
