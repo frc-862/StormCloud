@@ -471,6 +471,29 @@ function selectAnalysis(){
 
                                         addData(partId, foundTeam, key, {match: data.match, data: field.on == useData ? (usePoints ? points : 1) : 0})
                                     }
+                                    else if(field.componentType == "Select"){
+                                        var optionSelected = field.options.find(o => o.Name == useData);
+                                        if(optionSelected != undefined){
+                                            addData(partId, foundTeam, key, {match:data.match, data: usePoints ? parseInt(optionSelected.Points) : optionSelected.Name})
+                                        }
+    
+                                  
+                                        
+                                    }
+                                    else if(field.componentType == "Multi-Select"){
+                                        var optionsSelected = useData.split(";");
+                                        //var toSendData = [];
+                                        optionsSelected.forEach((option) => {
+                                            var optionSelected = field.options.find(o => o.Name == option);
+                                            if(optionSelected != undefined){
+                                                addData(partId, foundTeam, key, {match:data.match, data: usePoints ? parseInt(optionSelected.Points) : optionSelected.Name})
+                                            }
+                                            
+                                        });
+                                        
+    
+                                        
+                                    }
                                     return;
                                 }
                                 if(field.componentType == "Step" || field.componentType == "Timer"){
@@ -488,7 +511,7 @@ function selectAnalysis(){
                                     if(usePoints){
                                         points = field.points;
                                     }
-                                    addData(partId, foundTeam, key, field.on == useData ? (usePoints ? points : 1) : 0);
+                                    addData(partId, foundTeam, key, field.on == useData ? (usePoints ? parseInt(points) : 1) : 0);
                                 }else if(field.componentType == "Select"){
                                     var optionSelected = field.options.find(o => o.Name == useData);
                                     if(optionSelected == undefined){
@@ -498,7 +521,7 @@ function selectAnalysis(){
                                         }
                                     }
 
-                                    addData(partId, foundTeam, key, usePoints ? optionSelected.Points : optionSelected.Name)
+                                    addData(partId, foundTeam, key, usePoints ? parseInt(optionSelected.Points) : optionSelected.Name)
                                 }else if(field.componentType == "Multi-Select"){
                                     var optionsSelected = useData.split(";");
                                     //var toSendData = [];
@@ -510,7 +533,7 @@ function selectAnalysis(){
                                                 Points: 0
                                             }
                                         }
-                                        addData(partId, foundTeam, key, usePoints ? optionSelected.Points : optionSelected.Name)
+                                        addData(partId, foundTeam, key, usePoints ? parseInt(optionSelected.Points) : optionSelected.Name)
                                         //toSendData.append(usePoints ? optionSelected.Points : optionSelected.Name);
                                     });
                                     
