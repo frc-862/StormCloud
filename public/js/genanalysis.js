@@ -459,7 +459,7 @@ function selectAnalysis(){
                                         }
                                         addData(partId, foundTeam, key, {
                                             match: data.match,
-                                            data: parseInt(usePoints ? points : useData)
+                                            data: usePoints ? points : useData
                                         });
                                     }
                                     else if(field.componentType == "Check"){
