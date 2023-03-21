@@ -1023,6 +1023,8 @@ function selectAnalysis(){
                                                 break;
                                         }
 
+                                        matchFinal.data = Math.round(matchFinal.data*10)/10;
+
                                         final.push(matchFinal);
                                     });
 
