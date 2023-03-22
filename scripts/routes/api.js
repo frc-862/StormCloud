@@ -1392,7 +1392,8 @@ router.post("/submit/data", async (req, res, next) => {
             match: dataPiece.Number,
             color: dataPiece.Color,
             type: "tablet",
-            disabled: dataPiece.Disabled
+            disabled: dataPiece.Disabled,
+            generic: dataPiece.Number <= 0
         }
 
         var allDocs = await db.getDocs("Document", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
@@ -1797,6 +1798,8 @@ router.get("/quick/state", async (req, res, next) => {
     var currentlyRunning = true;
     var allMatches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
     allMatches = allMatches.sort((a,b) => a.matchNumber - b.matchNumber);
+    var teamsDb = await db.getDocs("Team", {environment: env.friendlyId});
+    var teamNumbers = [];
     allMatches.forEach((match) => {
         if(match.results.finished == false){
             match.results = {
@@ -1808,6 +1811,26 @@ router.get("/quick/state", async (req, res, next) => {
                 red: match.results.red,
                 blue: match.results.blue
             }
+        }
+        match.teams.forEach((team) => {
+            if(teamNumbers.indexOf(team.team) == -1){
+                teamNumbers.push(team.team);
+            }
+        });
+    });
+    var teams = [];
+    teamNumbers.forEach((teamNumber) => {
+        var team = teamsDb.find((team) => team.teamNumber == teamNumber);
+        if(team != undefined){
+            teams.push({
+                teamNumber: teamNumber,
+                teamName: team.name
+            });
+        }else{
+            teams.push({
+                teamNumber: teamNumber,
+                teamName: "Unknown FIRST Team"
+            });
         }
     });
 
@@ -1830,7 +1853,7 @@ router.get("/quick/state", async (req, res, next) => {
     var largerMatches = allMatches.filter((match) => {return match.matchNumber >= currentMatch});
     currentlyRunning = largerMatches.length > 0;
 
-    res.status(200).json({currentMatch: currentMatch, ourNextMatch: ourNextMatch, currentlyRunning: currentlyRunning, matchType: currentMatchType, competitionName: competitionName, location: location, matches: allMatches, teamNumber: env.settings.team});
+    res.status(200).json({currentMatch: currentMatch, ourNextMatch: ourNextMatch, currentlyRunning: currentlyRunning, matchType: currentMatchType, competitionName: competitionName, location: location, matches: allMatches, teamNumber: env.settings.team, teams: teams});
     
 });
 

@@ -1023,7 +1023,7 @@ function selectAnalysis(){
                                                 break;
                                         }
 
-                                        matchFinal.data = Math.round(matchFinal.data*10)/10;
+                                        matchFinal.data = Math.round(matchFinal.data*10)/1;
 
                                         final.push(matchFinal);
                                     });
