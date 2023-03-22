@@ -1805,12 +1805,6 @@ router.get("/quick/state", async (req, res, next) => {
             match.results = {
                 finished: false
             }
-        }else{
-            match.results = {
-                finished: true,
-                red: match.results.red,
-                blue: match.results.blue
-            }
         }
         match.teams.forEach((team) => {
             if(teamNumbers.indexOf(team.team) == -1){
