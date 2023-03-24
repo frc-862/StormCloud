@@ -52,7 +52,22 @@ function generate_document_snip(d, extraclasses="", additionalcontent=""){
             if(completed == undefined){
                 completed = false;
             }
-            df += `
+            if(data["match"] <= 0){
+                // general docuemnt
+                df += `
+                <div class="container clickable document ${extraclasses}" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}" onclick="handle_document_click('${d["_id"]}')">
+                    <div class="flex_apart" style="width:100%;pointer-events:none">
+                        <span class="text regular material-symbols-rounded" style="width:20%;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">bar_chart</span>
+                        <div style="width:80%">
+                            <span class="text caption" style="font-weight:600;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? `Team ${data["team"]}, General Document` : d["name"]}</span>
+                            <span class="text tiny" style="color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? `${completed ? `OK at ${datetime}` : "Not Complete"}` : `Team ${data["team"]}, General Document`}</span>
+                        </div>
+                        ${additionalcontent}
+                    </div>
+                </div>
+            `
+            }else{
+                df += `
                 <div class="container clickable document ${extraclasses}" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}" onclick="handle_document_click('${d["_id"]}')">
                     <div class="flex_apart" style="width:100%;pointer-events:none">
                         <span class="text regular material-symbols-rounded" style="width:20%;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">bar_chart</span>
@@ -64,6 +79,8 @@ function generate_document_snip(d, extraclasses="", additionalcontent=""){
                     </div>
                 </div>
             `
+            }
+            
             break;
         case "note":
             
@@ -1039,6 +1056,14 @@ function handle_document_click(id){
                                         </div>
                                         `;
                                         break;
+                                    case "Step":
+                                        f += `
+                                        <div class="flex_apart" style="margin:5px">
+                                            <span class="text small" style="margin:5px;display:inline-block;width:50%">${c.Name}</span>
+                                            <input disabled type="text" class="input text small" style="pointer-events: all;width:50%" value="${formData[n]}"/>
+                                        </div>
+                                        `;
+                                        break;
                                     case "Check":
                                         f += `
                                         <div class="flex_apart" style="margin:5px">
@@ -1060,7 +1085,7 @@ function handle_document_click(id){
                                         var options = "";
                                         c.Options.forEach(o => {
                                             options += `
-                                            <option value="${o}" ${o == formData[n] ? "selected" : ""}>${o}</option>
+                                            <option value="${o.Name}" ${o.Name == formData[n] ? "selected" : ""}>${o.Name}</option>
                                             `;
                                         });
         
@@ -1071,6 +1096,26 @@ function handle_document_click(id){
                                             
                                         </div>
                                         `;
+                                        break;
+                                    case "Multi-Select":
+                                        var optionsSelected = formData[n].split(";");
+                                        var optionHTML = "";
+                                        c.Options.forEach(o => {
+                                            optionHTML += `
+                                            <div class="container ${optionsSelected.includes(o.Name) ? "primarybg" : "level2bg"} clickable" style="padding:10px;margin:2px 5px;width:100%">
+                                                <span class="text caption">${o.Name}</span>
+                                            </div>
+                                            `;
+                                        });
+
+                                        f += `
+                                        <div class="flex_apart" style="margin:5px">
+                                            <span class="text small" style="margin:5px;display:inline-block;width:50%">${c.Name}</span>
+                                            <div style="pointer-events: all;width:50%">${optionHTML}</div>
+                                            
+                                        </div>
+                                        `;
+
                                         break;
                                     case "Event":
         
@@ -1290,7 +1335,12 @@ function handle_document_click(id){
             document.querySelector("#overlayDone").style.display = "";
 
             var matchText = match != undefined ? ` - Match ${match}` : "";
-            document.querySelector("#overlayTitle").innerHTML = `Data Document - Team ${teamNumber}${data["author"] == undefined || data["author"] == "" ? "" : " - By " + data["author"]}${data["completed"] == undefined || data["completed"] == false ? " (Incomplete)" : ""}${matchText}`;
+            if(match <= 0){
+                document.querySelector("#overlayTitle").innerHTML = `General Document - Team ${teamNumber}${data["author"] == undefined || data["author"] == "" ? "" : " - By " + data["author"]}`
+            }else{
+                document.querySelector("#overlayTitle").innerHTML = `Data Document - Team ${teamNumber}${data["author"] == undefined || data["author"] == "" ? "" : " - By " + data["author"]}${data["completed"] == undefined || data["completed"] == false ? " (Incomplete)" : ""}${matchText}`;
+            }
+            
             break;
         case "note":
             var teamNumber = data["team"];

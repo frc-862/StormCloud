@@ -426,6 +426,7 @@ function addItem(element, type){
         case "Input":
             item.Placeholder = "";
             item.Color = "default";
+            item.Large = "false";
             break;
     }
 
@@ -643,6 +644,11 @@ function reshowItems(sectionId){
                         <div style="width:90%;text-align:left">
                             <span class="text caption" style="margin: 5px 10px;text-align:left">Placeholder</span>
                             <input class="input small" style="width:100%" type="text" value="${i.Placeholder}" placeholder="Placeholder" data-id="${i._id}" onchange="editItem(this, 'Placeholder', '${sectionId}')"/>
+                        </div>
+                        <div class="flex_apart" style="width:400px">
+                            <span class="text regular">Large?</span>
+                            <input class="input small" value="${i.Large}" id="overlay_useMatchNumbers" type="checkbox" style="display:inline-block"/>
+
                         </div>
                         
                         
