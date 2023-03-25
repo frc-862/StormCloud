@@ -380,6 +380,14 @@ function selectAnalysis(){
                                 }else{
                                     requestedDataPoints[part.Data["DataPoint"]].push(part._id);
                                 }
+                            case "Custom":
+                                part.Data["DataPieces"].forEach((piece) => {
+                                    if(requestedDataPoints[piece.DataPoint] == undefined){
+                                        requestedDataPoints[piece.DataPoint] = [part._id];
+                                    }else{
+                                        requestedDataPoints[piece.DataPoint].push(part._id);
+                                    }
+                                });
                             case "Graph":
                                 try{
                                     part.Data["SchemaFields"].forEach((field) => {
@@ -443,7 +451,24 @@ function selectAnalysis(){
 
                                 var analysisPart = analysis.Parts.find(p => p._id == partId);
                                 var usePoints = analysisPart.Data.UsePoints == "true";
-                                if(analysisPart.Type == "Graph"){
+                                if(analysisPart.Type == "Custom"){
+                                    var points = 0;
+
+                                    var applicableDataPiece = analysisPart.Data.DataPieces.find(p => p.DataPoint == key);
+                
+
+                                    if(applicableDataPiece.includes("Points")){
+                                        points = Function(`
+                                            var x = ${useData};
+                                            return ${field.points};
+                                        `)();
+                                    }
+                                    addData(partId, foundTeam, key, {
+                                        match: data.match,
+                                        data: applicableDataPiece.includes("Points") ? points : useData
+                                    });
+                                }
+                                else if(analysisPart.Type == "Graph"){
                                     if(analysisPart.Data.DocumentData != "true" && analysisPart.Data.DocumentData != true){
                                         return;
                                     }
@@ -650,6 +675,11 @@ function selectAnalysis(){
                                                 data: stats[key]
                                             })
                                             return;
+                                        }else if(analysisPart.Type == "Custom"){
+                                            addData(partId, foundTeam.team, key, {
+                                                match: match.matchNumber,
+                                                data: stats[key]
+                                            });
                                         }
                                         // handle EACH PART ID AND ADDING DATA
                                         addData(partId, foundTeam.team, key, stats[key]);
@@ -689,6 +719,11 @@ function selectAnalysis(){
                                                 data: stats[key]
                                             });
                                             return;
+                                        }else if(analysisPart.Type == "Custom"){
+                                            addData(partId, foundTeam.team, key, {
+                                                match: match.matchNumber,
+                                                data: stats[key]
+                                            });
                                         }
                                         addData(partId, foundTeam.team, key, stats[key]);
                                     });
@@ -1046,6 +1081,8 @@ function selectAnalysis(){
                                         average: average
                                     });
 
+                                    break;
+                                case "Custom":
                                     break;
 
 
