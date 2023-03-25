@@ -1989,12 +1989,17 @@ router.get("/first/results*", async(req, res, next) => {
                     blue: existingMatch.results.blue
                 }
 
+               
+
                 existingMatch.results.finished = true;
 
 
                 var redAlliance = match["alliances"].find(a => a.alliance == "Red");
                 if(redAlliance == undefined){
                     throw "Red alliance not found!";
+                }
+                if(redAlliance["totalPoints"] == null){
+                    existingMatch.results.finished = false;
                 }
                 existingMatch.results["red"] = redAlliance["totalPoints"];
                 existingMatch.results["redStats"] = {};
@@ -2012,8 +2017,13 @@ router.get("/first/results*", async(req, res, next) => {
                 });
 
                 var blueAlliance = match["alliances"].find(a => a.alliance == "Blue");
+
+                
                 if(blueAlliance == undefined){
                     throw "Blue alliance not found!";
+                }
+                if(blueAlliance["totalPoints"] == null){
+                    existingMatch.results.finished = false;
                 }
                 existingMatch.results["blue"] = blueAlliance["totalPoints"];
                 existingMatch.results["blueStats"] = {};
