@@ -1932,6 +1932,23 @@ router.get("/quick/matches*", async (req, res, next) => {
     res.status(200).json({matches: sendBackMatches});
 });
 
+router.get("/first/clear", async (req, res, next) => {
+
+    var env = await authTools.getEnvironment(environment);
+    env.cachedCompetitionData = {
+        rankings: [],
+        matches: []
+    };
+    await db.updateDoc("Environment", {friendlyId: env.friendlyId}, {cachedCompetitionData: env.cachedCompetitionData});
+    
+    var allMatches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
+    for(var i = 0; i < allMatches.length; i++){
+        await db.deleteDoc("Match", {_id: allMatches[i]._id});
+    }
+
+    res.status(200).json({success: true});
+});
+
 router.get("/first/results*", async(req, res, next) => {
     var env = await authTools.getEnvironment(environment);
 
@@ -2046,7 +2063,7 @@ router.get("/first/results*", async(req, res, next) => {
                         title: "Match " + existingMatch.matchNumber + " Results Updated",
                         body: `There's been an update to Match Scores!\n🔴 - ${existingMatch.results.red} points\n🔵 - ${existingMatch.results.blue} points\n${existingMatch.results.blue > existingMatch.results.red ? "Blue Wins!" : (existingMatch.results.blue < existingMatch.results.red ? "Red Wins!" : "It's a Tie!")}`,
                         data: {
-                            team: ranking["teamNumber"].toString()
+                            match: existingMatch["matchNumber"].toString()
                         }
                     }
                     sendNotificationAll(message.title, message.body, message.data, "resultsAll");
