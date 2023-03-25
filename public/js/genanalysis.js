@@ -467,6 +467,7 @@ function selectAnalysis(){
                                         match: data.match,
                                         data: applicableDataPiece.Type.includes("Points") ? points : useData
                                     });
+                                    return;
                                 }
                                 else if(analysisPart.Type == "Graph"){
                                     if(analysisPart.Data.DocumentData != "true" && analysisPart.Data.DocumentData != true){
