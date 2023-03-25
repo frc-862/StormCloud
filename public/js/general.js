@@ -52,7 +52,7 @@ function generate_document_snip(d, extraclasses="", additionalcontent=""){
             if(completed == undefined){
                 completed = false;
             }
-            if(data["match"] <= 0){
+            if(data["generic"]){
                 // general docuemnt
                 df += `
                 <div class="container clickable document ${extraclasses}" style="width:180px;padding:15px 10px;margin:5px" data-team="${data["team"]}" data-id="${d["_id"]}" onclick="handle_document_click('${d["_id"]}')">
@@ -1335,7 +1335,7 @@ function handle_document_click(id){
             document.querySelector("#overlayDone").style.display = "";
 
             var matchText = match != undefined ? ` - Match ${match}` : "";
-            if(match <= 0){
+            if(data["generic"]){
                 document.querySelector("#overlayTitle").innerHTML = `General Document - Team ${teamNumber}${data["author"] == undefined || data["author"] == "" ? "" : " - By " + data["author"]}`
             }else{
                 document.querySelector("#overlayTitle").innerHTML = `Data Document - Team ${teamNumber}${data["author"] == undefined || data["author"] == "" ? "" : " - By " + data["author"]}${data["completed"] == undefined || data["completed"] == false ? " (Incomplete)" : ""}${matchText}`;

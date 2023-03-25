@@ -1377,9 +1377,7 @@ router.post("/submit/data", async (req, res, next) => {
         var dataPiece = dataPieces[i];
 
 
-        if(env.settings.matchType == "Playoff"){
-            dataPiece.Number += 900;
-        }
+        
 
         var generatedData = {
             team: dataPiece.Team,
@@ -1394,6 +1392,10 @@ router.post("/submit/data", async (req, res, next) => {
             type: "tablet",
             disabled: dataPiece.Disabled,
             generic: dataPiece.Number <= 0
+        }
+
+        if(env.settings.matchType == "Playoff"){
+            generatedData.match += 900;
         }
 
         var allDocs = await db.getDocs("Document", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
