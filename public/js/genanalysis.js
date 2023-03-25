@@ -457,7 +457,7 @@ function selectAnalysis(){
                                     var applicableDataPiece = analysisPart.Data.DataPieces.find(p => p.DataPoint == key);
                 
 
-                                    if(applicableDataPiece.includes("Points")){
+                                    if(applicableDataPiece.Type.includes("Points")){
                                         points = Function(`
                                             var x = ${useData};
                                             return ${field.points};
@@ -465,7 +465,7 @@ function selectAnalysis(){
                                     }
                                     addData(partId, foundTeam, key, {
                                         match: data.match,
-                                        data: applicableDataPiece.includes("Points") ? points : useData
+                                        data: applicableDataPiece.Type.includes("Points") ? points : useData
                                     });
                                 }
                                 else if(analysisPart.Type == "Graph"){
