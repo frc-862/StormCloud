@@ -813,7 +813,12 @@ function selectAnalysis(){
                                         for(var i = 0; i < options.length; i++){
                                             var letter = variableLetters[i];
                                             var applicableValue = variables.find(v => v.variable == letter) == undefined ? 0 : variables.find(v => v.variable == letter).value;
-                                            functionString += `var ${letter} = ${applicableValue};\n`;
+                                            if(Number.isInteger(applicableValue)){
+                                                functionString += `var ${letter} = ${applicableValue};\n`;
+                                            }else{
+                                                functionString += `var ${letter} = "${applicableValue}";\n`;
+                                            }
+                                            
 
                                         }
                                         
