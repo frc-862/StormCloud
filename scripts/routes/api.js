@@ -180,15 +180,35 @@ router.post("/request/document/delete*", async (req, res, next) => {
 });
 
 
-function prepareAnalysis(analysis, schema, documents, matches, team){
+function prepareAnalysis(analysis, schema, documents, matches, teams){
     // replication of the HTML version
     
     var partSets = {};
     var requestedDataPoints = {};
     var schemaFields = [];
+
+    function addData(partId, team, key, value){
+        if(Object.keys(partSets[partId][team]).find(k => k == key)){
+            // then add to obj
+            partSets[partId][team][key].push(value)
+        }else{
+            // then create obj
+            partSets[partId][team][key] = [value];
+        }
+    }
+
     schema.Parts.forEach((part) => {
         part.Components.forEach((component) => {
             if(component.Type == "Label"){
+                return;
+            }
+            if(component.Type == "Select" || component.Type == "Multi-Select"){
+                schemaFields.push({
+                    part: part.Name,
+                    component: component.Name,
+                    componentType: component.Type,
+                    options: component.Options
+                });
                 return;
             }
             if(component.Type == "Check"){
@@ -197,24 +217,29 @@ function prepareAnalysis(analysis, schema, documents, matches, team){
                     component: component.Name,
                     componentType: component.Type,
                     on: component.On,
-                    off: component.Off
+                    off: component.Off,
+                    points: component.Points
                 })
                 return;
             }
             schemaFields.push({
                 part: part.Name,
                 component: component.Name,
-                componentType: component.Type
+                componentType: component.Type,
+                points: component.Points
             })
         });
     });
 
+
     var finalData = undefined;
-
-
+    // TODO: Graph, FIRST, Document data
     analysis.Parts.forEach((part) => {
         partSets[part._id] = {};
-        
+        teams.forEach((team) => {
+            // separate by team
+            partSets[part._id][team] = {};
+        });
         switch(part.Type){
             case "Number":
                 //request SchemaFields and FIRSTFields
@@ -258,29 +283,86 @@ function prepareAnalysis(analysis, schema, documents, matches, team){
                     console.log(e);
                 }
                 break;
-            case "FIRST":
+            case "Frequency":
                 try{
-                    if(requestedDataPoints[part.Data["DataPoint"]] == undefined){
-                        requestedDataPoints[part.Data["DataPoint"]] = [part._id];
-                    }else{
-                        requestedDataPoints[part.Data["DataPoint"]].push(part._id);
-                    }
+                    part.Data["SchemaFields"].forEach((field) => {
+                        if(requestedDataPoints[field] == undefined){
+                            requestedDataPoints[field] = [part._id];
+                        }else{
+                            requestedDataPoints[field].push(part._id);
+                        }
+                    });
                 }catch(e){
-
+                    console.log(e);
                 }
+
+                try{
+                    part.Data["FIRSTFields"].forEach((field) => {
+                        if(requestedDataPoints[field] == undefined){
+                            requestedDataPoints[field] = [part._id];
+                        }else{
+                            requestedDataPoints[field].push(part._id);
+                        }
+                    });
+                }catch(e){
+                    console.log(e);
+                }
+                break;
+            case "FIRST":
                 // just request finalscore
+                if(requestedDataPoints["DataPoint"] == undefined){
+                    requestedDataPoints[part.Data["DataPoint"]] = [part._id];
+                }else{
+                    requestedDataPoints[part.Data["DataPoint"]].push(part._id);
+                }
+            case "Custom":
+                part.Data["DataPieces"].forEach((piece) => {
+                    if(requestedDataPoints[piece.DataPoint] == undefined){
+                        requestedDataPoints[piece.DataPoint] = [part._id];
+                    }else{
+                        requestedDataPoints[piece.DataPoint].push(part._id);
+                    }
+                });
+            case "Graph":
+                try{
+                    part.Data["SchemaFields"].forEach((field) => {
+                        if(requestedDataPoints[field] == undefined){
+                            requestedDataPoints[field] = [part._id];
+                        }else{
+                            requestedDataPoints[field].push(part._id);
+                        }
+                    });
+                }catch(e){
+                    console.log(e);
+                }
+
+                try{
+                    part.Data["FIRSTFields"].forEach((field) => {
+                        if(requestedDataPoints[field] == undefined){
+                            requestedDataPoints[field] = [part._id];
+                        }else{
+                            requestedDataPoints[field].push(part._id);
+                        }
+                    });
+                }catch(e){
+                    console.log(e);
+                }
         }
     });
 
     documents.forEach((doc) => {
         var data = JSON.parse(doc.json);
-        // assume that we've already sorted the document
-
-        if(!data.completed){
+        var foundTeam = teams.find(t => t == parseInt(data.team));
+        if(!teams.includes(parseInt(data.team))){
+            // not a doc we are looking for
             return;
         }
 
         if(doc.flagged){
+            return;
+        }
+
+        if(!data.completed){
             return;
         }
 
@@ -297,32 +379,136 @@ function prepareAnalysis(analysis, schema, documents, matches, team){
             if(requestedDataPoints[key] == undefined){
                 return;
             }
-
             var useData = JSON.parse(data.data)[indexOfField];
 
             requestedDataPoints[key].forEach((partId) => {
+
+
                 var analysisPart = analysis.Parts.find(p => p._id == partId);
+                var usePoints = analysisPart.Data.UsePoints == "true";
+                if(analysisPart.Type == "Custom"){
+                    var points = 0;
+
+                    var applicableDataPiece = analysisPart.Data.DataPieces.find(p => p.DataPoint == key);
+
+
+                    if(applicableDataPiece.Type.includes("Points")){
+                        points = Function(`
+                            var x = ${useData};
+                            return ${field.points};
+                        `)();
+                    }
+                    addData(partId, foundTeam, key, {
+                        match: data.match,
+                        data: applicableDataPiece.Type.includes("Points") ? points : useData
+                    });
+                    return;
+                }
+                else if(analysisPart.Type == "Graph"){
+                    if(analysisPart.Data.DocumentData != "true" && analysisPart.Data.DocumentData != true){
+                        return;
+                    }
+
+                    if(field.componentType == "Step" || field.componentType == "Timer"){
+                        var points = 0;
+                        if(usePoints){
+                            points = Function(`
+                                var x = ${useData};
+                                return ${field.points};
+                            `)();
+
+                        }
+                        addData(partId, foundTeam, key, {
+                            match: data.match,
+                            data: usePoints ? points : useData
+                        });
+                    }
+                    else if(field.componentType == "Check"){
+
+                        var points = 0;
+                        if(usePoints){
+                            points = field.points;
+                        }
+
+                        addData(partId, foundTeam, key, {match: data.match, data: field.on == useData ? (usePoints ? points : 1) : 0})
+                    }
+                    else if(field.componentType == "Select"){
+                        var optionSelected = field.options.find(o => o.Name == useData);
+                        if(optionSelected != undefined){
+                            addData(partId, foundTeam, key, {match:data.match, data: usePoints ? parseInt(optionSelected.Points) : optionSelected.Name})
+                        }else{
+                            addData(partId, foundTeam, key, {match:data.match, data: usePoints ? 0 : useData})
+                        }
+
+                    
+                        
+                    }
+                    else if(field.componentType == "Multi-Select"){
+                        var optionsSelected = useData.split(";");
+                        //var toSendData = [];
+                        optionsSelected.forEach((option) => {
+                            var optionSelected = field.options.find(o => o.Name == option);
+                            if(optionSelected != undefined){
+                                addData(partId, foundTeam, key, {match:data.match, data: usePoints ? parseInt(optionSelected.Points) : optionSelected.Name})
+                            }else{
+                                addData(partId, foundTeam, key, {match:data.match, data: usePoints ? 0 : option})
+                            }
+                            
+                        });
+                        
+
+                        
+                    }
+                    return;
+                }
                 if(field.componentType == "Step" || field.componentType == "Timer"){
-                    // most likely just requesting number only
-                    if(Object.keys(partSets[partId]).find(k => k == key)){
-                        // then add to obj
-                        partSets[partId][key].push(parseInt(useData))
-                    }else{
-                        // then create obj
-                        partSets[partId][key] = [parseInt(useData)]
+                    var points = 0;
+                    if(usePoints){
+                        points = Function(`
+                            var x = ${useData};
+                            return ${field.points};
+                        `)();
+
                     }
+                    addData(partId, foundTeam, key, usePoints ? points : parseInt(useData))
                 }else if(field.componentType == "Check"){
-                    // most likely just requesting number only
-                    if(Object.keys(partSets[partId]).find(k => k == key)){
-                        // then add to obj
-                        partSets[partId][key].push(field.on == useData ? 1 : 0)
-                    }else{
-                        // then create obj
-                        partSets[partId][key] = [field.on == useData ? 1 : 0]
+                    var points = 0;
+                    if(usePoints){
+                        points = field.points;
                     }
-                }else if(field.componentType == "Grid"){
+                    addData(partId, foundTeam, key, field.on == useData ? (usePoints ? parseInt(points) : 1) : 0);
+                }else if(field.componentType == "Select"){
+                    var optionSelected = field.options.find(o => o.Name == useData);
+                    if(optionSelected == undefined){
+                        optionSelected = {
+                            Name: useData,
+                            Points: 0
+                        }
+                    }
+
+                    addData(partId, foundTeam, key, usePoints ? parseInt(optionSelected.Points) : optionSelected.Name)
+                }else if(field.componentType == "Multi-Select"){
+                    var optionsSelected = useData.split(";");
+                    //var toSendData = [];
+                    optionsSelected.forEach((option) => {
+                        var optionSelected = field.options.find(o => o.Name == option);
+                        if(optionSelected == undefined){
+                            optionSelected = {
+                                Name: option,
+                                Points: 0
+                            }
+                        }
+                        addData(partId, foundTeam, key, usePoints ? parseInt(optionSelected.Points) : optionSelected.Name)
+                        //toSendData.append(usePoints ? optionSelected.Points : optionSelected.Name);
+                    });
+                    
+
+                    
+                }
+                else if(field.componentType == "Grid"){
                     // data point depends on the analysisPart type
                     var putData = 0;
+                    
                     switch(analysisPart.Type){
                         case "Number":
                             // then we are just requesting a number
@@ -350,7 +536,7 @@ function prepareAnalysis(analysis, schema, documents, matches, team){
                             var gridData = [];
                             var rowData = useData.split("*");
                             rowData.forEach((row) => {
-                                var cols = row.split(",");  
+                                var cols = row.split(",");
                                 var colsInt = [];
                                 cols.forEach((col) => {
                                     if(parseInt(col) == indexOfField){
@@ -363,19 +549,34 @@ function prepareAnalysis(analysis, schema, documents, matches, team){
                                 gridData.push(colsInt);
                             });
 
-                            putData = gridData;
+
+
+                            if(data.Color == undefined){
+                                // TRY to get the match
+                                var applicableMatch = allMatches.find(m => m.matchNumber == data.match)
+                                if(applicableMatch == undefined){
+                                    data.Color = "Red";
+                                }
+                                else{
+                                    var applicableTeam = applicableMatch.teams.find(t => t.team == foundTeam);
+                                    if(applicableTeam == undefined){
+                                        data.Color = "Red";
+                                    }
+                                    else{
+                                        data.Color = applicableTeam.color;
+                                    }
+                                }
+                            }
+
+                            putData = {
+                                color: data.Color,
+                                data: gridData
+                            };
                             break;
 
                     }
-                    if(Object.keys(partSets[partId]).find(k => k == key)){
-                        // then add to obj
-                        partSets[partId][key].push(putData)
-                    }else{
-                        // then create obj
-                        partSets[partId][key] = [putData]
-                    }
+                    addData(partId, foundTeam, key, putData);
                 }
-
                 // handle EACH PART ID AND ADDING DATA
                 
             });
@@ -383,192 +584,547 @@ function prepareAnalysis(analysis, schema, documents, matches, team){
             
         });
 
-
     });
 
     matches.forEach((match) => {
-        var foundTeam = match.teams.find(t => t.team == team);
-
-        if(foundTeam == undefined){
-            return;
-        }
-        if(!match.results.finished){
+        var foundTeams = match.teams.filter(t => teams.includes(t.team));
+        if(foundTeams.length == 0 || foundTeams == undefined){
             return;
         }
 
-        if(foundTeam.color == "Red"){
-            var stats = match.results.redStats;
-            Object.keys(stats).forEach((key) => {
-                if(requestedDataPoints[key] == undefined){
-                    return;
-                }
-                requestedDataPoints[key].forEach((partId) => {
-                    // handle EACH PART ID AND ADDING DATA
-                    if(Object.keys(partSets[partId]).find(k => k == key)){
-                        // then add to obj
-                        partSets[partId][key].push(stats[key])
-                    }else{
-                        // then create obj
-                        partSets[partId][key] = [stats[key]]
-                    }
-                });
-            });
+        foundTeams.forEach((foundTeam) => {
+            if(!match.results.finished){
+                return;
+            }
 
-            
-        }else{
-            var stats = match.results.blueStats;
-            Object.keys(stats).forEach((key) => {
-                if(requestedDataPoints[key] == undefined){
-                    return;
-                }
-                requestedDataPoints[key].forEach((partId) => {
-                    // handle EACH PART ID AND ADDING DATA
-                    if(Object.keys(partSets[partId]).find(k => k == key)){
-                        // then add to obj
-                        partSets[partId][key].push(stats[key])
-                    }else{
-                        // then create obj
-                        partSets[partId][key] = [stats[key]]
+            if(foundTeam.color == "Red"){
+                var stats = match.results.redStats;
+                Object.keys(stats).forEach((key) => {
+                    if(requestedDataPoints[key] == undefined){
+                        return;
                     }
+                    requestedDataPoints[key].forEach((partId) => {
+                        var analysisPart = analysis.Parts.find(p => p._id == partId);
+                        if(analysisPart.Type == "Graph"){
+                            addData(partId, foundTeam.team, key, {
+                                match: match.matchNumber,
+                                data: stats[key]
+                            })
+                            return;
+                        }else if(analysisPart.Type == "Custom"){
+                            addData(partId, foundTeam.team, key, {
+                                match: match.matchNumber,
+                                data: stats[key]
+                            });
+                            return;
+                        }
+                        // handle EACH PART ID AND ADDING DATA
+                        addData(partId, foundTeam.team, key, stats[key]);
+                    });
                 });
-            });
-        }
+
+                var score = match.results.red;
+                var rp = match.results.redStats.rp;
+                var penalties = match.results.redStats["tech Foul Count"] + match.results.redStats["foul Count"];
+                if(requestedDataPoints["score"] != undefined){
+                    requestedDataPoints["score"].forEach((partId) => {
+                        addData(partId, foundTeam.team, "score", score);
+                    });
+                }
+                if(requestedDataPoints["rp"] != undefined){
+                    requestedDataPoints["rp"].forEach((partId) => {
+                        addData(partId, foundTeam.team, "rp", rp);
+                    });
+                }
+                if(requestedDataPoints["penalties"] != undefined){
+                    requestedDataPoints["penalties"].forEach((partId) => {
+                        addData(partId, foundTeam.team, "penalties", penalties);
+                    });
+                }
+
+            }else{
+                var stats = match.results.blueStats;
+                Object.keys(stats).forEach((key) => {
+                    if(requestedDataPoints[key] == undefined){
+                        return;
+                    }
+                    requestedDataPoints[key].forEach((partId) => {
+                        var analysisPart = analysis.Parts.find(p => p._id == partId);
+                        if(analysisPart.Type == "Graph"){
+                            addData(partId, foundTeam.team, key, {
+                                match: match.matchNumber,
+                                data: stats[key]
+                            });
+                            return;
+                        }else if(analysisPart.Type == "Custom"){
+                            addData(partId, foundTeam.team, key, {
+                                match: match.matchNumber,
+                                data: stats[key]
+                            });
+                            return;
+                        }
+                        addData(partId, foundTeam.team, key, stats[key]);
+                    });
+                });
+
+                var score = match.results.blue;
+                var rp = match.results.blueStats.rp;
+                var penalties = match.results.blueStats["tech Foul Count"] + match.results.blueStats["foul Count"];
+                if(requestedDataPoints["score"] != undefined){
+                    requestedDataPoints["score"].forEach((partId) => {
+                        addData(partId, foundTeam.team, "score", score);
+                    });
+                }
+                if(requestedDataPoints["rp"] != undefined){
+                    requestedDataPoints["rp"].forEach((partId) => {
+                        addData(partId, foundTeam.team, "rp", rp);
+                    });
+                }
+                if(requestedDataPoints["penalties"] != undefined){
+                    requestedDataPoints["penalties"].forEach((partId) => {
+                        addData(partId, foundTeam.team, "penalties", penalties);
+                    });
+                }
+            }
+        });
 
         
 
 
     });
 
-    finalData = [];
+    console.log(partSets);
 
+    finalData = {};
+    teams.forEach((team) => {
+        finalData[team] = [];
+    });
     Object.keys(partSets).forEach((partId) => {
         // now we condense
 
+        
+
         var part = analysis.Parts.find(p => p._id == partId);
-        var partData = partSets[partId];
 
-        switch(part.Type){
-            case "Number":
-                var final = 0;
-                var n = 0;
+        teams.forEach((team) => {
+            var partData = partSets[partId][team];
 
-                var method = part.Data["Stat_Between"];
-                var finalMethod = part.Data["Stat_Final"];
+            switch(part.Type){
+                case "Custom":
+                    var final = 0;
 
-                // first, handle the statistical analysis of the individual parts
-                Object.keys(partData).forEach((key) => {
-                    try{
+                    var finalMethod = part.Data["Stat_Final"];
+
+                    var options = part.Data["DataPieces"];
+
+                    var variableLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                    var matchData = {};
+
+                    var codeString = ``;
+                    part.Data["Code"].forEach((line) => {
+                        codeString += line + `\n`;
+                    });
+
+
+                    Object.keys(partData).forEach((key) => {
+                        var applicableOption = options.find(o => o.DataPoint == key);
+
+                        if(applicableOption == undefined) return;
+
+                        partData[key].forEach((data) => {
+                            if(matchData[data.match] == undefined){
+                                matchData[data.match] = [];
+                            }
+                            matchData[data.match].push({
+                                variable: applicableOption.Variable,
+                                value: data.data
+                            })
+                        });
+
+
+                    });
+
+                    var localFinals = [];
+                    Object.keys(matchData).forEach((key) => {
                         var localFinal = 0;
+
+                        var variables = matchData[key];
+                        var functionString = ``;
+                        for(var i = 0; i < options.length; i++){
+                            var letter = variableLetters[i];
+                            var applicableValue = variables.find(v => v.variable == letter) == undefined ? 0 : variables.find(v => v.variable == letter).value;
+                            if(Number.isInteger(applicableValue)){
+                                functionString += `var ${letter} = ${applicableValue};\n`;
+                            }else{
+                                functionString += `var ${letter} = "${applicableValue}";\n`;
+                            }
+                            
+
+                        }
+                        
+
+
+                        localFinal = Function(`
+                            ${functionString}
+                                
+                            ${codeString}
+                            `)();
+                        localFinals.push(localFinal);
+                    });
+
+                    console.log(localFinals);
+
+                    var final = 0;
+
+                    switch(finalMethod){
+                        case "sum":
+                            final = localFinals.reduce((a, b) => a + b, 0);
+                            break;
+                        case "avg":
+                            final = localFinals.reduce((a, b) => a + b, 0) / localFinals.length;
+                            break;
+                        case "max":
+                            final = Math.max(...localFinals);
+                            break;
+                        case "min":
+                            final = Math.min(...localFinals);
+                            break;
+                        case "range":
+                            final = Math.max(...localFinals) - Math.min(...localFinals);
+                            break;
+                    }
+
+                    finalData[team].push({
+                        name: part.Name,
+                        type: part.Type,
+                        value: final
+                    });
+
+
+                    break;
+
+                case "Number":
+                    var final = 0;
+                    var n = 0;
+
+                    var method = part.Data["Stat_Between"];
+                    var finalMethod = part.Data["Stat_Final"];
+
+                    // first, handle the statistical analysis of the individual parts
+                    Object.keys(partData).forEach((key) => {
+                        try{
+                            var localFinal = 0;
+
+                            switch(method){
+                                case "sum":
+                                    localFinal = partData[key].reduce((a, b) => a + b, 0);
+                                    break;
+                                case "avg":
+                                    localFinal = partData[key].reduce((a, b) => a + b, 0) / partData[key].length;
+                                    break;
+                                case "max":
+                                    localFinal = Math.max(...partData[key]);
+                                    break;
+                                case "min":
+                                    localFinal = Math.min(...partData[key]);
+                                    break;
+                                case "range":
+                                    localFinal = Math.max(...partData[key]) - Math.min(...partData[key]);
+                                    break;
+                            }
+                            n += 1;
+                            final += localFinal;
+                        }catch(e){
+                            console.log(e);
+                        }
+                        
+                    });
+                    if(finalMethod == "avg"){
+                        final = final / n;
+                    }
+                    finalData[team].push({
+                        name: part.Name,
+                        type: part.Type,
+                        value: final
+                    });
+
+
+                    break;
+                case "Grid":
+                    // get one grid for each team!
+                    var finalRed = [];
+                    var finalBlue = [];
+
+                    Object.keys(partData).forEach((key) => {
+                        try{
+                            if(partData[key].length == 0){
+                                return;
+                            }
+                            var localFinalForTeamRed = [];
+                            var localFinalForTeamBlue = [];
+                            
+                            var height = partData[key][0]["data"].length;
+                            var width = partData[key][0]["data"][0].length;
+
+                            for(var i = 0; i < height; i++){
+                                var row = [];
+                                for(var j = 0; j < width; j++){
+                                    row.push(0);
+                                }
+                                localFinalForTeamRed.push(row);
+                                localFinalForTeamBlue.push(row.map(c => c));
+                            }
+
+                            partData[key].forEach((gridD) => {
+                                var grid = gridD.data;
+                                var color = gridD.color;
+                                if(color == "Red"){
+                                    grid.forEach((row, i) => {
+                                        row.forEach((col, j) => {
+                                            var toAdd = 0;
+                                            if(parseInt(grid[i][j]) != -1){
+                                                toAdd = 1;
+                                            }
+                                            localFinalForTeamRed[i][j] += toAdd;
+                                        });
+                                    });
+
+                                }else{
+                                    grid.forEach((row, i) => {
+                                        row.forEach((col, j) => {
+                                            var toAdd = 0;
+                                            if(parseInt(grid[i][j]) != -1){
+                                                toAdd = 1;
+                                            }
+                                            localFinalForTeamBlue[i][j] += toAdd;
+                                        });
+                                    });
+                                }
+
+                                
+                            });
+
+                            finalRed.push(localFinalForTeamRed);
+                            finalBlue.push(localFinalForTeamBlue);
+                        }catch(e){
+                            // if it reaches here, then it is of a different size
+                        }
+                        
+                    });
+
+                    var maxRed = 0;
+                    
+                    for(var i = 1; i < finalRed.length; i++){
+                        for(var r = 0; r < finalRed[i].length; r++){
+                            for(var c = 0; c < finalRed[i][r].length; c++){
+                                if(finalRed[i][r][c] != -1){
+                                    finalRed[0][r][c] += finalRed[i][r][c];
+                                }
+                            }
+                        }
+                    }
+                    try{
+                        for(var r = 0; r < finalRed[0].length; r++){
+                            for(var c = 0; c < finalRed[0][r].length; c++){
+                                if(finalRed[0][r][c] > maxRed){
+                                    maxRed = finalRed[0][r][c];
+                                }
+                            }
+                        }
+                    }catch(e){
+
+                    }
+
+                    var maxBlue = 0;
+                    for(var i = 1; i < finalBlue.length; i++){
+                        for(var r = 0; r < finalBlue[i].length; r++){
+                            for(var c = 0; c < finalBlue[i][r].length; c++){
+                                if(finalBlue[i][r][c] != -1){
+                                    finalBlue[0][r][c] += finalBlue[i][r][c];
+                                }
+                            }
+                        }
+                    }
+                    try{
+                        for(var r = 0; r < finalBlue[0].length; r++){
+                            for(var c = 0; c < finalBlue[0][r].length; c++){
+                                if(finalBlue[0][r][c] > maxBlue){
+                                    maxBlue = finalBlue[0][r][c];
+                                }
+                            }
+                        }
+                    }catch(e){
+
+                    }
+                    
+                
+                    finalData[team].push({
+                        name: part.Name,
+                        type: part.Type,
+                        valueRed: finalRed[0],
+                        valueBlue: finalBlue[0],
+                        maxRed: maxRed,
+                        maxBlue: maxBlue,
+                        separate: part.Data.SeparateColors
+                    });
+                    break;
+                case "FIRST":
+                    var final = 0;
+                    var n = 0;
+
+                    var method = part.Data["Stat"];
+
+                    // first, handle the statistical analysis of the individual parts
+                    Object.keys(partData).forEach((key) => {
+                        try{
+                            var localFinal = 0;
+
+                            switch(method){
+                                case "sum":
+                                    localFinal = partData[key].reduce((a, b) => a + b, 0);
+                                    break;
+                                case "avg":
+                                    localFinal = partData[key].reduce((a, b) => a + b, 0) / partData[key].length;
+                                    break;
+                                case "max":
+                                    localFinal = Math.max(...partData[key]);
+                                    break;
+                                case "min":
+                                    localFinal = Math.min(...partData[key]);
+                                    break;
+                                case "range":
+                                    localFinal = Math.max(...partData[key]) - Math.min(...partData[key]);
+                                    break;
+                            }
+                            
+                            n += 1;
+                            final += localFinal;
+                        }catch(e){
+                            console.log(e);
+                        }
+                        
+                    });
+                    finalData[team].push({
+                        name: part.Name,
+                        type: part.Type,
+                        value: final
+                    });
+                    break;
+                case "Frequency":
+
+                    var uniqueValues = [];
+                    
+                    var allValues = [];
+                    Object.keys(partData).forEach((key) => {
+                        partData[key].forEach((item) => {
+                            if(!uniqueValues.includes(item)){
+                                uniqueValues.push(item);
+                            }
+                            allValues.push(item);
+                        });
+                    });
+
+                    uniqueValues = uniqueValues.sort();
+
+                    var totalItems = allValues.length;
+                    var percents = [];
+                    uniqueValues.forEach(u => {
+                        var count = allValues.filter(v => v == u).length / totalItems;
+                        count = Math.round(count*100);
+                        percents.push(count);
+                    });
+                    
+
+                    finalData[team].push({
+                        name: part.Name,
+                        type: part.Type,
+                        fields: uniqueValues,
+                        values: percents
+                    });
+
+
+                    break;
+                case "Graph":
+                    var matchesUnique = [];
+                    var allDataObjects = [];
+                    var method = part.Data["Stat_Between"];
+                    Object.keys(partData).forEach((key) => {
+                        partData[key].forEach((match) => {
+                            if(!matchesUnique.includes(match.match)){
+                                matchesUnique.push(match.match);
+                            }
+                            allDataObjects.push(match);
+                        });
+                    });
+
+                    matchesUnique.sort((a, b) => {
+                        return a - b;
+                    });
+                    var final = [];
+                    matchesUnique.forEach((match) => {
+                        var matchData = allDataObjects.filter((obj) => {
+                            return obj.match == match;
+                        });
+                        var matchFinal = {
+                            match: match,
+                            data: 0
+                        };
+                        
 
                         switch(method){
                             case "sum":
-                                localFinal = partData[key].reduce((a, b) => a + b, 0);
+                                matchFinal.data = matchData.reduce((a, b) => a + b.data, 0);
                                 break;
                             case "avg":
-                                localFinal = partData[key].reduce((a, b) => a + b, 0) / partData[key].length;
+                                matchFinal.data = matchData.reduce((a, b) => a + b.data, 0) / matchData.length;
                                 break;
                             case "max":
-                                localFinal = Math.max(...partData[key]);
+                                matchFinal.data = Math.max(...matchData.map((obj) => obj.data));
                                 break;
                             case "min":
-                                localFinal = Math.min(...partData[key]);
+                                matchFinal.data = Math.min(...matchData.map((obj) => obj.data));
                                 break;
                             case "range":
-                                localFinal = Math.max(...partData[key]) - Math.min(...partData[key]);
+                                matchFinal.data = Math.max(...matchData.map((obj) => obj.data)) - Math.min(...matchData.map((obj) => obj.data));
                                 break;
                         }
-                        n += 1;
-                        final += localFinal;
-                    }catch(e){
-                        console.log(e);
-                    }
-                    
-                });
-                if(finalMethod == "avg"){
-                    final = final / n;
-                }
-                finalData.push({
-                    name: part.Name,
-                    type: part.Type,
-                    value: final
-                });
+
+                        matchFinal.data = Math.round(matchFinal.data*10)/10;
+
+                        final.push(matchFinal);
+                    });
 
 
-                break;
-            case "Grid":
-                // get one grid for each team!
-                var final = [];
+                    var matchesFinal = final.map((obj) => obj.match);
+                    var dataFinal = final.map((obj) => obj.data);
 
-                Object.keys(partData).forEach((key) => {
-                    try{
-                        if(partData[key].length == 0){
-                            return;
-                        }
-                        var localFinalForAll = [];
-                        
-                        var height = partData[key][0].length;
-                        var width = partData[key][0][0].length;
+                    var average = 0;
+                    dataFinal.forEach(d => {
+                        average += d;
+                    })
+                    average = average / dataFinal.length;
 
-                        for(var i = 0; i < height; i++){
-                            var row = [];
-                            for(var j = 0; j < width; j++){
-                                row.push(0);
-                            }
-                            localFinalForAll.push(row);
-                        }
+                    finalData[team].push({
+                        name: part.Name,
+                        type: part.Type,
+                        matches: matchesFinal,
+                        data: dataFinal,
+                        average: average
+                    });
 
-                        partData[key].forEach((grid) => {
-                            grid.forEach((row, i) => {
-                                row.forEach((col, j) => {
-                                    var toAdd = 0;
-                                    if(parseInt(grid[i][j]) != -1){
-                                        toAdd = 1;
-                                    }
-                                    localFinalForAll[i][j] += toAdd;
-                                });
-                            });
-                        });
+                    break;
+                case "Custom":
+                    break;
 
-                        final.push(localFinalForAll);
-                    }catch(e){
-                        // if it reaches here, then it is of a different size
-                    }
-                    
-                });
 
-                var max = 0;
+            }
+        });
 
-                for(var i = 1; i < final.length; i++){
-                    for(var r = 0; r < final[i].length; r++){
-                        for(var c = 0; c < final[i][r].length; c++){
-                            if(final[i][r][c] != -1){
-                                final[0][r][c] += final[i][r][c];
-                                
-                            }
-                        }
-                    }
-                }
-                try{
-                    for(var r = 0; r < final[0].length; r++){
-                        for(var c = 0; c < final[0][r].length; c++){
-                            if(final[0][r][c] > max){
-                                max = final[0][r][c];
-                            }
-                        }
-                    }
-                }catch(e){
 
-                }
-
-                finalData.push({
-                    name: part.Name,
-                    type: part.Type,
-                    value: final[0],
-                    max: max
-                });
-                break;
-        }
+        
     });
+
+    console.log(finalData);
 
     return finalData;
 
@@ -578,6 +1134,44 @@ function prepareAnalysis(analysis, schema, documents, matches, team){
 
 }
 
+
+router.get("/request/analysis*", async(req, res, next) => {
+    let env = await authTools.getEnvironment(environment);
+
+    var authValid = await authTools.checkPassword(req.query.authKey, env);
+    var teams = req.query.teams.split(",");
+    for(var i = 0; i < teams.length; i++){
+        teams[i] = parseInt(teams[i]);
+    }
+    var analysisRequested = req.query.analysis;
+
+    var preparedAnalysis = undefined;
+    var competition = env.settings.competitionYear + env.settings.competitionCode;
+    if(authValid){
+        var allAnalysises = await db.getDocs("AnalysisSet", {environment: env.friendlyId});
+        var analysis = allAnalysises.find(a => a.Name == analysisRequested != undefined ? analysisRequested : env.settings.defaultAnalysis);
+        if(analysis == undefined){
+            analysis = allAnalysises.find(a => a.Name == env.settings.defaultAnalysis);
+        }
+
+        var schemas = await db.getDocs("Schema", {environment: env.friendlyId});
+        schema = schemas.find(s => s.Name == analysis.Schema.Name);
+        var matches = await db.getDocs("Match", {environment: env.friendlyId, competition: competition});
+        matches = matches.sort((a, b) => a.matchNumber - b.matchNumber);
+        var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match", competition: competition});
+
+        preparedAnalysis = prepareAnalysis(analysis, schema, documents, matches, teams);
+
+
+
+
+
+    }
+
+    res.send({analysis: preparedAnalysis, auth: authValid});
+    
+
+});
 
 router.get("/request/team*", async(req, res, next) => {
     let env = await authTools.getEnvironment(environment);
@@ -636,7 +1230,7 @@ router.get("/request/team*", async(req, res, next) => {
         matches = matches.sort((a, b) => a.matchNumber - b.matchNumber);
 
         if(defaultAnalysis != undefined){
-            var getPreparedAnalysis = prepareAnalysis(defaultAnalysis, schema, documents, matches, parseInt(teamNumber));
+            var getPreparedAnalysis = prepareAnalysis(defaultAnalysis, schema, documents, matches, [parseInt(teamNumber)]);
             sendBackTeam.analysis = getPreparedAnalysis;
         }
 
@@ -697,7 +1291,7 @@ router.get("/request/team*", async(req, res, next) => {
         };
 
         if(defaultAnalysis != undefined){
-            var getPreparedAnalysis = prepareAnalysis(defaultAnalysis, schema, documents, matches, parseInt(teamNumber));
+            var getPreparedAnalysis = prepareAnalysis(defaultAnalysis, schema, documents, matches, [parseInt(teamNumber)]);
             sendBackTeam.analysis = getPreparedAnalysis;
         }
 
