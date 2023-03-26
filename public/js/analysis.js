@@ -280,6 +280,12 @@ function refreshAnalysisSet(){
 
             case "Custom":
 
+                var codeString = "";
+                if(part.Data["Code"] != undefined){
+                    part.Data["Code"].forEach((line) => {
+                        codeString += `${line}\n`;
+                    });
+                }
                 partHTML = `
                 <div class="flex_center" style="width:100%">
                             <span class="text small" style="margin: 5px 10px;text-align:left">Interpret Final Number</span>
@@ -305,7 +311,7 @@ function refreshAnalysisSet(){
                     </div>
                     <div>
                         <span class="text small" style="margin: 5px 10px;text-align:left">Code (MUST return #)</span>
-                        <textarea class="input text important setting" style="margin:10px;width:40%;pointer-events:all" placeholder="Javascript Here" onchange="setData('${part._id}', 'Code', this)" data-data="innerHTML">${part.Data["Code"]}</textarea>
+                        <textarea class="input text important setting" style="margin:10px;width:40%;pointer-events:all" placeholder="Javascript Here" onchange="setData('${part._id}', 'Code', this)" data-data="innerHTML">${codeString}</textarea>
                     </div>
                     
                     

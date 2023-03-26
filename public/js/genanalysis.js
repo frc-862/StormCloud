@@ -785,6 +785,11 @@ function selectAnalysis(){
                                     var variableLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
                                     var matchData = {};
 
+                                    var codeString = ``;
+                                    part.Data["Code"].forEach((line) => {
+                                        codeString += line + `\n`;
+                                    });
+
 
                                     Object.keys(partData).forEach((key) => {
                                         var applicableOption = options.find(o => o.DataPoint == key);
@@ -822,6 +827,7 @@ function selectAnalysis(){
 
                                         }
                                         
+
 
                                         localFinal = Function(`
                                             ${functionString}
