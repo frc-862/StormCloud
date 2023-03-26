@@ -1154,7 +1154,7 @@ function selectAnalysis(){
                                                 break;
                                         }
 
-                                        matchFinal.data = Math.round(matchFinal.data*10)/1;
+                                        matchFinal.data = Math.round(matchFinal.data*10)/10;
 
                                         final.push(matchFinal);
                                     });
