@@ -681,6 +681,7 @@ function selectAnalysis(){
                                                 match: match.matchNumber,
                                                 data: stats[key]
                                             });
+                                            return;
                                         }
                                         // handle EACH PART ID AND ADDING DATA
                                         addData(partId, foundTeam.team, key, stats[key]);
@@ -725,6 +726,7 @@ function selectAnalysis(){
                                                 match: match.matchNumber,
                                                 data: stats[key]
                                             });
+                                            return;
                                         }
                                         addData(partId, foundTeam.team, key, stats[key]);
                                     });
@@ -773,6 +775,88 @@ function selectAnalysis(){
                             var partData = partSets[partId][team];
         
                             switch(part.Type){
+                                case "Custom":
+                                    var final = 0;
+
+                                    var finalMethod = part.Data["Stat_Final"];
+
+                                    var options = part.Data["DataPieces"];
+
+                                    var variableLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                                    var matchData = {};
+
+
+                                    Object.keys(partData).forEach((key) => {
+                                        var applicableOption = options.find(o => o.DataPoint == key);
+
+                                        if(applicableOption == undefined) return;
+
+                                        partData[key].forEach((data) => {
+                                            if(matchData[data.match] == undefined){
+                                                matchData[data.match] = [];
+                                            }
+                                            matchData[data.match].push({
+                                                variable: applicableOption.Variable,
+                                                value: data.data
+                                            })
+                                        });
+
+
+                                    });
+
+                                    var localFinals = [];
+                                    Object.keys(matchData).forEach((key) => {
+                                        var localFinal = 0;
+
+                                        var variables = matchData[key];
+                                        var functionString = ``;
+                                        for(var i = 0; i < options.length; i++){
+                                            var letter = variableLetters[i];
+                                            var applicableValue = variables.find(v => v.variable == letter) == undefined ? 0 : variables.find(v => v.variable == letter).value;
+                                            functionString += `var ${letter} = ${applicableValue};\n`;
+
+                                        }
+                                        
+
+                                        localFinal = Function(`
+                                            ${functionString}
+                                             
+                                            ${part.Data["Code"]}
+                                            `)();
+                                        localFinals.push(localFinal);
+                                    });
+
+                                    console.log(localFinals);
+
+                                    var final = 0;
+
+                                    switch(finalMethod){
+                                        case "sum":
+                                            final = localFinals.reduce((a, b) => a + b, 0);
+                                            break;
+                                        case "avg":
+                                            final = localFinals.reduce((a, b) => a + b, 0) / localFinals.length;
+                                            break;
+                                        case "max":
+                                            final = Math.max(...localFinals);
+                                            break;
+                                        case "min":
+                                            final = Math.min(...localFinals);
+                                            break;
+                                        case "range":
+                                            final = Math.max(...localFinals) - Math.min(...localFinals);
+                                            break;
+                                    }
+
+                                    finalData[team].push({
+                                        name: part.Name,
+                                        type: part.Type,
+                                        value: final
+                                    });
+
+
+                                    break;
+
                                 case "Number":
                                     var final = 0;
                                     var n = 0;
@@ -1145,6 +1229,18 @@ function selectAnalysis(){
                         var tlHTML = "";
     
                         switch(part.type){
+                            case "Custom":
+                                teams.forEach((team) => {
+                                    var record = finalData[team].find(p => p.name == part.name);
+                                    tlHTML += `<div class='text important' style="color:#190024;font-weight:600;margin: 0px; 10px">${record.value.toFixed(2)}</div>`;
+                                });
+                                fHTML += `
+                                <div style="border: 1px solid #190024; padding:8px 0px; border-radius:8px;width:100%">
+                                    <div class='flex_apart' style-"width:50%;padding:10px 0px;">${tlHTML}</div>
+                                </div>
+                                 <hr style="margin-top:20px;margin-bottom:10px"/>
+                                `;
+                                break;
                             case "Number":
                                 teams.forEach((team) => {
                                     var record = finalData[team].find(p => p.name == part.name);
