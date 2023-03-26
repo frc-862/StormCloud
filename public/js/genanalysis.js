@@ -832,7 +832,7 @@ function selectAnalysis(){
                                         localFinal = Function(`
                                             ${functionString}
                                              
-                                            ${part.Data["Code"]}
+                                            ${codeString}
                                             `)();
                                         localFinals.push(localFinal);
                                     });
