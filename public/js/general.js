@@ -1056,6 +1056,14 @@ function handle_document_click(id){
                                         </div>
                                         `;
                                         break;
+                                    case "Input":
+                                        f += `
+                                        <div class="flex_apart" style="margin:5px">
+                                            <span class="text small" style="margin:5px;display:inline-block;width:50%">${c.Name}</span>
+                                            <input disabled type="text" class="input text small" style="pointer-events: all;width:50%" value="${formData[n]}"/>
+                                        </div>
+                                        `;
+                                        break;
                                     case "Step":
                                         f += `
                                         <div class="flex_apart" style="margin:5px">
