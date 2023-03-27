@@ -2409,6 +2409,7 @@ router.get("/quick/state", async (req, res, next) => {
         });
     });
     var teams = [];
+
     teamNumbers.forEach((teamNumber) => {
         var team = teamsDb.find((team) => team.teamNumber == teamNumber);
         if(team != undefined){
@@ -2423,6 +2424,8 @@ router.get("/quick/state", async (req, res, next) => {
             });
         }
     });
+
+    teams = teams.sort((a,b) => a.teamNumber - b.teamNumber);
 
     var ourNextMatches = allMatches.filter((match) => match.teams.find((team) => team.team == env.settings.team) != undefined && match.results.finished == false);
     
