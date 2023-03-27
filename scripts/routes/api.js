@@ -2443,7 +2443,7 @@ router.get("/quick/state", async (req, res, next) => {
     var largerMatches = allMatches.filter((match) => {return match.matchNumber >= currentMatch});
     currentlyRunning = largerMatches.length > 0;
 
-    res.status(200).json({currentMatch: currentMatch, ourNextMatch: ourNextMatch, currentlyRunning: currentlyRunning, matchType: currentMatchType, competitionName: competitionName, location: location, matches: allMatches, teamNumber: env.settings.team, teams: teams});
+    res.status(200).json({currentMatch: currentMatch, ourNextMatch: ourNextMatch, currentlyRunning: currentlyRunning, matchType: currentMatchType, competitionName: competitionName, location: location, matches: allMatches, teamNumber: env.settings.team, teams: teams, rankings: env.cachedCompetitionData.rankings});
     
 });
 
