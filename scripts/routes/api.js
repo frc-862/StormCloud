@@ -2201,57 +2201,64 @@ async function updateCache(year, competition, matchType){
     var fRes1 = await firstApiTools.getRankings(year, competition);
 
     var finalRankings = [];
+
     var rankings = fRes1["Rankings"];
-    rankings.forEach((ranking) => {
+    if(rankings != undefined){
+        rankings.forEach((ranking) => {
 
-        var rankingObject = {
-            team: ranking["teamNumber"],
-            rank: ranking["rank"],
-            record: {
-                wins: ranking["wins"],
-                losses: ranking["losses"],
-                ties: ranking["ties"]
-            },
-            rankingPoints: ranking["sortOrder1"],
-            matchesPlayed: ranking["matchesPlayed"]
-        }
-
-        if(ranking["teamNumber"] == env.settings.team){
-            var previousRankingObject = env.cachedCompetitionData.rankings.find(r => r.team == ranking["teamNumber"]);
-            if(previousRankingObject != undefined){
-                // send notification ONLY if ranking or RP is different
-                if(previousRankingObject.rank != rankingObject.rank || previousRankingObject.rankingPoints != rankingObject.rankingPoints){
-                    var message = {
-                        title: "Ranking Update 🏆",
-                        body: `We detected an update to ${ranking["teamNumber"]}'s ranking...\nCurrent Ranking: ${rankingObject.rank}\nCurrent RP: ${rankingObject.rankingPoints}`,
-                        data: {
-                            team: ranking["teamNumber"].toString()
+            var rankingObject = {
+                team: ranking["teamNumber"],
+                rank: ranking["rank"],
+                record: {
+                    wins: ranking["wins"],
+                    losses: ranking["losses"],
+                    ties: ranking["ties"]
+                },
+                rankingPoints: ranking["sortOrder1"],
+                matchesPlayed: ranking["matchesPlayed"]
+            }
+    
+            if(ranking["teamNumber"] == env.settings.team){
+                var previousRankingObject = env.cachedCompetitionData.rankings.find(r => r.team == ranking["teamNumber"]);
+                if(previousRankingObject != undefined){
+                    // send notification ONLY if ranking or RP is different
+                    if(previousRankingObject.rank != rankingObject.rank || previousRankingObject.rankingPoints != rankingObject.rankingPoints){
+                        var message = {
+                            title: "Ranking Update 🏆",
+                            body: `We detected an update to ${ranking["teamNumber"]}'s ranking...\nCurrent Ranking: ${rankingObject.rank}\nCurrent RP: ${rankingObject.rankingPoints}`,
+                            data: {
+                                team: ranking["teamNumber"].toString()
+                            }
                         }
+                        sendNotificationAll(message.title, message.body, message.data, "general");
                     }
-                    sendNotificationAll(message.title, message.body, message.data, "general");
                 }
             }
-        }
-
-        finalRankings.push(rankingObject);
-    });
+    
+            finalRankings.push(rankingObject);
+        });
+    }
+    
 
     var fRes2 = await firstApiTools.getSimpleMatchResults(year, competition, matchType);
     
 
     var latestMatch = 0;
     var matchResults = fRes2["Matches"];
-    matchResults.forEach((match) => {
-        if(match["tournamentLevel"] == "Playoff"){
-            match["matchNumber"] += 900;
-        }
-        if(match["actualStartTime"] != null && match["actualStartTime"] != undefined){
-            if(match["matchNumber"] > latestMatch){
-                latestMatch = match["matchNumber"];
+    if(matchResults != undefined){
+        matchResults.forEach((match) => {
+            if(match["tournamentLevel"] == "Playoff"){
+                match["matchNumber"] += 900;
             }
-        }
-        
-    })
+            if(match["actualStartTime"] != null && match["actualStartTime"] != undefined){
+                if(match["matchNumber"] > latestMatch){
+                    latestMatch = match["matchNumber"];
+                }
+            }
+            
+        })
+    }
+    
     var currentMatch = 0;
     if(latestMatch != 0){
         currentMatch = latestMatch + 1;
@@ -2278,7 +2285,7 @@ async function updateCache(year, competition, matchType){
     }
     
 
-    if(env.cachedCompetitionData.currentMatch != cache.currentMatch){
+    if(env.cachedCompetitionData.currentMatch != cache.currentMatch && matchResults != undefined){
         var matchToCheckQueue = matchResults.find((m => m.matchNumber == cache.currentMatch+2));
         if(matchToCheckQueue != undefined){
             var areWeIn = matchToCheckQueue.teams.find(t => t.team == env.settings.team) != undefined;
