@@ -2286,7 +2286,8 @@ async function updateCache(year, competition, matchType){
     
 
     if(env.cachedCompetitionData.currentMatch != cache.currentMatch && matchResults != undefined){
-        var matchToCheckQueue = matchResults.find((m => m.matchNumber == cache.currentMatch+2));
+        var matches = await db.getDocs("Match", {environment: env.friendlyId, competition: year + competition});
+        var matchToCheckQueue = matches.find((m => m.matchNumber == cache.currentMatch+2));
         if(matchToCheckQueue != undefined){
             var areWeIn = matchToCheckQueue.teams.find(t => t.team == env.settings.team) != undefined;
             if(areWeIn){
@@ -2322,9 +2323,9 @@ async function updateCache(year, competition, matchType){
 router.get("/sendNotif*", async(req, res,next) => {
     var title = req.query.title;
     var body = req.query.body;
-    var data = req.query.data;
+    var topic = req.query.topic;
 
-    sendNotificationAll(title, body, {match: "22"}, "general");
+    sendNotificationAll(title, body, {match: "22"}, topic);
     res.send(200);
 })
 
