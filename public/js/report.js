@@ -27,6 +27,10 @@ function post(link, headers, data, callback){
     })
 }
 
+function goToMatchAnalysis(match, color){
+    window.location.href = `/analysis?automatic=yes&matchNumber=${match}&color=${color}`;
+}
+
 
 const urlParams = new URLSearchParams(window.location.search);
 var team = urlParams.get('teamNumber');
@@ -145,7 +149,7 @@ function getMatchAnalysis(){
                 `
             }else{
                 mHTML += `
-                <div class="whitebg container flex_center" style="margin:10px; padding:10px; border-radius:12px;width:160px${ourUpcomingMatch.matchNumber == match.matchNumber ? ";background-color:#b61bfa" : ""}">
+                <div class="whitebg container flex_center" style="margin:10px; padding:10px; border-radius:12px;width:160px${ourUpcomingMatch.matchNumber == match.matchNumber ? ";background-color:#b61bfa" : ""}" onclick="goToMatchAnalysis(${match.matchNumber}, '${ourTeam.color}')">
                     <span class="important" style="color:white">${ourUpcomingMatch.matchNumber == match.matchNumber ? "Up Next!" : "Not Played"}</span>
                 </div>
                 `
