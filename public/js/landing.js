@@ -85,7 +85,8 @@ function getLatestData(){
 
 
             document.getElementById("matchNumber").innerHTML = "Match " + ourNextUpMatch.matchNumber;
-            document.getElementById("matchStart").innerHTML = new Date(ourNextUpMatch.planned).toTimeString();
+            // get time in UTC only
+            document.getElementById("matchStart").innerHTML = new Date(ourNextUpMatch.planned).toLocaleTimeString('en-US', {timeZone: 'UTC'});
             document.getElementById("matchCurrent").innerHTML = "Field on Match " + (nextUpMatch.matchNumber);
 
             var ourColor = ourNextUpMatch.teams.find(t => t.team == teamNumber).color;

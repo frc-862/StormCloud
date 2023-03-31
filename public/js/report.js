@@ -89,7 +89,7 @@ function getMatchAnalysis(){
             mHTML += `
             <div>
             <span class="important" style="color:${textColor};display:block">Match ${match.matchNumber}</span>
-            <span class="regular" style="color:${textColor};display:block">${(new Date(match.planned)).toLocaleTimeString()}</span>
+            <span class="regular" style="color:${textColor};display:block">${(new Date(match.planned)).toLocaleTimeString('en-US', {timeZone: 'UTC'})}</span>
             </div>
             
             `
