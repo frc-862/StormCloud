@@ -1955,7 +1955,11 @@ router.post("/submit/data", async (req, res, next) => {
             color: dataPiece.Color,
             type: "tablet",
             disabled: dataPiece.Disabled,
-            generic: dataPiece.Number <= 0
+            generic: dataPiece.Schema == "Paper Scouting" || dataPiece.Number < 0
+        }
+
+        if(generatedData.generic){
+            generatedData.match = 0;
         }
 
         if(env.settings.matchType == "Playoff"){
@@ -1965,8 +1969,12 @@ router.post("/submit/data", async (req, res, next) => {
         var allDocs = await db.getDocs("Document", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
         var prevDoc = allDocs.find((doc) => JSON.parse(doc.json).identifier == dataPiece.Identifier);
         if(prevDoc != undefined){
-            await db.updateDoc("Document", {_id: prevDoc._id}, {json: JSON.stringify(generatedData), datetime: new Date(dataPiece.Created)});
-            continue;
+
+            if(JSON.parse(prevDoc.json).team == generatedData.team){
+                await db.updateDoc("Document", {_id: prevDoc._id}, {json: JSON.stringify(generatedData), datetime: new Date(dataPiece.Created)});
+                continue;
+            }
+            
         }
         
 
@@ -1980,7 +1988,7 @@ router.post("/submit/data", async (req, res, next) => {
             name: ""
         }
 
-        var similarDoc = allDocs.find((doc) => JSON.parse(doc.json).match == dataPiece.Number && JSON.parse(doc.json).team == dataPiece.Team);
+        var similarDoc = allDocs.find((doc) => JSON.parse(doc.json).match == generatedData.match && JSON.parse(doc.json).team == dataPiece.Team);
         if(similarDoc != undefined && dataPiece.Number > 0){
             document.flagged = true;
         }
