@@ -73,6 +73,7 @@ function getMatchAnalysis(){
 
         var ourUpcomingMatch = matches.filter(m => m.results.finished == false)[0];
 
+        var n = 0;
         matches.forEach(function(match){
 
             var prevMatch = matches[matches.indexOf(match) - 1];
@@ -86,13 +87,24 @@ function getMatchAnalysis(){
             <div class="flex_apart${fan == "yes" ? " container" : ""}" style="margin:20px 10px;padding:20px 40px;${fan == "yes" ? "border-radius:16px;background-color:rgba(0,0,0,0.5);" : (ourUpcomingMatch.matchNumber == match.matchNumber ? "border-radius:16px;background-color:#e4a6ff" : "")}"> 
             `;
 
-            mHTML += `
-            <div>
-            <span class="important" style="color:${textColor};display:block">Match ${match.matchNumber}</span>
-            <span class="regular" style="color:${textColor};display:block">${(new Date(match.planned)).toLocaleTimeString('en-US', {timeZone: 'UTC'})}</span>
-            </div>
+            if(n == 0){
+                mHTML += `
+                <div>
+                <span class="important" style="color:${textColor};display:block">Match ${match.matchNumber}</span>
+                <span class="regular" style="color:${textColor};display:block">${(new Date(match.planned)).toLocaleTimeString('en-US', {timeZone: 'UTC'})}</span>
+                </div>
+                
+                `
+            }else{
+                mHTML += `
+                <div>
+                <span class="important" style="color:${textColor};display:block">Match ${match.matchNumber} <span class="caption">(+${matches[n-1].matchNumber})</span></span>
+                <span class="regular" style="color:${textColor};display:block">${(new Date(match.planned)).toLocaleTimeString('en-US', {timeZone: 'UTC'})}</span>
+                </div>
+                
+                `
+            }
             
-            `
 
             var redTeams = match.teams.filter(t => t.color == "Red");
             var blueTeams = match.teams.filter(t => t.color == "Blue");
@@ -162,6 +174,7 @@ function getMatchAnalysis(){
 
 
             fHTML += mHTML;
+            n++;
         });
         fHTML += `</div>`;
         document.getElementById("report").innerHTML = fHTML;
