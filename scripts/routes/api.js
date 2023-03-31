@@ -794,6 +794,9 @@ function prepareAnalysis(analysis, schema, documents, matches, teams){
                             break;
                     }
 
+                    if(final == null){
+                        final = 0;
+                    }
                     finalData[team].push({
                         name: part.Name,
                         type: part.Type,
@@ -1113,8 +1116,7 @@ function prepareAnalysis(analysis, schema, documents, matches, teams){
                     });
 
                     break;
-                case "Custom":
-                    break;
+                
 
 
             }
