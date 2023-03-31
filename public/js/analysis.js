@@ -732,7 +732,7 @@ function addItem(itemType){
             break;
         case "Custom":
             item.Data = {
-                "Code": "",
+                "Code": [],
                 "DataPieces": []
             }
     }
