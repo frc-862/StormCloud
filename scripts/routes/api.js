@@ -1800,22 +1800,7 @@ router.post("/submit/photo", async (req, res, next) => {
             var doc = await db.createDoc("Document", document);
 
             console.log(doc);
-            var possibleMatches = await db.getDocs("Match", {environment: env.friendlyId});
-            console.log(possibleMatches);
-            console.log(matches);
-            if(matches != undefined){
-                console.log("WORK");
-                matches.forEach(async (match) => {
-                    console.log("Match: " + match)
-                    var associatedMatch = possibleMatches.find((m) => m.matchNumber == match && m.competition == env.settings.competitionYear + env.settings.competitionCode);
-                    
-                    if(associatedMatch != undefined){
-                        associatedMatch.documents.push(doc._id);
-    
-                        await db.updateDoc("Match", {_id: associatedMatch._id}, {documents: associatedMatch.documents});
-                    }
-                });
-            }
+            
             
         }
         console.log(err);
@@ -2011,7 +1996,7 @@ router.post("/submit/data", async (req, res, next) => {
         }
 
         var similarDoc = allDocs.find((doc) => JSON.parse(doc.json).match == dataPiece.Number && JSON.parse(doc.json).team == dataPiece.Team);
-        if(similarDoc != undefined){
+        if(similarDoc != undefined && dataPiece.Number > 0){
             document.flagged = true;
         }
 
