@@ -2263,7 +2263,7 @@ async function updateCache(year, competition, matchType){
     }
     
 
-    if(env.cachedCompetitionData.currentMatch != cache.currentMatch && matchResults != undefined){
+    if((env.cachedCompetitionData.currentMatch != cache.currentMatch && matchResults != undefined) || true){
         var matches = await db.getDocs("Match", {environment: env.friendlyId, competition: year + competition});
         var matchToCheckQueue = matches.find((m => m.matchNumber == cache.currentMatch+2));
         if(matchToCheckQueue != undefined){
@@ -2272,10 +2272,10 @@ async function updateCache(year, competition, matchType){
                 var redTeamString = "";
                 var blueTeamString = "";
                 matchToCheckQueue.teams.forEach((team) => {
-                    if(team["station"].substring(0, team["station"].length - 1) == "Red"){
-                        redTeamString += team["teamNumber"] + ", ";
+                    if(team["color"] == "Red"){
+                        redTeamString += team["team"] + ", ";
                     }else{
-                        blueTeamString += team["teamNumber"] + ", ";
+                        blueTeamString += team["team"] + ", ";
                     }
                 });
                 redTeamString = redTeamString.substring(0, redTeamString.length - 2);
@@ -2284,7 +2284,7 @@ async function updateCache(year, competition, matchType){
                     title: "We're Almost Up 🔔",
                     body: `We are in Match ${matchToCheckQueue["matchNumber"]}! Currently, Match ${cache.currentMatch} is playing...\n🔴 - ${redTeamString}\n🔵 - ${blueTeamString}`,
                     data: {
-                        match: matchToCheckQueue["matchNumber"]
+                        match: matchToCheckQueue["matchNumber"].toString()
                     }
                 }
                 sendNotificationAll(message.title, message.body, message.data, "queue");
