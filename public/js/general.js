@@ -23,7 +23,7 @@ function generate_document_snip(d, extraclasses="", additionalcontent=""){
                     <div class="flex_apart" style="width:100%;pointer-events:none">
                         <span class="text regular material-symbols-rounded" style="width:20%;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">edit_document</span>
                         <div style="width:80%">
-                            <span class="text caption" style="font-weight:600;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? `Team ${data["team"]}, Match ${data["match"]}` : d["name"]}</span>
+                        <span class="text caption" style="font-weight:600;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? `Team ${data["team"]}, Photo` : d["name"]}</span>
                             <span class="text tiny" style="color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? datetime : `Team ${data["team"]}, Match ${data["match"]}`}</span>
                         </div>
                         ${additionalcontent}
@@ -39,7 +39,7 @@ function generate_document_snip(d, extraclasses="", additionalcontent=""){
                     <div class="flex_apart" style="width:100%;pointer-events:none">
                         <span class="text regular material-symbols-rounded" style="width:20%;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">camera</span>
                         <div style="width:80%">
-                            <span class="text caption" style="font-weight:600;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? `Team ${data["team"]}, Match ${data["match"]}` : d["name"]}</span>
+                            <span class="text caption" style="font-weight:600;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? `Team ${data["team"]}, Photo` : d["name"]}</span>
                             <span class="text tiny" style="color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? datetime : `Team ${data["team"]}, Match ${data["match"]}`}</span>
                         </div>
                         ${additionalcontent}
@@ -1533,6 +1533,7 @@ document.querySelector("#match_view_create_document").addEventListener("click", 
 
         document.querySelector("#overlay").style.display = "none";
     };
+    document.querySelector("#overlaySave").style.display = "";
     document.querySelector("#overlay").style.display = "";
 });
 

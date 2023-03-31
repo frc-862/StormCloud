@@ -1909,24 +1909,7 @@ router.post("/submit/paper", async (req, res, next) => {
 
             var doc = await db.createDoc("Document", document);
 
-            console.log(doc);
-            var possibleMatches = await db.getDocs("Match", {environment: env.friendlyId});
-            console.log(possibleMatches);
-            console.log(matches);
-            if(matches != undefined){
-                console.log("WORK");
-                matches.forEach(async (match) => {
-                    console.log("Match: " + match)
-                    var associatedMatch = possibleMatches.find((m) => m.matchNumber == match);
-                    console.log("Associated: " + associatedMatch);
-                    if(associatedMatch != undefined){
-                        associatedMatch.documents.push(doc._id);
-    
-                        await db.updateDoc("Match", {_id: associatedMatch._id}, {documents: associatedMatch.documents});
-                    }
-                });
-            }
-            
+           
         }
         console.log(err);
     });
