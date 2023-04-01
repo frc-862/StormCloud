@@ -1076,10 +1076,10 @@ function prepareAnalysis(analysis, schema, documents, matches, teams){
 
                         switch(method){
                             case "sum":
-                                matchFinal.data = matchData.reduce((a, b) => a + b.data, 0);
+                                matchFinal.data = matchData.reduce((a, b) => a.data + b.data, 0);
                                 break;
                             case "avg":
-                                matchFinal.data = matchData.reduce((a, b) => a + b.data, 0) / matchData.length;
+                                matchFinal.data = matchData.reduce((a, b) => a.data + b.data, 0) / matchData.length;
                                 break;
                             case "max":
                                 matchFinal.data = Math.max(...matchData.map((obj) => obj.data));
