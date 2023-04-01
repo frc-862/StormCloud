@@ -2263,7 +2263,7 @@ async function updateCache(year, competition, matchType){
     }
     
 
-    if((env.cachedCompetitionData.currentMatch != cache.currentMatch && matchResults != undefined) || true){
+    if((env.cachedCompetitionData.currentMatch != cache.currentMatch && matchResults != undefined)){
         var matches = await db.getDocs("Match", {environment: env.friendlyId, competition: year + competition});
         var matchToCheckQueue = matches.find((m => m.matchNumber == cache.currentMatch+2));
         if(matchToCheckQueue != undefined){
@@ -2644,16 +2644,18 @@ router.get("/first/results*", async(req, res, next) => {
                 if(previousStats.red != existingMatch.results.red || previousStats.blue != existingMatch.results.blue || previousStats.finished != existingMatch.results.finished){
                     var message = {
                         title: "Match " + existingMatch.matchNumber + " Results Updated",
-                        body: `There's been an update to Match Scores!\n🔴 - ${existingMatch.results.red} points\n🔵 - ${existingMatch.results.blue} points\n${existingMatch.results.blue > existingMatch.results.red ? "Blue Wins!" : (existingMatch.results.blue < existingMatch.results.red ? "Red Wins!" : "It's a Tie!")}`,
+                        body: `There's been an update to Match Scores!\n🔴 - ${existingMatch.results.red} points (${existingMatch.results.redStats == undefined ? "?" : existingMatch.results.redStats.rp} RP)\n🔵 - ${existingMatch.results.blue} points (${existingMatch.results.blueStats == undefined ? "?" : existingMatch.results.blueStats.rp} RP)\n${existingMatch.results.blue > existingMatch.results.red ? "Blue Wins!" : (existingMatch.results.blue < existingMatch.results.red ? "Red Wins!" : "It's a Tie!")}`,
                         data: {
                             match: existingMatch["matchNumber"].toString()
                         }
                     }
-                    sendNotificationAll(message.title, message.body, message.data, "resultsAll");
+                    
 
                     var weAreInMatch = existingMatch.teams.find((t) => t.team.toString() == env.settings.team.toString()) != undefined;
                     if(weAreInMatch){
                         sendNotificationAll(message.title, message.body, message.data, "results");
+                    }else{
+                        sendNotificationAll(message.title, message.body, message.data, "resultsAll");
                     }
                 }
 

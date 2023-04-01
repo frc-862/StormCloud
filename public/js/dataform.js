@@ -209,12 +209,12 @@ function saveSchemaData(){
     </div>
     <div class="flex_apart" style="width:400px">
         <span class="text regular">Use Match Numbers</span>
-        <input class="input small" value="${useMatchNumbers}" id="overlay_useMatchNumbers" type="checkbox" style="display:inline-block"/>
+        <input class="input small" id="overlay_useMatchNumbers" type="checkbox" style="display:inline-block" ${useMatchNumbers ? "checked" : ""}/>
 
     </div>
     <div class="flex_apart" style="width:400px">
         <span class="text regular">Allow for Disabled Robots</span>
-        <input class="input small" value="${allowRobotDisable}" id="overlay_allowRobotDisable" type="checkbox" style="display:inline-block"/>
+        <input class="input small"id="overlay_allowRobotDisable" type="checkbox" style="display:inline-block" ${allowRobotDisable ? "checked" : ""}/>
 
     </div>
 

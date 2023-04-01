@@ -192,7 +192,7 @@ function refreshAnalysisSet(){
                 </div>
                 <div class="flex_center" style="width:100%">
                     <span class="text small" style="margin: 5px 10px;text-align:left">Use Points Instead of Values </span>
-                    <input type="checkbox" data-data="check" onchange="setData('${part._id}', 'UsePoints', this)" ${part.Data["UsePoints"] ? "checked" : ""}>
+                    <input type="checkbox" data-data="check" onchange="setData('${part._id}', 'UsePoints', this)" ${part.Data["UsePoints"] == "true" ? "checked" : ""}>
                 </div>
                 <div class="flex_center" style="width:100%">
                     
@@ -356,7 +356,7 @@ function refreshAnalysisSet(){
                 </div>
                 <div class="flex_center" style="width:100%">
                     <span class="text small" style="margin: 5px 10px;text-align:left">Use Points Instead of Values </span>
-                    <input type="checkbox" data-data="check" onchange="setData('${part._id}', 'UsePoints', this)" ${part.Data["UsePoints"] ? "checked" : ""}>
+                    <input type="checkbox" data-data="check" onchange="setData('${part._id}', 'UsePoints', this)" ${part.Data["UsePoints"] == "true" ? "checked" : ""}>
                 </div>
                 
                 <div class="flex_center" style="width:100%">

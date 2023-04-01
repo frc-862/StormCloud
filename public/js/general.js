@@ -1726,7 +1726,7 @@ document.querySelector('#match_view_score').addEventListener('click', function()
                             <span class="text small">${redRes}</span>
                         </div>
                         <div class="bluebg flex_center" style="padding:10px;width:140px;">
-                            <span class="text small">${redRes}</span>
+                            <span class="text small">${blueRes}</span>
                         </div>
                         
                         
@@ -1744,7 +1744,7 @@ document.querySelector('#match_view_score').addEventListener('click', function()
                             <span class="text small">${redRes}</span>
                         </div>
                         <div class="bluebg flex_center" style="padding:10px;width:140px;">
-                            <span class="text small">${redRes}</span>
+                            <span class="text small">${blueRes}</span>
                         </div>
                         
                         
