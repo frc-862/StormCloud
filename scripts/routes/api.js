@@ -404,6 +404,12 @@ function prepareAnalysis(analysis, schema, documents, matches, teams){
                     });
                     return;
                 }
+                else if(analysisPart.Type == "Frequency"){
+                    if(field.componentType == "Input"){
+                        
+                        addData(partId, foundTeam, key, useData)
+                    }
+                }
                 else if(analysisPart.Type == "Graph"){
                     if(analysisPart.Data.DocumentData != "true" && analysisPart.Data.DocumentData != true){
                         return;

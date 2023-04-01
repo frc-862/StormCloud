@@ -468,6 +468,12 @@ function selectAnalysis(){
                                 });
                                 return;
                             }
+                            else if(analysisPart.Type == "Frequency"){
+                                if(field.componentType == "Input"){
+                                    
+                                    addData(partId, foundTeam, key, useData)
+                                }
+                            }
                             else if(analysisPart.Type == "Graph"){
                                 if(analysisPart.Data.DocumentData != "true" && analysisPart.Data.DocumentData != true){
                                     return;
@@ -1137,21 +1143,22 @@ function selectAnalysis(){
 
                                     switch(method){
                                         case "sum":
-                                            matchFinal.data = matchData.reduce((a, b) => a + b.data, 0);
+                                            matchFinal.data = matchData.reduce((a, b) => parseFloat(a) + parseFloat(b.data), 0);
                                             break;
                                         case "avg":
-                                            matchFinal.data = matchData.reduce((a, b) => a + b.data, 0) / matchData.length;
+                                            matchFinal.data = matchData.reduce((a, b) => parseFloat(a) + parseFloat(b.data), 0) / matchData.length;
                                             break;
                                         case "max":
-                                            matchFinal.data = Math.max(...matchData.map((obj) => obj.data));
+                                            matchFinal.data = Math.max(...matchData.map((obj) => parseFloat(obj.data)));
                                             break;
                                         case "min":
-                                            matchFinal.data = Math.min(...matchData.map((obj) => obj.data));
+                                            matchFinal.data = Math.min(...matchData.map((obj) => parseFloat(obj.data)));
                                             break;
                                         case "range":
-                                            matchFinal.data = Math.max(...matchData.map((obj) => obj.data)) - Math.min(...matchData.map((obj) => obj.data));
+                                            matchFinal.data = Math.max(...matchData.map((obj) => parseFloat(obj.data))) - Math.min(...matchData.map((obj) => parseFloat(obj.data)));
                                             break;
                                     }
+
 
                                     matchFinal.data = Math.round(matchFinal.data*10)/10;
 
