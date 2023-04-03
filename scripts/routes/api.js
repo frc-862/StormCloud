@@ -2199,6 +2199,7 @@ async function updateCache(year, competition, matchType){
                     ties: ranking["ties"]
                 },
                 rankingPoints: ranking["sortOrder1"],
+                tiebreaker: ranking["sortOrder2"],
                 matchesPlayed: ranking["matchesPlayed"]
             }
     
@@ -2209,7 +2210,7 @@ async function updateCache(year, competition, matchType){
                     if(previousRankingObject.rank != rankingObject.rank || previousRankingObject.rankingPoints != rankingObject.rankingPoints){
                         var message = {
                             title: "Ranking Update 🏆",
-                            body: `We detected an update to ${ranking["teamNumber"]}'s ranking...\nCurrent Ranking: ${rankingObject.rank}\nCurrent RP: ${rankingObject.rankingPoints}`,
+                            body: `We detected an update to ${ranking["teamNumber"]}'s ranking...\nCurrent Ranking: ${rankingObject.rank}\nCurrent RP: ${rankingObject.rankingPoints}\nTiebreaker Points: ${rankingObject.tiebreaker}`,
                             data: {
                                 team: ranking["teamNumber"].toString()
                             }
@@ -2217,6 +2218,8 @@ async function updateCache(year, competition, matchType){
                         sendNotificationAll(message.title, message.body, message.data, "general");
                     }
                 }
+            }else{
+
             }
     
             finalRankings.push(rankingObject);
@@ -2268,9 +2271,9 @@ async function updateCache(year, competition, matchType){
         location: location
     }
     
-
+    var matches = await db.getDocs("Match", {environment: env.friendlyId, competition: year + competition});
     if((env.cachedCompetitionData.currentMatch != cache.currentMatch && matchResults != undefined)){
-        var matches = await db.getDocs("Match", {environment: env.friendlyId, competition: year + competition});
+        
         var matchToCheckQueue = matches.find((m => m.matchNumber == cache.currentMatch+2));
         if(matchToCheckQueue != undefined){
             var areWeIn = matchToCheckQueue.teams.find(t => t.team == env.settings.team) != undefined;
@@ -2297,6 +2300,36 @@ async function updateCache(year, competition, matchType){
             }
 
         }
+    }else{
+        var ourNextMatches = matches.filter((match) => match.teams.find((team) => team.team == env.settings.team) != undefined && match.results.finished == false);
+        if(ourNextMatches.length > 0){
+            var nextMatch = ourNextMatches[0];
+            
+            var timeLeft = nextMatch.planned.getTime() - new Date().getTime();
+            var minutes = Math.floor(timeLeft / 1000 / 60);
+            if(minutes < 25 && minutes > 10 && minutes % 3 == 0){
+                var redTeamString = "";
+                var blueTeamString = "";
+                matchToCheckQueue.teams.forEach((team) => {
+                    if(team["color"] == "Red"){
+                        redTeamString += team["team"] + ", ";
+                    }else{
+                        blueTeamString += team["team"] + ", ";
+                    }
+                });
+                redTeamString = redTeamString.substring(0, redTeamString.length - 2);
+                blueTeamString = blueTeamString.substring(0, blueTeamString.length - 2);
+                var message = {
+                    title: "Time's Awaiting 🔔",
+                    body: `We are in Match ${matchToCheckQueue["matchNumber"]} in ${minutes} minutes! Currently, Match ${cache.currentMatch} is playing...\n🔴 - ${redTeamString}\n🔵 - ${blueTeamString}`,
+                    data: {
+                        match: matchToCheckQueue["matchNumber"].toString()
+                    }
+                }
+                sendNotificationAll(message.title, message.body, message.data, "queue");
+            }
+        }
+
     }
 
     await db.updateDoc("Environment", {_id: env._id}, {cachedCompetitionData: cache});
@@ -2545,7 +2578,7 @@ router.get("/first/results*", async(req, res, next) => {
     var competition = req.query.competition;
     var matchType = req.query.matchType;
     if(matchType != "Qualification" && matchType != "Playoff" && matchType != "Practice" && matchType != "None"){
-        matchType = "Qualification";
+        matchType = env.settings.matchType;
     }
     if(year == undefined || year == ""){
         year = env.settings.competitionYear;
@@ -2648,12 +2681,36 @@ router.get("/first/results*", async(req, res, next) => {
 
 
                 if(previousStats.red != existingMatch.results.red || previousStats.blue != existingMatch.results.blue || previousStats.finished != existingMatch.results.finished){
+                    var redTeams = existingMatch.teams.filter(t => t.color == "Red");
+                    var redString = "";
+                    redTeams.forEach((t) => {
+                        redString += t.team + ", ";
+                    });
+                    if(redString != ""){
+                        redString = redString.substring(0, redString.length-2);
+                    }
+
+                    var blueTeams = existingMatch.teams.filter(t => t.color == "Blue");
+                    var blueString = "";
+                    blueTeams.forEach((t) => {
+                        blueString += t.team + ", ";
+                    });
+                    if(blueString != ""){
+                        blueString = blueString.substring(0, blueString.length-2);
+                    }
+
+                    
                     var message = {
                         title: "Match " + existingMatch.matchNumber + " Results Updated",
-                        body: `There's been an update to Match Scores!\n🔴 - ${existingMatch.results.red} points (${existingMatch.results.redStats == undefined ? "?" : existingMatch.results.redStats.rp} RP)\n🔵 - ${existingMatch.results.blue} points (${existingMatch.results.blueStats == undefined ? "?" : existingMatch.results.blueStats.rp} RP)\n${existingMatch.results.blue > existingMatch.results.red ? "Blue Wins!" : (existingMatch.results.blue < existingMatch.results.red ? "Red Wins!" : "It's a Tie!")}`,
+                        body: `There's been an update to Match Scores!\n🔴 (${redString}) - ${existingMatch.results.red}pts (${existingMatch.results.redStats == undefined ? "?" : existingMatch.results.redStats.rp} RP)\n🔵 (${blueString}) - ${existingMatch.results.blue}pts (${existingMatch.results.blueStats == undefined ? "?" : existingMatch.results.blueStats.rp} RP)\n${existingMatch.results.blue > existingMatch.results.red ? "Blue Wins!" : (existingMatch.results.blue < existingMatch.results.red ? "Red Wins!" : "It's a Tie!")}`,
                         data: {
                             match: existingMatch["matchNumber"].toString()
                         }
+                    }
+
+                    if(match["matchLevel"] == "Playoff"){
+                        message.title = "Playoff Match " + (existingMatch.matchNumber-900) + " Results Updated";
+                        message.body = `There's been an update to Match Scores!\n🔴 (${redString}) - ${existingMatch.results.red}pts\n🔵 (${blueString}) - ${existingMatch.results.blue}pts\n${existingMatch.results.blue > existingMatch.results.red ? "Blue Wins!" : (existingMatch.results.blue < existingMatch.results.red ? "Red Wins!" : "It's a Tie!")}`
                     }
                     
 

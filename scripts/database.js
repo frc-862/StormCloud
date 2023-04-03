@@ -56,6 +56,7 @@ const models = {
                 team: Number,
                 rank: Number,
                 rankingPoints: Number,
+                tiebreaker: Number,
                 matchesPlayed: Number,
                 record: {
                     wins: Number,
