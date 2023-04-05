@@ -20,6 +20,74 @@ router.get('/', function(req, res, next) {
     res.json({message: "Welcome to the StormCloud API!", account: false, version: "0.0.1"});
 });
 
+router.get('/export/matches', async function(req, res, next) {
+    let env = await authTools.getEnvironment(environment);
+
+    var matches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
+   
+
+    var sendBackString = "";
+    matches.forEach(match => {
+        sendBackString += "<span style='display:block'>" + JSON.stringify(match) + "</span>";
+    });
+
+    res.send(sendBackString);
+});
+
+router.get('/export/teams', async function(req, res, next) {
+    let env = await authTools.getEnvironment(environment);
+
+    var teams = await db.getDocs("Team", {environment: env.friendlyId});
+    var matches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
+
+    var teamsToSend = [];
+
+    matches.forEach(match => {
+        match.teams.forEach(team => {
+            if(teamsToSend.filter(t => t.teamNumber == team.team).length == 0){
+                // generate random id if it doesn't exist
+                teamsToSend.push({teamNumber: team.team, name: teams.find(t => t.teamNumber == team) == undefined ? "Unknown" : teams.find(t => t.teamNumber == team).name, _id: teams.find(t => t.teamNumber == team) == undefined? Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) : teams.find(t => t.teamNumber == team)._id});
+            }
+        })
+    });
+
+    teamsToSend = teamsToSend.sort((a, b) => (a.teamNumber - b.teamNumber));
+   
+
+    var sendBackString = "";
+    teamsToSend.forEach(team => {
+        sendBackString += "<span style='display:block'>" + JSON.stringify(team) + "</span>";
+    });
+
+    res.send(sendBackString);
+});
+
+router.get('/export/rankings', async function(req, res, next) {
+   let env = await authTools.getEnvironment(environment);
+   
+   var rankings = env.cachedCompetitionData.rankings;
+
+    var sendBackString = "";
+    rankings.forEach(rank => {
+        sendBackString += "<span style='display:block'>" + JSON.stringify(rank) + "</span>";
+    });
+
+    res.send(sendBackString);
+});
+
+router.get('/export/documents', async function(req, res, next) {
+    let env = await authTools.getEnvironment(environment);
+
+    var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match", competition: env.settings.competitionYear + env.settings.competitionCode});
+   
+
+    var sendBackString = "";
+    documents.forEach(doc => {
+        sendBackString += "<span style='display:block'>" + JSON.stringify(doc) + "</span>";
+    });
+
+    res.send(sendBackString);
+});
 
 /**
  * @api {get} /api/matches* Get a list of matches based on information provided
@@ -1280,6 +1348,8 @@ router.get("/request/team*", async(req, res, next) => {
             }
         });
 
+        sendBackTeam.matches = sendBackTeam.matches.sort((a,b) => a.matchNumber - b.matchNumber);
+
         res.json({team: sendBackTeam, auth: authValid});
     }else{
         var team = teams[0];
@@ -1302,6 +1372,8 @@ router.get("/request/team*", async(req, res, next) => {
             var getPreparedAnalysis = prepareAnalysis(defaultAnalysis, schema, documents, matches, [parseInt(teamNumber)]);
             sendBackTeam.analysis = getPreparedAnalysis;
         }
+
+        matches = matches.sort((a, b) => a.matchNumber - b.matchNumber);
 
         matches.forEach(match => {
             if(match.teams.find(t => t.team == teamNumber) != undefined){
