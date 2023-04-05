@@ -195,6 +195,10 @@ function refreshAnalysisSet(){
                     <input type="checkbox" data-data="check" onchange="setData('${part._id}', 'UsePoints', this)" ${part.Data["UsePoints"] == "true" ? "checked" : ""}>
                 </div>
                 <div class="flex_center" style="width:100%">
+                    <span class="text small" style="margin: 5px 10px;text-align:left">Use Old Documents</span>
+                    <input type="checkbox" data-data="check" onchange="setData('${part._id}', 'UseOtherDocs', this)" ${part.Data["UseOtherDocs"] ? "checked" : ""}>
+                </div>
+                <div class="flex_center" style="width:100%">
                     
                     <select class="input text regular setting" style="margin:10px;width:50%;pointer-events:all" multiple data-data="multi" onchange="setData('${part._id}', 'SchemaFields', this)">
                         ${selectHTML}
@@ -222,6 +226,10 @@ function refreshAnalysisSet(){
                 <div class="flex_center" style="width:100%">
                     <span class="text small" style="margin: 5px 10px;text-align:left">Show Separate Colors</span>
                     <input type="checkbox" data-data="check" onchange="setData('${part._id}', 'SeparateColors', this)" ${part.Data["SeparateColors"] ? "checked" : ""}>
+                </div>
+                <div class="flex_center" style="width:100%">
+                    <span class="text small" style="margin: 5px 10px;text-align:left">Use Old Documents</span>
+                    <input type="checkbox" data-data="check" onchange="setData('${part._id}', 'UseOtherDocs', this)" ${part.Data["UseOtherDocs"] ? "checked" : ""}>
                 </div>
                 <div class="flex_center" style="width:100%">
                     <span class="text small" style="margin: 5px 10px;text-align:left">Display Style</span>
@@ -264,6 +272,10 @@ function refreshAnalysisSet(){
                 <div class="flex_center" style="width:100%">
                     <span class="text small" style="margin: 5px 10px;text-align:left">Use Points Instead of Values </span>
                     <input type="checkbox" data-data="check" onchange="setData('${part._id}', 'UsePoints', this)" ${part.Data["UsePoints"] ? "checked" : ""}>
+                </div>
+                <div class="flex_center" style="width:100%">
+                    <span class="text small" style="margin: 5px 10px;text-align:left">Use Old Documents</span>
+                    <input type="checkbox" data-data="check" onchange="setData('${part._id}', 'UseOtherDocs', this)" ${part.Data["UseOtherDocs"] ? "checked" : ""}>
                 </div>
                 <div class="flex_center" style="width:100%">
                     
@@ -699,20 +711,23 @@ function addItem(itemType){
                 "Stat_Between": "sum",
                 "FIRSTFields": [],
                 "SchemaFields": [],
-                "UsePoints": false
+                "UsePoints" : false,
+                "UseOtherDocs": false
             }
             break;
         case "Grid":
             item.Data = {
                 "Display": "heatmap",
-                "SchemaFields": []
+                "SchemaFields": [],
+                "UseOtherDocs": false
             }
             break;
         case "Frequency":
             item.Data = {
                 "FIRSTFields": [],
                 "SchemaFields": [],
-                "UsePoints": false
+                "UsePoints": false,
+                "UseOtherDocs": false
             }
             break;
         case "Graph":

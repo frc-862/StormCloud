@@ -89,6 +89,10 @@ router.get('/export/documents', async function(req, res, next) {
     res.send(sendBackString);
 });
 
+router.get('/export/analysis', async function(req, res, next) {
+    // export analysis ONLY WITH THE OBJECT FORMAT (NO LIST)
+});
+
 /**
  * @api {get} /api/matches* Get a list of matches based on information provided
  * @apiName GET Matches
@@ -248,7 +252,7 @@ router.post("/request/document/delete*", async (req, res, next) => {
 });
 
 
-function prepareAnalysis(analysis, schema, documents, matches, teams){
+function prepareAnalysis(analysis, schema, documents, matches, teams, competition){
     // replication of the HTML version
     
     var partSets = {};
@@ -440,6 +444,7 @@ function prepareAnalysis(analysis, schema, documents, matches, teams){
         if(!(data.schema == analysis.Schema.Name)){
             return;
         }
+        
 
         schemaFields.forEach((field) => {
             var key = field.part + "---" + field.component;
@@ -453,6 +458,11 @@ function prepareAnalysis(analysis, schema, documents, matches, teams){
 
 
                 var analysisPart = analysis.Parts.find(p => p._id == partId);
+
+                if(!(doc.competition == competition) && analysisPart.Data.UseOtherDocs != true){
+                    return;
+                }
+
                 var usePoints = analysisPart.Data.UsePoints == "true";
                 if(analysisPart.Type == "Custom"){
                     var points = 0;
@@ -1234,9 +1244,9 @@ router.get("/request/analysis*", async(req, res, next) => {
         schema = schemas.find(s => s.Name == analysis.Schema.Name);
         var matches = await db.getDocs("Match", {environment: env.friendlyId, competition: competition});
         matches = matches.sort((a, b) => a.matchNumber - b.matchNumber);
-        var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match", competition: competition});
+        var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match"});
 
-        preparedAnalysis = prepareAnalysis(analysis, schema, documents, matches, teams);
+        preparedAnalysis = prepareAnalysis(analysis, schema, documents, matches, teams, env.settings.competitionYear + env.settings.competitionCode);
 
 
 
@@ -1265,7 +1275,7 @@ router.get("/request/team*", async(req, res, next) => {
 
     var documents = [];
     if(authValid){
-        var teamDocs = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match", competition: competition});
+        var teamDocs = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match"});
 
         teamDocs.forEach(doc => {
             var data = JSON.parse(doc["json"]);
@@ -1306,7 +1316,7 @@ router.get("/request/team*", async(req, res, next) => {
         matches = matches.sort((a, b) => a.matchNumber - b.matchNumber);
 
         if(defaultAnalysis != undefined){
-            var getPreparedAnalysis = prepareAnalysis(defaultAnalysis, schema, documents, matches, [parseInt(teamNumber)]);
+            var getPreparedAnalysis = prepareAnalysis(defaultAnalysis, schema, documents, matches, [parseInt(teamNumber)], env.settings.competitionYear + env.settings.competitionCode);
             sendBackTeam.analysis = getPreparedAnalysis;
         }
 
@@ -1369,7 +1379,7 @@ router.get("/request/team*", async(req, res, next) => {
         };
 
         if(defaultAnalysis != undefined){
-            var getPreparedAnalysis = prepareAnalysis(defaultAnalysis, schema, documents, matches, [parseInt(teamNumber)]);
+            var getPreparedAnalysis = prepareAnalysis(defaultAnalysis, schema, documents, matches, [parseInt(teamNumber)], env.settings.competitionYear + env.settings.competitionCode);
             sendBackTeam.analysis = getPreparedAnalysis;
         }
 
