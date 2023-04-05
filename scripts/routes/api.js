@@ -107,7 +107,7 @@ router.get('/matches*', async function(req, res, next) {
     var matches = await db.getDocs("Match", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
     var teams = await db.getDocs("Team", {environment: env.friendlyId});
 
-    var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match", competition: env.settings.competitionYear + env.settings.competitionCode});
+    var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match"});
     // copy documents array
     var allDocuments = documents.slice(0);
 
@@ -128,7 +128,7 @@ router.get('/matches*', async function(req, res, next) {
 
         documents.forEach(doc => {
             var docData = JSON.parse(doc.json);
-            if(match.matchNumber == docData.match){
+            if(match.matchNumber == docData.match && match.competition == doc.competition){
                 matchData.documents.push(doc);
                 
             }
