@@ -25,6 +25,7 @@ function generate_document_snip(d, extraclasses="", additionalcontent=""){
                         <div style="width:80%">
                         <span class="text caption" style="font-weight:600;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? `Team ${data["team"]}, Photo` : d["name"]}</span>
                             <span class="text tiny" style="color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? datetime : `Team ${data["team"]}, Match ${data["match"]}`}</span>
+                            <span class="text tiny" style="color:${d["competition"]}</span>
                         </div>
                         ${additionalcontent}
                     </div>
@@ -41,6 +42,7 @@ function generate_document_snip(d, extraclasses="", additionalcontent=""){
                         <div style="width:80%">
                             <span class="text caption" style="font-weight:600;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? `Team ${data["team"]}, Photo` : d["name"]}</span>
                             <span class="text tiny" style="color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? datetime : `Team ${data["team"]}, Match ${data["match"]}`}</span>
+                            <span class="text tiny" style="color:${d["competition"]}</span>
                         </div>
                         ${additionalcontent}
                     </div>
@@ -61,6 +63,7 @@ function generate_document_snip(d, extraclasses="", additionalcontent=""){
                         <div style="width:80%">
                             <span class="text caption" style="font-weight:600;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? `Team ${data["team"]}, General Document` : d["name"]}</span>
                             <span class="text tiny" style="color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? `${completed ? `OK at ${datetime}` : "Not Complete"}` : `Team ${data["team"]}, General Document`}</span>
+                            <span class="text tiny" style="color:${d["competition"]}</span>
                         </div>
                         ${additionalcontent}
                     </div>
@@ -74,6 +77,7 @@ function generate_document_snip(d, extraclasses="", additionalcontent=""){
                         <div style="width:80%">
                             <span class="text caption" style="font-weight:600;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? `Team ${data["team"]}, Match ${data["match"]}` : d["name"]}</span>
                             <span class="text tiny" style="color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? `${completed ? `OK at ${datetime}` : "Not Complete"}` : `Team ${data["team"]}, Match ${data["match"]}`}</span>
+                            <span class="text tiny" style="color:${d["competition"]}</span>
                         </div>
                         ${additionalcontent}
                     </div>
@@ -94,6 +98,7 @@ function generate_document_snip(d, extraclasses="", additionalcontent=""){
                         <div style="width:80%">
                             <span class="text caption" style="font-weight:600;color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? `${teamConcerned == undefined || teamConcerned == "" ? "Match Note": "Note on " + teamConcerned}` : d["name"]}</span>
                             <span class="text tiny" style="color:${d["flagged"] == undefined || d["flagged"] == false ? "white" : "yellow"}">${d["name"] == undefined || d["name"] == "" ? `By ${data["author"] == undefined ? "Anonymous" : data["author"]}` : `${teamConcerned == undefined || teamConcerned == "" ? "Match Note": "Note on " + teamConcerned}`}</span>
+                            <span class="text tiny" style="color:${d["competition"]}</span>
                         </div>
                         ${additionalcontent}
                     </div>
@@ -576,11 +581,15 @@ function refresh_filter_documents(){
     var team = document.querySelector("#filter_team").value;
     var type = document.querySelector("#filter_type").value;
     var match = document.querySelector("#filter_match").value;
+    var comp = document.querySelector("#filter_comp").value;
 
     persistantData["allDocuments"].forEach((d)=>{
         var data = JSON.parse(d["json"]);
         var display = true;
         if(team != "" && data["team"] != team){
+            display = false;
+        }
+        else if(comp != "" && !data["competition"].includes(comp)){
             display = false;
         }
         else if(type != "any" && type != "" && data["type"] != type){
