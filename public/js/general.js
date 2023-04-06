@@ -123,6 +123,32 @@ function writeToCookie(name, value){
 }
 
 
+
+function exportData(part){
+    get("/api/export/" + part,{}, (suc,data) => {
+        // download the file
+        var a = document.createElement("a");
+
+        var file = new Blob([data], {type: 'text/plain'});
+        a.href = URL.createObjectURL(file);
+
+        a.download = part + ".db";
+        a.click();
+
+    })
+}
+
+function importData(part){
+    var data=  document.querySelector("#import_data").value;
+    if(part == "documents"){
+        post("/api/submit/data",{}, {documents: data}, (suc,data) => {
+            document.querySelector("#import_data").value = "";
+        });
+    }
+}
+
+
+
 function try_show_content(){
     if(showingContent == false){
         showingContent = true;

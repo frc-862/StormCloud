@@ -28,7 +28,7 @@ router.get('/export/matches', async function(req, res, next) {
 
     var sendBackString = "";
     matches.forEach(match => {
-        sendBackString += "<span style='display:block'>" + JSON.stringify(match) + "</span>";
+        sendBackString += JSON.stringify(match) + "\n";
     });
 
     res.send(sendBackString);
@@ -56,7 +56,7 @@ router.get('/export/teams', async function(req, res, next) {
 
     var sendBackString = "";
     teamsToSend.forEach(team => {
-        sendBackString += "<span style='display:block'>" + JSON.stringify(team) + "</span>";
+        sendBackString += JSON.stringify(team) + "\n";
     });
 
     res.send(sendBackString);
@@ -69,7 +69,7 @@ router.get('/export/rankings', async function(req, res, next) {
 
     var sendBackString = "";
     rankings.forEach(rank => {
-        sendBackString += "<span style='display:block'>" + JSON.stringify(rank) + "</span>";
+        sendBackString += JSON.stringify(rank) + "\n";
     });
 
     res.send(sendBackString);
@@ -83,14 +83,36 @@ router.get('/export/documents', async function(req, res, next) {
 
     var sendBackString = "";
     documents.forEach(doc => {
-        sendBackString += "<span style='display:block'>" + JSON.stringify(doc) + "</span>";
+        sendBackString += JSON.stringify(doc) + "\n";
     });
 
     res.send(sendBackString);
 });
 
 router.get('/export/analysis', async function(req, res, next) {
-    // export analysis ONLY WITH THE OBJECT FORMAT (NO LIST)
+    let env = await authTools.getEnvironment(environment);
+
+    var analysisSets = await db.getDocs("AnalysisSet", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
+
+    var sendBackString = "";
+    analysisSets.forEach(set => {
+        sendBackString += JSON.stringify(set) + "\n";
+    });
+
+    res.send(sendBackString);
+});
+
+router.get('/export/schemas', async function(req, res, next) {
+
+    var schemas = await db.getDocs("Schema", {});
+
+    var sendBackString = "";
+    schemas.forEach(schema => {
+        sendBackString += JSON.stringify(schema) + "\n";
+    });
+
+    res.send(sendBackString);
+
 });
 
 /**
@@ -2023,83 +2045,89 @@ router.post("/submit/paper", async (req, res, next) => {
 router.post("/submit/data", async (req, res, next) => {
     var env = await authTools.getEnvironment(environment);
 
-    var dataPieces = JSON.parse(req.body.documents);
+    try{
+        var dataPieces = JSON.parse(req.body.documents);
 
-    for(var i = 0; i < dataPieces.length; i++){
-        var dataPiece = dataPieces[i];
+        for(var i = 0; i < dataPieces.length; i++){
+            var dataPiece = dataPieces[i];
 
 
-        
+            
 
-        var generatedData = {
-            team: dataPiece.Team,
-            completed: true,
-            data: dataPiece.Data,
-            author: dataPiece.Scouter,
-            schema: dataPiece.Schema,
-            deviceId: dataPiece.DeviceID,
-            identifier: dataPiece.Identifier,
-            match: dataPiece.Number,
-            color: dataPiece.Color,
-            type: "tablet",
-            disabled: dataPiece.Disabled,
-            generic: dataPiece.Schema == "Paper Scouting" || dataPiece.Number < 0
-        }
+            var generatedData = {
+                team: dataPiece.Team,
+                completed: true,
+                data: dataPiece.Data,
+                author: dataPiece.Scouter,
+                schema: dataPiece.Schema,
+                deviceId: dataPiece.DeviceID,
+                identifier: dataPiece.Identifier,
+                match: dataPiece.Number,
+                color: dataPiece.Color,
+                type: "tablet",
+                disabled: dataPiece.Disabled,
+                generic: dataPiece.Schema == "Paper Scouting" || dataPiece.Number < 0
+            }
 
-        if(generatedData.generic){
-            generatedData.match = 0;
-        }
+            if(generatedData.generic){
+                generatedData.match = 0;
+            }
 
-        if(env.settings.matchType == "Playoff"){
-            generatedData.match += 900;
-        }
+            if(env.settings.matchType == "Playoff"){
+                generatedData.match += 900;
+            }
 
-        var allDocs = await db.getDocs("Document", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
-        var prevDoc = allDocs.find((doc) => JSON.parse(doc.json).identifier == dataPiece.Identifier);
-        if(prevDoc != undefined){
+            var allDocs = await db.getDocs("Document", {environment: env.friendlyId, competition: env.settings.competitionYear + env.settings.competitionCode});
+            var prevDoc = allDocs.find((doc) => JSON.parse(doc.json).identifier == dataPiece.Identifier);
+            if(prevDoc != undefined){
 
-            if(JSON.parse(prevDoc.json).team == generatedData.team){
-                await db.updateDoc("Document", {_id: prevDoc._id}, {json: JSON.stringify(generatedData), datetime: new Date(dataPiece.Created)});
-                continue;
+                if(JSON.parse(prevDoc.json).team == generatedData.team){
+                    await db.updateDoc("Document", {_id: prevDoc._id}, {json: JSON.stringify(generatedData), datetime: new Date(dataPiece.Created)});
+                    continue;
+                }
+                
             }
             
+
+
+            var document = {
+                environment: env.friendlyId,
+                dataType: "match",
+                json: JSON.stringify(generatedData),
+                datetime: new Date(dataPiece.Created),
+                competition: env.settings.competitionYear + env.settings.competitionCode,
+                name: ""
+            }
+
+            var similarDoc = allDocs.find((doc) => JSON.parse(doc.json).match == generatedData.match && JSON.parse(doc.json).team == dataPiece.Team);
+            if(similarDoc != undefined && dataPiece.Number > 0){
+                document.flagged = true;
+            }
+
+            var associatedMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: dataPiece.Number, competition: env.settings.competitionYear + env.settings.competitionCode});
+
+            
+
+
+            var doc = await db.createDoc("Document", document);
+            console.log(doc);
+
+            if(associatedMatch.length > 0){
+                associatedMatch = associatedMatch[0];
+                associatedMatch.documents.push(doc._id);
+
+                await db.updateDoc("Match", {_id: associatedMatch._id}, {documents: associatedMatch.documents});
+            }
+
         }
-        
-
-
-        var document = {
-            environment: env.friendlyId,
-            dataType: "match",
-            json: JSON.stringify(generatedData),
-            datetime: new Date(dataPiece.Created),
-            competition: env.settings.competitionYear + env.settings.competitionCode,
-            name: ""
-        }
-
-        var similarDoc = allDocs.find((doc) => JSON.parse(doc.json).match == generatedData.match && JSON.parse(doc.json).team == dataPiece.Team);
-        if(similarDoc != undefined && dataPiece.Number > 0){
-            document.flagged = true;
-        }
-
-        var associatedMatch = await db.getDocs("Match", {environment: env.friendlyId, matchNumber: dataPiece.Number, competition: env.settings.competitionYear + env.settings.competitionCode});
-
-        
-
-
-        var doc = await db.createDoc("Document", document);
-        console.log(doc);
-
-        if(associatedMatch.length > 0){
-            associatedMatch = associatedMatch[0];
-            associatedMatch.documents.push(doc._id);
-
-            await db.updateDoc("Match", {_id: associatedMatch._id}, {documents: associatedMatch.documents});
-        }
-
+        res.status(200).json({message: "Data submitted!"});
+    }catch(e){
+        res.status(500).json({message: "Error submitting data!"});
     }
     
+    
 
-    res.status(200).json({message: "Data submitted!"});
+    
 });
 
 

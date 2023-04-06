@@ -521,6 +521,45 @@
                     </div>
                     
                 </div>
+
+                <div class="flex_center subscreen" data-subscreen="3" style="width:100%">
+                    <div>
+                        <div class="level1bg container" style="padding:20px;border-radius:8px;margin:10px">
+                            <span class="text important" style="font-weight: bold;margin:10px 0px">Export Data</span>
+                            <div class="flex_center">
+                                <div class="level2bg container clickable hover" style="padding:10px; margin:7px;pointer-events: all" onclick="exportData('matches')">
+                                    <span class="text caption">Matches</span>
+                                </div>
+                                <div class="level2bg container clickable hover" style="padding:10px; margin:7px;pointer-events: all" onclick="exportData('rankings')">
+                                    <span class="text caption">Rankings</span>
+                                </div>
+                                <div class="level2bg container clickable hover" style="padding:10px; margin:7px;pointer-events: all" onclick="exportData('teams')">
+                                    <span class="text caption">Teams</span>
+                                </div>
+                                <div class="level2bg container clickable hover" style="padding:10px; margin:7px;pointer-events: all" onclick="exportData('documents')">
+                                    <span class="text caption">Documents</span>
+                                </div>
+                                <div class="level2bg container clickable hover" style="padding:10px; margin:7px;pointer-events: all" onclick="exportData('analysis')">
+                                    <span class="text caption">Analysis Sets</span>
+                                </div>
+                                <div class="level2bg container clickable hover" style="padding:10px; margin:7px;pointer-events: all" onclick="exportData('schemas')">
+                                    <span class="text caption">Schemas</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level1bg container" style="padding:20px;border-radius:8px;margin:10px">
+                            <span class="text important" style="font-weight: bold;margin:10px 0px">Import Data</span>
+                            <textarea class="input text small setting" style="pointer-events: all;width:100%;height:200px;resize:none" id="import_data" placeholder="Paste Data Here"></textarea>
+                            <div class="flex_center">
+                                <div class="level2bg container clickable hover" style="padding:10px; margin:7px;pointer-events: all" onclick="importData('documents')">
+                                    <span class="text caption">Documents</span>
+                                </div>
+                               
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
                 
                 
                 
