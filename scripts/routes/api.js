@@ -900,17 +900,14 @@ function prepareAnalysis(analysis, schema, documents, matches, teams, competitio
                             break;
                     }
 
-
-                    console.log("CUSTOM: " + final);
-
-                    if(final != null){
-                        finalData[team].push({
-                            name: part.Name,
-                            type: part.Type,
-                            value: final
-                        });
+                    if(final != null || final == NaN){
+                        final = 0;
                     }
-                    
+                    finalData[team].push({
+                        name: part.Name,
+                        type: part.Type,
+                        value: final
+                    });
 
 
                     break;
