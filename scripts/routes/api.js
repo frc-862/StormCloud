@@ -900,14 +900,14 @@ function prepareAnalysis(analysis, schema, documents, matches, teams, competitio
                             break;
                     }
 
-                    if(final == null){
-                        final = 0;
+                    if(final != null){
+                        finalData[team].push({
+                            name: part.Name,
+                            type: part.Type,
+                            value: final
+                        });
                     }
-                    finalData[team].push({
-                        name: part.Name,
-                        type: part.Type,
-                        value: final
-                    });
+                    
 
 
                     break;
