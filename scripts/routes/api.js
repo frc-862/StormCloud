@@ -900,6 +900,9 @@ function prepareAnalysis(analysis, schema, documents, matches, teams, competitio
                             break;
                     }
 
+
+                    console.log("CUSTOM: " + final);
+
                     if(final != null){
                         finalData[team].push({
                             name: part.Name,
