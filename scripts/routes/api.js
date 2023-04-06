@@ -1232,6 +1232,14 @@ function prepareAnalysis(analysis, schema, documents, matches, teams, competitio
         
     });
 
+    Object.keys(finalData).forEach(t => {
+        finalData[t].forEach(p => {
+            if(p.value == null){
+                p.value = 0;
+            }
+        })
+    })
+
     console.log(finalData);
 
     return finalData;
