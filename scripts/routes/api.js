@@ -220,7 +220,7 @@ router.get("/request/match*", async (req, res, next) => {
         var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match", competition: competition});
         documents.forEach(doc => {
             var docData = JSON.parse(doc.json);
-            if(match.matchNumber == docData.matchNumber && match.competition == doc.competition){
+            if(match.matchNumber == docData.match && match.competition == doc.competition){
                 sendBackMatch.documents.push(doc);
             }
         });
