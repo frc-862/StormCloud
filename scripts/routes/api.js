@@ -221,6 +221,9 @@ router.get("/request/match*", async (req, res, next) => {
         documents.forEach(doc => {
             var docData = JSON.parse(doc.json);
             if(match.matchNumber == docData.match && match.competition == doc.competition){
+                if(doc.flagged == undefined || doc.flagged == false){
+                    doc.flagged = false;
+                }
                 sendBackMatch.documents.push(doc);
             }
         });
@@ -1310,6 +1313,9 @@ router.get("/request/team*", async(req, res, next) => {
         teamDocs.forEach(doc => {
             var data = JSON.parse(doc["json"]);
             if(data["team"] == teamNumber){
+                if(doc.flagged == undefined || doc.flagged == false){
+                    doc.flagged = false;
+                }
                 documents.push(doc);
             }
         });
