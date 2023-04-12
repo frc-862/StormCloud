@@ -428,6 +428,9 @@ function addItem(element, type){
             item.Color = "default";
             item.Large = "false";
             break;
+        case "Notes":
+            item.MaxNotes = -1;
+            item.Placeholder = "";
     }
 
     sections[index].Components.push(item);
@@ -648,6 +651,43 @@ function reshowItems(sectionId){
                         <div class="flex_apart" style="width:400px">
                             <span class="text regular">Large?</span>
                             <input class="input small" value="${i.Large}" id="overlay_useMatchNumbers" type="checkbox" style="display:inline-block"/>
+
+                        </div>
+                        
+                        
+                    </div>
+
+                    <div class="flex_apart" style="width:10%;justify-content:right">
+                        <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="moveItem(this, -1, '${sectionId}')">
+                            <span class="text regular material-symbols-rounded">arrow_upward</span>
+                        </div>
+                        <div class="container primarybg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="moveItem(this, 1, '${sectionId}')">
+                            <span class="text regular material-symbols-rounded">arrow_downward</span>
+                        </div>
+                        <div class="container redbg clickable" style="padding: 10px;margin:5px;width:50px" data-id="${i._id}" onclick="deleteItem(this, '${sectionId}')">
+                            <span class="text regular material-symbols-rounded">close</span>
+                        </div>
+                    </div>
+                </div>
+                `;
+                break;
+            case "Notes":
+                contentElement.innerHTML += `
+                <div class="level2bg container flex_apart" style="margin:5px 0px">
+                    
+                    <div style="width:30%">
+                        <span class="text caption" style="margin: 5px 10px;text-align:left">Notes Label</span>
+                        <input class="input small" style="width:100%" type="text" value="${i.Name}" placeholder="Title" data-id="${i._id}" onchange="editItem(this, 'Name', '${sectionId}')"/>
+                    </div>
+
+                    <div style="width:50%" class="flex_apart">
+                        <div style="width:90%;text-align:left">
+                            <span class="text caption" style="margin: 5px 10px;text-align:left">Placeholder</span>
+                            <input class="input small" style="width:100%" type="text" value="${i.Placeholder}" placeholder="Placeholder" data-id="${i._id}" onchange="editItem(this, 'Placeholder', '${sectionId}')"/>
+                        </div>
+                        <div class="flex_apart" style="width:400px">
+                            <span class="text regular">Max Notes</span>
+                            <input class="input small" value="${i.MaxNotes}" type="checkbox" style="display:inline-block" onchange="editItem(this, 'MaxNotes', '${sectionId}')"/>
 
                         </div>
                         

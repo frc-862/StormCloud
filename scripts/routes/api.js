@@ -2584,7 +2584,7 @@ router.get("/quick/state", async (req, res, next) => {
         ourNextMatch.documents = [];
         var color = "";
         ourNextMatch.teams.forEach(t => {
-            if(t.team.toString() == env.settings.team.toString()){
+            if(t.team != null && t.team.toString() == env.settings.team.toString()){
                 color = t.color;
             }
         })
