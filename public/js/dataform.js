@@ -535,6 +535,9 @@ function reshowSections(){
                     <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px" data-id="${s._id}" onclick="addItem(this, 'Input')">
                         <span class="text caption">+ Input</span>
                     </div>
+                    <div class="level2bg container clickable" style="padding: 10px;margin:0px 5px" data-id="${s._id}" onclick="addItem(this, 'Notes')">
+                        <span class="text caption">+ Notes</span>
+                    </div>
                 </div>
 
                 
