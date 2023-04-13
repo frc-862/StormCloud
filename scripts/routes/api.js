@@ -2181,6 +2181,7 @@ router.get("/first/teams*", async(req, res, next) => {
         });
 
         var teams = fRes["teams"];
+        env.cachedCompetitionData.teams = teams;
         teams.forEach(async (team) => {
             var existingTeam = await db.getDocs("Team", {environment: env.friendlyId, teamNumber: team.teamNumber});
             if(existingTeam.length > 0){
@@ -2201,6 +2202,7 @@ router.get("/first/teams*", async(req, res, next) => {
 
 
         });
+        await db.updateDoc("Environment", {_id: env._id}, {cachedCompetitionData: env.cachedCompetitionData});
     }
 })
 
@@ -2559,20 +2561,31 @@ router.get("/quick/state", async (req, res, next) => {
     });
     var teams = [];
 
-    teamNumbers.forEach((teamNumber) => {
-        var team = teamsDb.find((team) => team.teamNumber == teamNumber);
-        if(team != undefined){
+    if(teamNumbers.length == 0){
+
+        env.cachedCompetitionData.teams.forEach((teamf) => {
             teams.push({
-                teamNumber: teamNumber,
-                teamName: team.name
+                teamNumber: teamf.teamNumber,
+                teamName: teamf.nameShort
             });
-        }else{
-            teams.push({
-                teamNumber: teamNumber,
-                teamName: "Unknown FIRST Team"
-            });
-        }
-    });
+        });
+    }else{
+        teamNumbers.forEach((teamNumber) => {
+            var team = teamsDb.find((team) => team.teamNumber == teamNumber);
+            if(team != undefined){
+                teams.push({
+                    teamNumber: teamNumber,
+                    teamName: team.name
+                });
+            }else{
+                teams.push({
+                    teamNumber: teamNumber,
+                    teamName: "Unknown FIRST Team"
+                });
+            }
+        });
+    }
+    
 
     teams = teams.sort((a,b) => a.teamNumber - b.teamNumber);
 

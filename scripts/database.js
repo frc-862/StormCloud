@@ -67,7 +67,8 @@ const models = {
             currentMatch: Number,
             updated: Date,
             competitionName: String,
-            location: String
+            location: String,
+            teams: [Object]
         }
     })),
     'Match' : mongoose.model('Match', new mongoose.Schema({

@@ -653,7 +653,7 @@ function reshowItems(sectionId){
                         </div>
                         <div class="flex_apart" style="width:400px">
                             <span class="text regular">Large?</span>
-                            <input class="input small" value="${i.Large}" id="overlay_useMatchNumbers" type="checkbox" style="display:inline-block"/>
+                            <input class="input small" value="${i.Large}" type="checkbox" style="display:inline-block" onchange="editItem(this, 'Large', '${sectionId}')"/>
 
                         </div>
                         
@@ -689,7 +689,7 @@ function reshowItems(sectionId){
                             <input class="input small" style="width:100%" type="text" value="${i.Placeholder}" placeholder="Placeholder" data-id="${i._id}" onchange="editItem(this, 'Placeholder', '${sectionId}')"/>
                         </div>
                         <div class="flex_apart" style="width:400px">
-                            <div style="width:30%;text-align:left">
+                            <div style="width:60%;text-align:left">
                                 <span class="text caption" style="margin: 5px 10px;text-align:left" title="Please put -1 for infinite">Max Notes</span>
                                 <input class="input small" value="${i.MaxNotes}" style="display: inline-block;width:160px;text-align:center" type="text" placeholder="#" data-id="${i._id}" onchange="editItem(this, 'MaxNotes', '${sectionId}')"/>
                             </div>
