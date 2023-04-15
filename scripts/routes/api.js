@@ -1364,6 +1364,11 @@ router.get("/request/team*", async(req, res, next) => {
         });
     }
     
+    documentsForComp = documents.filter(d => d.competition == competition);
+    documentsNotForComp = documents.filter(d => d.competition != competition);
+
+    documents = documentsForComp.concat(documentsNotForComp);
+    
     var analysis = await db.getDocs("AnalysisSet", {environment: env.friendlyId});
     var defaultAnalysis = analysis.find(a => a.Name == env.settings.defaultAnalysis);
 
