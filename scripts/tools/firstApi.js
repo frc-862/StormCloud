@@ -41,9 +41,9 @@ async function getSchedule(year, competition, phase){
     
 }
 
-async function getTeams(year, competition){
+async function getTeams(year, competition, pageNum){
     try{
-        var res = await axios.get(getBaseApiUrl() +  `/${year}/teams?eventCode=${competition}`, {headers: {"Authorization":getAuthToken()}});
+        var res = await axios.get(getBaseApiUrl() +  `/${year}/teams?eventCode=${competition}&page=${pageNum}`, {headers: {"Authorization":getAuthToken()}});
     }catch(e){
         return {error:e};
     }

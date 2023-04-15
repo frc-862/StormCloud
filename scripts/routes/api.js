@@ -577,6 +577,18 @@ function prepareAnalysis(analysis, schema, documents, matches, teams, competitio
 
                         
                     }
+                    else if(field.componentType == "Notes"){
+                        var notesMade = useData.split(";");
+
+                        for(var i = 0; i < notesMade.length-1; i++){
+                            var note = notesMade[i];
+                            addData(partId, foundTeam, key, {match:data.match, data: note})
+                        }
+                       
+                        
+
+                        
+                    }
                     return;
                 }
                 if(field.componentType == "Step" || field.componentType == "Timer"){
@@ -623,6 +635,20 @@ function prepareAnalysis(analysis, schema, documents, matches, teams, competitio
                         addData(partId, foundTeam, key, usePoints ? parseInt(optionSelected.Points) : optionSelected.Name)
                         //toSendData.append(usePoints ? optionSelected.Points : optionSelected.Name);
                     });
+                    
+
+                    
+                }
+                else if(field.componentType == "Notes"){
+                    var notesMade = useData.split(";");
+                    //var toSendData = [];
+
+                    for(var i = 0; i < notesMade.length-1; i++){
+                        var note = notesMade[i];
+                        addData(partId, foundTeam, key, note)
+                    }
+
+                    
                     
 
                     
@@ -2185,42 +2211,59 @@ router.get("/first/teams*", async(req, res, next) => {
     }
 
     var doNotPush = req.query.doNotPush == "true";
+    var pageNum = 1;
+    while(true){
+        var fRes = await firstApiTools.getTeams(year, competition, pageNum);
 
-    var fRes = await firstApiTools.getTeams(year, competition);
+        var path = process.env.HOME_FOLDER + "/cache/" + "teams.json";
+        var sendBackFRes = JSON.stringify(fRes);
 
-    var path = process.env.HOME_FOLDER + "/cache/" + "teams.json";
-    var sendBackFRes = JSON.stringify(fRes);
-    res.status(fRes.error == undefined ? 200 : 500).json({data: sendBackFRes});
-
-    if(fRes.error == undefined && !doNotPush){
-        fs.writeFile(path, sendBackFRes, (err) => {
-
-        });
-
-        var teams = fRes["teams"];
-        env.cachedCompetitionData.teams = teams;
-        teams.forEach(async (team) => {
-            var existingTeam = await db.getDocs("Team", {environment: env.friendlyId, teamNumber: team.teamNumber});
-            if(existingTeam.length > 0){
+        if(pageNum == 1){
+            res.status(fRes.error == undefined ? 200 : 500).json({data: sendBackFRes});
+            if(fRes.error != undefined){
                 return;
             }
+        }
+        
+        if(fRes.error == undefined && !doNotPush){
+            fs.writeFile(path, sendBackFRes, (err) => {
 
-            var teamNumber = team.teamNumber;
-            var newTeam = {
-                environment: env.friendlyId,
-                teamNumber: teamNumber,
-                name: team.nameShort,
-                notes: [],
-                extraData: {}
-            }
+            });
 
-            await db.createDoc("Team", newTeam);
+            var teams = fRes["teams"];
+            env.cachedCompetitionData.teams = teams;
+            teams.forEach(async (team) => {
+                var existingTeam = await db.getDocs("Team", {environment: env.friendlyId, teamNumber: team.teamNumber});
+                if(existingTeam.length > 0){
+                    return;
+                }
+
+                var teamNumber = team.teamNumber;
+                var newTeam = {
+                    environment: env.friendlyId,
+                    teamNumber: teamNumber,
+                    name: team.nameShort,
+                    notes: [],
+                    extraData: {}
+                }
+
+                await db.createDoc("Team", newTeam);
 
 
 
-        });
-        await db.updateDoc("Environment", {_id: env._id}, {cachedCompetitionData: env.cachedCompetitionData});
+            });
+            await db.updateDoc("Environment", {_id: env._id}, {cachedCompetitionData: env.cachedCompetitionData});
+        }
+
+
+        if(fRes["pageTotal"] >= pageNum){
+            return;
+        }
+    
+
+        pageNum++;
     }
+    
 })
 
 router.get("/first/schedule*", async (req, res, next) => {
