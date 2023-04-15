@@ -496,10 +496,14 @@ function prepareAnalysis(analysis, schema, documents, matches, teams, competitio
 
 
                     if(applicableDataPiece.Type.includes("Points")){
-                        points = Function(`
-                            var x = ${useData};
-                            return ${field.points};
-                        `)();
+                        try{
+                            points = Function(`
+                                var x = ${useData};
+                                return ${field.points};
+                            `)();
+                        }catch(pex){
+                            points = 0;
+                        }
                     }
                     addData(partId, foundTeam, key, {
                         match: data.match,
@@ -521,10 +525,15 @@ function prepareAnalysis(analysis, schema, documents, matches, teams, competitio
                     if(field.componentType == "Step" || field.componentType == "Timer"){
                         var points = 0;
                         if(usePoints){
-                            points = Function(`
-                                var x = ${useData};
-                                return ${field.points};
-                            `)();
+                            try{
+                                points = Function(`
+                                    var x = ${useData};
+                                    return ${field.points};
+                                `)();
+                            }catch(pex){
+                                points = 0;
+                            }
+                            
 
                         }
                         addData(partId, foundTeam, key, {
@@ -573,10 +582,14 @@ function prepareAnalysis(analysis, schema, documents, matches, teams, competitio
                 if(field.componentType == "Step" || field.componentType == "Timer"){
                     var points = 0;
                     if(usePoints){
-                        points = Function(`
-                            var x = ${useData};
-                            return ${field.points};
-                        `)();
+                        try{
+                            points = Function(`
+                                var x = ${useData};
+                                return ${field.points};
+                            `)();
+                        }catch(pex){
+                            points = 0;
+                        }
 
                     }
                     addData(partId, foundTeam, key, usePoints ? points : parseInt(useData))
@@ -872,12 +885,16 @@ function prepareAnalysis(analysis, schema, documents, matches, teams, competitio
                         }
                         
 
-
-                        localFinal = Function(`
+                        try{
+                            localFinal = Function(`
                             ${functionString}
                                 
                             ${codeString}
                             `)();
+                        }catch(pex){
+                            localFinal = 0;
+                        }
+                        
                         localFinals.push(localFinal);
                     });
 
