@@ -99,7 +99,7 @@ router.get("/spreadsheet/documents*", async function(req, res, next){
     var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match", competition: competition});
     var dataDocuments = documents.filter((doc) => {
         var docData = JSON.parse(doc.json);
-        return docData.type == "data";
+        return docData.type == "tablet";
     })
     try{
 
