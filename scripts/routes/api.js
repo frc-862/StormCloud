@@ -187,11 +187,7 @@ router.get("/spreadsheet/analysis*", async function(req, res, next){
             });
         });
 
-        var schemas = await db.getDocs("Schema", {environment: env.friendlyId});
-        schema = schemas.find(s => s.Name == analysis.Schema.Name);
-        var matches = await db.getDocs("Match", {environment: env.friendlyId, competition: competition});
-        matches = matches.sort((a, b) => a.matchNumber - b.matchNumber);
-        var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match"});
+        
 
 
         var finalCSV = "";
@@ -203,6 +199,12 @@ router.get("/spreadsheet/analysis*", async function(req, res, next){
 
             
         var thisAnalysis = (await db.getDocs("AnalysisSet", {environment: env.friendlyId, Name: analysisToSelect}))[0];
+
+        var schemas = await db.getDocs("Schema", {environment: env.friendlyId});
+        schema = schemas.find(s => s.Name == thisAnalysis.Schema.Name);
+        var matches = await db.getDocs("Match", {environment: env.friendlyId, competition: competition});
+        matches = matches.sort((a, b) => a.matchNumber - b.matchNumber);
+        var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match"});
 
         finalCSV += "Team Number,";
         finalCSV += "Team Name,";
