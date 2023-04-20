@@ -89,6 +89,83 @@ router.get('/export/documents', async function(req, res, next) {
     res.send(sendBackString);
 });
 
+router.get("/spreadsheet/documents*", async function(req, res, next){
+    let env = await authTools.getEnvironment(environment);
+
+    var schemaToSelect = req.query.schema;
+
+    var competition = env.settings.competitionYear + env.settings.competitionCode;
+
+    var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match", competition: competition});
+    var dataDocuments = documents.filter((doc) => {
+        var docData = JSON.parse(doc.json);
+        return docData.type == "data";
+    })
+    try{
+
+        var finalCSV = "";
+
+        var schema = await db.getDoc("Schema", {Name: schemaToSelect, environment: env.friendlyId});
+        var schemaItems = [];
+        schema.Parts.forEach((part) => {
+            part.Components.forEach((item) => {
+                if(item.Type != "Label"){
+                    schemaItems.push({
+                        name: item.Name,
+                        part: part.Name
+                    });
+                }
+            });
+        });
+
+        // create CSV header
+        finalCSV += "Team Number,";
+        finalCSV += "Match Number,";
+        finalCSV += "Timestamp,";
+        finalCSV += "Flagged?,";
+        finalCSV += "Scouter,";
+
+        schemaItems.forEach((item) => {
+            finalCSV += item.name + "(" + item.part + ")" + ",";
+        });
+        finalCSV += "\n";
+
+        dataDocuments.forEach((doc) => {
+            var docData = JSON.parse(doc.json);
+            finalCSV += docData.team + ",";
+            finalCSV += docData.match + ",";
+            finalCSV += doc.datetime + ",";
+            finalCSV += doc.flagged + ",";
+            finalCSV += docData.author + ",";
+
+            var dataTaken = JSON.parse(docData.data);
+
+            var i = 0;
+            schemaItems.forEach((item) => {
+                if(dataTaken[i] != undefined){
+                    finalCSV += dataTaken[i] + ",";
+                }
+                else{
+                    finalCSV += ",";
+                }
+                i++;
+            });
+
+            finalCSV += "\n";
+        });
+
+        res.send(finalCSV);
+
+
+
+    }
+    
+    catch(e){
+
+        res.status(500).send("Error: " + e);
+    }
+});
+
 router.get('/export/analysis', async function(req, res, next) {
     let env = await authTools.getEnvironment(environment);
 
