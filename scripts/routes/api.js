@@ -219,6 +219,15 @@ router.get("/spreadsheet/analysis*", async function(req, res, next){
             finalCSV += team.team + ",";
             finalCSV += team.name + ",";
             analysisForTeam[team.team].forEach((part) => {
+                if(part.type == "Graph"){
+                    finalCSV += part.data + ",";
+                }else if(part.type == "Frequency"){
+                    var addToCSV = "";
+                    for(var a = 0; a < part.fields.length; a++){
+                        addToCSV += part.fields[a].value + ": " + part.fields[a].count + "%; ";
+                    }
+                    finalCSV += addToCSV + ",";
+                }
                 finalCSV += part.value + ",";
             });
             finalCSV += "\n";
