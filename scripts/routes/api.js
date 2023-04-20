@@ -105,7 +105,7 @@ router.get("/spreadsheet/documents*", async function(req, res, next){
 
         var finalCSV = "";
 
-        var schema = await db.getDoc("Schema", {Name: schemaToSelect, environment: env.friendlyId});
+        var schema = (await db.getDocs("Schema", {Name: schemaToSelect, environment: env.friendlyId}))[0];
         var schemaItems = [];
         schema.Parts.forEach((part) => {
             part.Components.forEach((item) => {
