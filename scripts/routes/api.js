@@ -224,7 +224,7 @@ router.get("/spreadsheet/analysis*", async function(req, res, next){
                 }else if(part.type == "Frequency"){
                     var addToCSV = "";
                     for(var a = 0; a < part.fields.length; a++){
-                        addToCSV += part.fields[a] + ": " + part.fields[a] + "%; ";
+                        addToCSV += part.fields[a] + ": " + part.values[a] + "%; ";
                     }
                     finalCSV += addToCSV + ",";
                 }else{
