@@ -167,6 +167,69 @@ router.get("/spreadsheet/documents*", async function(req, res, next){
     }
 });
 
+router.get("/spreadsheet/analysis*", async function(req, res, next){
+    let env = await authTools.getEnvironment(environment);
+
+    var analysisToSelect = req.query.analysis;
+
+    var competition = env.settings.competitionYear + env.settings.competitionCode;
+
+    try{
+        var teamsToUse = [];
+        env.cachedCompetitionData.rankings.forEach(async (rank) => {
+
+            var teaminDB = (await db.getDocs("Team", {teamNumber: rank.team, environment: env.friendlyId}))[0];
+
+
+            teamsToUse.push({
+                team: rank.team,
+                name: teaminDB == undefined ? "Unknown" : teaminDB.name,
+            });
+        });
+
+        var schemas = await db.getDocs("Schema", {environment: env.friendlyId});
+        schema = schemas.find(s => s.Name == analysis.Schema.Name);
+        var matches = await db.getDocs("Match", {environment: env.friendlyId, competition: competition});
+        matches = matches.sort((a, b) => a.matchNumber - b.matchNumber);
+        var documents = await db.getDocs("Document", {environment: env.friendlyId, dataType: "match"});
+
+
+        var finalCSV = "";
+
+        // create header
+
+        
+
+
+            
+        var thisAnalysis = (await db.getDocs("AnalysisSet", {environment: env.friendlyId, Name: analysisToSelect}))[0];
+
+        finalCSV += "Team Number,";
+        finalCSV += "Team Name,";
+        thisAnalysis.Parts.forEach((part) => {
+            finalCSV += part.Name + ",";
+            
+        });
+        finalCSV += "\n";
+
+        teamsToUse.forEach((team) => {
+            var analysisForTeam = prepareAnalysis(thisAnalysis, schema, documents, matches, [team.team], env.settings.competitionYear + env.settings.competitionCode);
+            finalCSV += team.team + ",";
+            finalCSV += team.name + ",";
+            analysisForTeam[team.team].forEach((part) => {
+                finalCSV += part.value + ",";
+            });
+            finalCSV += "\n";
+        });
+
+        res.attachment("download.csv");
+        res.type("text/csv").send(finalCSV);
+    }catch(e){
+        res.status(500).send("Error: " + e);
+    }
+    
+});
+
 router.get('/export/analysis', async function(req, res, next) {
     let env = await authTools.getEnvironment(environment);
 
