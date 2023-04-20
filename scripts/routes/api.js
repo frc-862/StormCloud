@@ -154,6 +154,7 @@ router.get("/spreadsheet/documents*", async function(req, res, next){
             finalCSV += "\n";
         });
 
+        res.attachment("download.csv");
         res.type("text/csv").send(finalCSV);
 
 
